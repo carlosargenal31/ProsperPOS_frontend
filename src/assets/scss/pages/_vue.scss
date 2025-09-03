@@ -1,0 +1,195 @@
+@use "../utils/mixins" as *;
+@use "../utils/variables" as *;
+
+.ant-table-tbody .ant-table-cell {
+    color: #000;
+    padding: 13px 12px !important;
+}
+.leaflet-pane.leaflet-shadow-pane{
+    display: none;
+}
+.sidebar-inner.slimscroll{
+    width: 100%;
+}
+.settings-wrapper .sidebars.settings-sidebar .sidebar-inner .sidebar-menu ul .submenu-open{
+    margin-bottom: 0px;
+}
+.select2.select2-container{
+    width: 100% !important;
+}
+.scroll-area {
+    position: relative;
+    margin: auto;
+    width: 100%;
+    height: calc(100vh - 30px);
+    background-color: transparent !important;
+}
+.scroll-area-one {
+    position: relative;
+    margin: auto;
+    width: 100%;
+    background-color: transparent !important;
+    height: calc(100vh - 30px);
+}
+
+.scroll-area-two {
+    position: relative;
+    margin: auto;
+    width: 100%;
+    background-color: transparent !important;
+    height: calc(100vh - 200px);
+}
+
+.stickysidebar {
+    position: sticky;
+    top: 0;
+}
+
+.notes-slider.owl-carousel .carousel__next {
+    background-color: transparent;
+    width: 24px;
+    height: auto;
+    margin-top: -165px;
+    left: 130px;
+}
+
+.notes-slider.owl-carousel .carousel__prev {
+    background-color: transparent;
+    width: 24px;
+    height: auto;
+    margin-top: -165px;
+    left: 100px;
+}
+
+.owl-carousel.files-carousel .carousel .files-wrap {
+    width: 100% !important;
+    margin: 0 8px;
+}
+.owl-carousel.folders-carousel .carousel .folder-wrap {
+    width: 100% !important;
+    margin: 0 8px;
+}
+.owl-carousel.video-section .carousel .video-wrap {
+    width: 100% !important;
+    margin: 0 8px;
+}
+.video-section video{
+    width: 100% !important;
+}
+
+.tabs.owl-carousel.pos-category3 .carousel ol .carousel__slide{
+    width: auto !important;
+    margin-right: 8px;
+}
+.tabs.owl-carousel.pos-category3 .carousel ol li li{
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid transparent;
+    box-shadow: 0px 4px 54px 0px rgba(224, 224, 224, 0.2509803922);
+    transition: all 0.5sease;
+    border-radius: 8px;
+    margin-left: -0.1px !important;
+}
+.tabs.owl-carousel.pos-category3 .carousel ol li li.active{
+    border-color: #FE9F43 !important;
+}
+
+.pos-category3 .carousel .carousel__viewport ol li li{
+    padding: 7.2px;
+}
+.tabs_wrapper .tabs.owl-carousel .carousel ol li .owl-item{
+    margin: 0 4px;
+    width: 100%;
+}
+
+.tabs_wrapper .tabs.owl-carousel .carousel .carousel__prev{
+    background-color: #ffffff;
+    border: 1px solid #E6EAED;
+    color: #212B36;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    top: -25px;
+    left: 90%;
+}
+
+.tabs_wrapper .tabs.owl-carousel .carousel .carousel__next{
+    background-color: #ffffff;
+    border: 1px solid #E6EAED;
+    color: #212B36;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    top: -25px;
+}
+.ant-spin-container .ant-pagination.ant-table-pagination{
+    display: none;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner{
+    background-color: #FE9F43 !important;
+    border-color: #FE9F43 !important;
+}
+
+.ant-table-wrapper .ant-table-tbody >tr.ant-table-row-selected >td {
+    background: #ffffff !important;
+}
+[data-theme="dark"] .ant-table-wrapper .ant-table-tbody >tr.ant-table-row-selected >td {
+    background: #0D0D0D !important;
+}
+[data-theme="dark"] .ant-table-wrapper .ant-table-tbody >tr >td.ant-table-cell-row-hover {
+    background: #0D0D0D !important;
+}
+[data-theme="dark"] .ant-table-wrapper .ant-table-thead th.ant-table-column-has-sorters:hover {
+    background: #1F2228 !important;
+}
+.ant-table-wrapper .ant-table-thead th.ant-table-column-has-sorters:hover {
+    background: #FAFBFB !important;
+}
+@media (max-width: 768px){
+    .sidebar-logo {
+        display: none !important;
+    }
+}
+
+.input-groupicon.calender-input svg{
+    top: 5px !important;
+}
+
+.ant-picker-dropdown.css-dev-only-do-not-override-1p3hq3p.ant-picker-dropdown-placement-bottomLeft{
+    z-index: 1055 !important;
+}
+.ant-picker-dropdown{
+    z-index: 1055 !important;
+}
+
+.chat-wrapper{
+    .slimscroll{
+        overflow-x: auto;
+    }
+}
+
+.chat-wrapper .chat.chat-messages .slimscroll {
+    height: calc(-163px + 100vh) !important;
+}
+.chat-wrapper .sidebar-group .slimscroll {
+    height: calc(100vh - 99px) !important;
+}
+.chat.chat-messages.show {
+    height: calc(100vh - 99px) !important;
+}
+
+.slime-grp .slimscroll {
+    height: calc(100vh - 216px) !important;
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.vue-select .control .indicators-container .clear-button{
+    display: none;
+}
