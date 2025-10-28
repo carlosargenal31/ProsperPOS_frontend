@@ -7,11 +7,11 @@
                         <div class="login-userset">
                             <div class="login-userset">
                                 <div class="login-logo logo-normal">
-                                    <img src="@/assets/img/logo.svg" alt="img">
+                                    <img src="@/assets/img/logo.png" alt="img">
                                 </div>
                             </div>
                             <router-link to="/dashboard" class="login-logo logo-white">
-                                <img src="@/assets/img/logo-white.svg" alt="">
+                                <img src="@/assets/img/logo-white.png" alt="">
                             </router-link>
                             <div class="login-userheading text-center">
                                 <img src="@/assets/img/icons/check-icon.svg" alt="Icon">
@@ -22,7 +22,7 @@
                                 <router-link class="btn btn-login mt-0" to="/">Back to Login</router-link>
                             </div>
                             <div class="my-4 d-flex justify-content-center align-items-center copyright-text">
-                                <p>Copyright © {{ new Date().getFullYear() }}-Dreamspos</p>
+                                <p>Copyright © {{ new Date().getFullYear() }}-ProsperPOS</p>
                             </div>
                         </div>
                     </div>

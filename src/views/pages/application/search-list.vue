@@ -39,7 +39,7 @@
         <div class="card-body">
           <form @submit.prevent="submitForm">
             <div class="d-flex align-items-center">
-              <input type="text" class="form-control flex-fill me-3" value="DreamsPOS" />
+              <input type="text" class="form-control flex-fill me-3" value="ProsperPOS" />
               <button type="submit" class="btn btn-primary">Search</button>
             </div>
           </form>
@@ -49,18 +49,16 @@
       <!-- Search Results -->
       <div class="card">
         <div class="card-body">
-          <h5 class="mb-3">Search result for "DreamsPOS"</h5>
+          <h5 class="mb-3">Search result for "ProsperPOS"</h5>
 
           <!-- Text Result -->
           <div class="row">
             <div class="col-md-6">
               <div class="card shadow-none">
                 <div class="card-body">
-                  <a href="#" class="text-info text-truncate mb-2">
-                    https://themeforest.net/search/dreamspos
-                  </a>
+                  
                   <p class="text-truncate line-clamb-2 mb-2">
-                    DreamsPOS - Html, Vue 3, Angular 17+, React & Node HR Project
+                    ProsperPOS - Html, Vue 3, Angular 17+, React & Node HR Project
                     Management & CRM Admin Dashboard Template
                   </p>
                   <div class="d-flex align-items-center flex-wrap row-gap-2">
@@ -111,10 +109,12 @@
     <div
       class="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3"
     >
-      <p class="mb-0">2014-2025 © DreamsPOS. All Right Reserved</p>
+      <p class="mb-0 text-gray-9">
+        {{ new Date().getFullYear() }} &copy; ProsperPOS. All Right Reserved
+      </p>
       <p>
-        Designed &amp; Developed By
-        <a href="javascript:void(0);" class="text-primary">Dreams</a>
+        Diseñado &amp Desarrollado Por;
+        <a href="javascript:void(0);" class="text-primary">Carlos Argeñal</a>
       </p>
     </div>
   </div>

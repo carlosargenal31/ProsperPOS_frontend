@@ -289,18 +289,6 @@ const routes = [
     ]
   },
   {
-    path: '/blog',
-    component: () => import('@/views/pages/content/blogs/pos-blogs.vue'),
-    children: [
-      { path: '', redirect: '/blog/blog-comments' },
-      { path: "blog-comments", component: () => import('@/views/pages/content/blogs/blog-comments.vue') },
-      { path: "blog-categories", component: () => import('@/views/pages/content/blogs/blog-categories.vue') },
-      { path: "blog-tag", component: () => import('@/views/pages/content/blogs/blog-tag.vue') },
-      { path: "all-blog", component: () => import('@/views/pages/content/blogs/all-blog.vue') },
-      { path: "blog-details", component: () => import('@/views/pages/content/blogs/blog-details.vue') },
-    ]
-  },
-  {
     path: '/page',
     component: () => import('@/views/pages/content/pages/page-index.vue'),
     children: [
@@ -636,7 +624,7 @@ const routes = [
       { path: "layout-hovered", component: () => import('@/views/pages/layouts/layout-hovered.vue') },
       { path: "layout-boxed", component: () => import('@/views/pages/layouts/layout-boxed.vue') },
       { path: "layout-dark", component: () => import('@/views/pages/layouts/layout-dark.vue') },
-      { path: "layout-rtl", component: () => import('@/views/pages/layouts/layout-rtl.vue') },
+
     ]
   },
   {

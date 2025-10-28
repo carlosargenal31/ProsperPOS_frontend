@@ -6,7 +6,7 @@
     <div class="content">
       <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-2">
         <div class="mb-3">
-          <h1 class="mb-1">Welcome, Admin</h1>
+          <h1 class="mb-1">Bienvenido, Admin</h1>
           <p class="fw-medium">
             You have <span class="text-primary fw-bold">200+</span> Orders, Today
           </p>
@@ -1485,9 +1485,16 @@
       </div>
     </div>
     
-    <div class="copyright-footer d-flex align-items-center justify-content-between border-top bg-white gap-3 flex-wrap">
-      <p class="fs-13 text-gray-9 mb-0">{{ new Date().getFullYear() }} © DreamsPOS. All Right Reserved</p>
-      <p>Designed & Developed By Dreams <a href="javascript:void(0);" class="link-primary">Dreams</a></p>
+   <div
+      class="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3"
+    >
+      <p class="mb-0 text-gray-9">
+        {{ new Date().getFullYear() }} &copy; ProsperPOS. Todos los derechos reservados
+      </p>
+      <p>
+        Diseñado &amp Desarrollado Por
+        <a href="javascript:void(0);" class="text-primary">Carlos Argeñal</a>
+      </p>
     </div>
     
   </div>

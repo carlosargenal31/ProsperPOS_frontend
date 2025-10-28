@@ -13,7 +13,7 @@ import VueEasyLightbox from "vue-easy-lightbox"
 
 /********* Layout component**********/
 import Header from "@/views/layouts/layouts-header.vue";
-import HeaderRtl from "@/views/layouts/layout-rtl-header.vue";
+
 import Sidebar from "@/views/layouts/layouts-sidebar.vue";
 import FilesSidebar from "@/views/layouts/files-sidebar.vue";
 import Settings_Sidebar from "@/views/layouts/settings-sidebar.vue";
@@ -212,7 +212,6 @@ const app = createApp(App);
 
 /********* Layout component**********/
 app.component("layout-header", Header);
-app.component("layout-rtl-header", HeaderRtl);
 app.component("layout-sidebar", Sidebar);
 app.component("files-sidebar", FilesSidebar);
 app.component("settings-sidebar", Settings_Sidebar);

@@ -7,7 +7,7 @@
                     <div class="row justify-content-between align-items-center mb-3">
                         <div class="col-md-6">
                             <div class="mb-4">
-                                <img src="@/assets/img/logo.svg" class="img-fluid" alt="logo">
+                                <img src="@/assets/img/logo.png" class="img-fluid" alt="logo">
                             </div>
                         </div>
                         <div class="col-md-6">

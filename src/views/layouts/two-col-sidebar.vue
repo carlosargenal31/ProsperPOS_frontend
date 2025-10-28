@@ -121,7 +121,6 @@
                                 <li><router-link to="/layouts/layout-two-column">Two Column</router-link></li>
                                 <li><router-link to="/layouts/layout-hovered">Hovered</router-link></li>
                                 <li><router-link to="/layouts/layout-boxed">Boxed</router-link></li>
-                                <li><router-link to="/layouts/layout-rtl">RTL</router-link></li>
                                 <li><router-link to="/layouts/layout-dark">Dark</router-link></li>
                             </ul>
                         </div>

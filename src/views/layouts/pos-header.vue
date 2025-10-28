@@ -4,10 +4,10 @@
     <!-- Logo -->
     <div class="header-left active">
       <router-link to="/dashboard/" class="logo logo-normal">
-        <img src="@/assets/img/logo.svg" alt="Img" />
+        <img src="@/assets/img/logo.png" alt="Img" />
       </router-link>
       <router-link to="/dashboard/" class="logo logo-white">
-        <img src="@/assets/img/logo-white.svg" alt="Img" />
+        <img src="@/assets/img/logo-white.png" alt="Img" />
       </router-link>
       <router-link to="/dashboard/" class="logo-small">
         <img src="@/assets/img/logo-small.png" alt="Img" />

@@ -199,7 +199,7 @@
                         <div class="new-logo ms-xl-auto">
                           <a href="#">
                             <img
-                              src="@/assets/img/products/company-logo.svg"
+                              src="@/assets/img/products/company-logo.png"
                               alt="Logo"
                             />
                             <span><i class="ti ti-x"></i></span>
@@ -239,7 +239,7 @@
                       <div class="col-xl-3">
                         <div class="new-logo ms-xl-auto">
                           <a href="#" class="bg-secondary">
-                            <img src="@/assets/img/products/white-logo.svg" alt="Logo" />
+                            <img src="@/assets/img/products/white-logo.png" alt="Logo" />
                             <span><i class="ti ti-x"></i></span>
                           </a>
                         </div>
@@ -322,12 +322,12 @@
     <div
       class="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3"
     >
-      <p class="mb-0">
-        {{ new Date().getFullYear() }} &copy; DreamsPOS. All Right Reserved
+      <p class="mb-0 text-gray-9">
+        {{ new Date().getFullYear() }} &copy; ProsperPOS. Todos los derechos reservados
       </p>
       <p>
-        Designed &amp; Developed by
-        <a href="javascript:void(0);" class="text-primary">Dreams</a>
+        Diseñado &amp Desarrollado Por
+        <a href="javascript:void(0);" class="text-primary">Carlos Argeñal</a>
       </p>
     </div>
   </div>

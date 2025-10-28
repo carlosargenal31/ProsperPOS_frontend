@@ -5,9 +5,9 @@
                 <div class="login-wrapper login-new">
                     <div class="login-content user-login">
                         <div class="login-logo">
-                            <img src="@/assets/img/logo.svg" alt="img">
+                            <img src="@/assets/img/logo.png" alt="img">
                             <router-link to="/dashboard" class="login-logo logo-white">
-                                <img src="@/assets/img/logo-white.svg" alt="">
+                                <img src="@/assets/img/logo-white.png" alt="">
                             </router-link>
                         </div>
                         <div class="login-userset">
@@ -22,12 +22,12 @@
                                 <router-link class="btn btn-login mt-0" to="/signin-3">Back to Login</router-link>
                             </div>
                             <div class="my-4 d-flex justify-content-center align-items-center copyright-text">
-                                <p>Copyright © {{ new Date().getFullYear() }}-Dreamspos</p>
+                                <p>Copyright © {{ new Date().getFullYear() }}-ProsperPOS</p>
                             </div>
                         </div>
                     </div>
                     <div class="my-4 d-flex justify-content-center align-items-center copyright-text">
-                        <p>Copyright &copy; {{ new Date().getFullYear() }} DreamsPOS. All rights reserved</p>
+                        <p>Copyright &copy; {{ new Date().getFullYear() }} ProsperPOS. All rights reserved</p>
                     </div>
                 </div>
             </div>

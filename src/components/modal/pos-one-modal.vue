@@ -48,7 +48,7 @@
           <div class="icon-head text-center">
             <a href="javascript:void(0);">
               <img
-                src="@/assets/img/logo.svg"
+                src="@/assets/img/logo.png"
                 width="100"
                 height="30"
                 alt="Receipt Logo"
@@ -56,7 +56,7 @@
             </a>
           </div>
           <div class="text-center info text-center">
-            <h6>Dreamguys Technologies Pvt Ltd.,</h6>
+            <h6>ProsperPOS Technologies Pvt Ltd.,</h6>
             <p class="mb-0">Phone Number: +1 5656665656</p>
             <p class="mb-0">
               Email: <a href="mailto:example@gmail.com">example@gmail.com</a>

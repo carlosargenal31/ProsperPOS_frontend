@@ -106,7 +106,7 @@
                       />
                       <label for="ltr" class="checktoggles">
                         <a
-                          href="https://dreamspos.dreamstechnologies.com/vue/template/"
+                          href="https://prosperpos.prosperpos.com/vue/template/"
                           target="_blank"
                         >
                           <img src="@/assets/img/theme/theme-img-01.jpg" alt="" />
@@ -130,7 +130,7 @@
                       />
                       <label for="rtl" class="checktoggles">
                         <a
-                          href="https://dreamspos.dreamstechnologies.com/vue/template-rtl/"
+                          href="https://prosperpos.prosperpos.com/vue/template/"
                           target="_blank"
                         >
                           <img src="@/assets/img/theme/theme-img-03.jpg" alt="" />
@@ -322,12 +322,7 @@
             </div>
             <div class="col-xl-6">
               <div class="footer-reset-btn">
-                <a
-                  href="https://themeforest.net/item/dreamspos-pos-inventory-management-admin-dashboard-template/38834413"
-                  target="_blank"
-                  class="btn btn-primary w-100"
-                  >Buy Now</a
-                >
+                
               </div>
             </div>
           </div>

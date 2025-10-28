@@ -36,7 +36,7 @@
           <div class="row justify-content-between align-items-center border-bottom mb-3">
             <div class="col-md-6">
               <div class="mb-2">
-                <img src="@/assets/img/logo.svg" class="img-fluid" alt="logo" />
+                <img src="@/assets/img/logo.png" class="img-fluid" alt="logo" />
               </div>
               <p>3099 Kennedy Court Framingham, MA 01702</p>
             </div>
@@ -193,7 +193,7 @@
           </div>
           <div class="text-center">
             <div class="mb-3">
-              <img src="@/assets/img/logo.svg" class="img-fluid" alt="logo" />
+              <img src="@/assets/img/logo.png" class="img-fluid" alt="logo" />
             </div>
             <p class="text-dark mb-1">
               Payment Made Via bank transfer / Cheque in the name of Thomas Lawler
@@ -228,10 +228,12 @@
     <div
       class="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3"
     >
-      <p class="mb-0 text-gray-9">2014-2025 © DreamsPOS. All Right Reserved</p>
+      <p class="mb-0 text-gray-9">
+        {{ new Date().getFullYear() }} &copy; ProsperPOS. All Right Reserved
+      </p>
       <p>
-        Designed &amp; Developed By
-        <a href="javascript:void(0);" class="text-primary">Dreams</a>
+        Diseñado &amp Desarrollado Por;
+        <a href="javascript:void(0);" class="text-primary">Carlos Argeñal</a>
       </p>
     </div>
   </div>

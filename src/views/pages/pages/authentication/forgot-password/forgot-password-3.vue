@@ -6,9 +6,9 @@
           <div class="col-lg-5 mx-auto">
             <div class="login-content user-login">
               <div class="login-logo">
-                <img src="@/assets/img/logo.svg" alt="img" />
+                <img src="@/assets/img/logo.png" alt="img" />
                 <router-link to="/dashboard" class="login-logo logo-white">
-                  <img src="@/assets/img/logo-white.svg" alt="Img" />
+                  <img src="@/assets/img/logo-white.png" alt="Img" />
                 </router-link>
               </div>
               <form @submit.prevent="submitForm">
@@ -52,7 +52,7 @@
             <div
               class="my-4 d-flex justify-content-center align-items-center copyright-text"
             >
-              <p>Copyright &copy; {{ new Date().getFullYear() }} DreamsPOS</p>
+              <p>Copyright &copy; {{ new Date().getFullYear() }} ProsperPOS</p>
             </div>
           </div>
         </div>

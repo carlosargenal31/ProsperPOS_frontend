@@ -6,10 +6,10 @@
           <form @submit.prevent="submitForm" class="digit-group">
             <div class="login-userset">
               <div class="login-logo logo-normal">
-                <img src="@/assets/img/logo.svg" alt="img" />
+                <img src="@/assets/img/logo.png" alt="img" />
               </div>
               <router-link to="/dashboard" class="login-logo logo-white">
-                <img src="@/assets/img/logo-white.svg" alt="Img" />
+                <img src="@/assets/img/logo-white.png" alt="Img" />
               </router-link>
               <div>
                 <div class="login-userheading">
@@ -77,7 +77,7 @@
               <div
                 class="my-4 d-flex justify-content-center align-items-center copyright-text"
               >
-                <p>Copyright &copy; {{ new Date().getFullYear() }} DreamsPOS</p>
+                <p>Copyright &copy; {{ new Date().getFullYear() }} ProsperPOS</p>
               </div>
             </div>
           </form>

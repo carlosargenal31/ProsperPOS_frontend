@@ -9,7 +9,7 @@
   <div class="main-wrapper login-body">
     <div class="login-wrapper position-relative">
       <div class="container">
-        <img class="img-fluid logo-dark mb-5" src="@/assets/img/logo.svg" alt="Logo" />
+        <img class="img-fluid logo-dark mb-5" src="@/assets/img/logo.png" alt="Logo" />
         <div class="loginbox">
           <div class="login-right">
             <div class="login-right-wrap">
@@ -54,7 +54,7 @@
             class="my-4 d-flex justify-content-center align-items-center copyright-text"
           >
             <p>
-              Copyright &copy; {{ new Date().getFullYear() }} DreamsPOS. All rights
+              Copyright &copy; {{ new Date().getFullYear() }} ProsperPOS. All rights
               reserved
             </p>
           </div>

@@ -5,16 +5,16 @@
         <div class="container">
           <div class="login-content user-login">
             <div class="login-logo">
-              <img src="@/assets/img/logo.svg" alt="img" />
+              <img src="@/assets/img/logo.png" alt="img" />
               <router-link to="/dashboard" class="login-logo logo-white">
-                <img src="@/assets/img/logo-white.svg" alt="" />
+                <img src="@/assets/img/logo-white.png" alt="" />
               </router-link>
             </div>
             <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors }">
               <div class="login-userset">
                 <div class="login-userheading">
                   <h3>Sign In</h3>
-                  <h4>Access the Dreamspos panel using your email and passcode.</h4>
+                  <h4>Access the ProsperPOS panel using your email and passcode.</h4>
                 </div>
                 <div class="form-login">
                   <label class="form-label">Email Address</label>
@@ -22,7 +22,7 @@
                     <Field
                       name="email"
                       type="text"
-                      value="example@dreamstechnologies.com"
+                      value="example@prosperpos.com"
                       class="form-control"
                       :class="{ 'is-invalid': errors.email }"
                     />
@@ -109,7 +109,7 @@
             class="my-4 d-flex justify-content-center align-items-center copyright-text"
           >
             <p>
-              Copyright &copy; {{ new Date().getFullYear() }} DreamsPOS. All rights
+              Copyright &copy; {{ new Date().getFullYear() }} ProsperPOS. All rights
               reserved
             </p>
           </div>
@@ -124,9 +124,9 @@
           <div class="col-lg-5 mx-auto">
             <div class="login-content user-login">
               <div class="login-logo">
-                <img src="@/assets/img/logo.svg" alt="img" />
+                <img src="@/assets/img/logo.png" alt="img" />
                 <router-link to="/dashboard" class="login-logo logo-white">
-                  <img src="@/assets/img/logo-white.svg" alt="Img" />
+                  <img src="@/assets/img/logo-white.png" alt="Img" />
                 </router-link>
               </div>
               <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors }">
@@ -134,7 +134,7 @@
                   <div class="card-body p-5">
                     <div class="login-userheading">
                       <h3>Sign In</h3>
-                      <h4>Access the Dreamspos panel using your email and passcode.</h4>
+                      <h4>Access the ProsperPOS panel using your email and passcode.</h4>
                     </div>
                     <div class="mb-3">
                       <label class="form-label"
@@ -144,7 +144,7 @@
                         <Field
                           name="email"
                           type="text"
-                          value="example@dreamstechnologies.com"
+                          value="example@prosperpos.com"
                           class="form-control"
                         />
                         <div class="invalid-feedback">{{ errors.email }}</div>
@@ -263,7 +263,7 @@
             <div
               class="my-4 d-flex justify-content-center align-items-center copyright-text"
             >
-              <p>Copyright &copy; 2025 DreamsPOS</p>
+              <p>Copyright &copy; 2025 ProsperPOS</p>
             </div>
           </div>
         </div>
@@ -305,7 +305,7 @@ export default {
     if (users === null) {
       let password = [
         {
-          email: "example@dreamstechnologies.com",
+          email: "example@prosperpos.com",
           password: "123456",
         },
       ];

@@ -321,14 +321,7 @@
               "active_link": "/layouts/layout-boxed",
               "customSubmenuTwo": false
             },
-            {
-              "tittle": "RTL",
-              "hasSubRoute": false,
-              "showSubRoute": false,
-              "route": "/layouts/layout-rtl",
-              "active_link": "/layouts/layout-rtl",
-              "customSubmenuTwo": false
-            },
+            
             {
               "tittle": "Dark",
               "hasSubRoute": false,
@@ -2338,13 +2331,7 @@
           ]
         },
         {
-          "tittle": "Documentation",
-          "hasSubRoute": false,
-          "showSubRoute": false,
-          "activeRoute:": "users"
-        },
-        {
-          "tittle": "Changelog v2.0.7",
+          "tittle": "Documentacion",
           "hasSubRoute": false,
           "showSubRoute": false,
           "activeRoute:": "users"

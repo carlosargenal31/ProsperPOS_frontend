@@ -6,14 +6,14 @@
           <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors }">
             <div class="login-userset">
               <div class="login-logo logo-normal">
-                <img src="@/assets/img/logo.svg" alt="img" />
+                <img src="@/assets/img/logo.png" alt="img" />
               </div>
               <router-link to="/dashboard" class="login-logo logo-white">
-                <img src="@/assets/img/logo-white.svg" alt="Img" />
+                <img src="@/assets/img/logo-white.png" alt="Img" />
               </router-link>
               <div class="login-userheading">
                 <h3>Register</h3>
-                <h4>Create New Dreamspos Account</h4>
+                <h4>Create New ProsperPOS Account</h4>
               </div>
               <div class="mb-3">
                 <label class="form-label">Name <span class="text-danger"> *</span></label>
@@ -158,7 +158,7 @@
               <div
                 class="my-4 d-flex justify-content-center align-items-center copyright-text"
               >
-                <p>Copyright &copy; 2025 DreamsPOS</p>
+                <p>Copyright &copy; 2025 ProsperPOS</p>
               </div>
             </div>
           </Form>

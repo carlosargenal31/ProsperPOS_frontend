@@ -142,10 +142,12 @@
     <div
       class="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3"
     >
-      <p class="mb-0">2014 - 2025 &copy; DreamsPOS. All Right Reserved</p>
+      <p class="mb-0 text-gray-9">
+        {{ new Date().getFullYear() }} &copy; ProsperPOS. Todos los derechos reservados
+      </p>
       <p>
-        Designed &amp; Developed by
-        <a href="javascript:void(0);" class="text-primary">Dreams</a>
+        Diseñado &amp Desarrollado Por
+        <a href="javascript:void(0);" class="text-primary">Carlos Argeñal</a>
       </p>
     </div>
   </div>

@@ -623,7 +623,7 @@
                         <div class="auth-logo">
                           <router-link to="/dashboard" class="logo logo-dark">
                             <span class="logo-lg">
-                              <img src="@/assets/img/logo.svg" alt="Logo" height="42" />
+                              <img src="@/assets/img/logo.png" alt="Logo" height="42" />
                             </span>
                           </router-link>
                         </div>
@@ -705,7 +705,7 @@
                         <div class="auth-logo">
                           <router-link to="/dashboard" class="logo logo-dark">
                             <span class="logo-lg">
-                              <img src="@/assets/img/logo.svg" alt="Logo" height="42" />
+                              <img src="@/assets/img/logo.png" alt="Logo" height="42" />
                             </span>
                           </router-link>
                         </div>
