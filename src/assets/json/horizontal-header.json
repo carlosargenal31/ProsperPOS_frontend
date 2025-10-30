@@ -1572,46 +1572,6 @@
               ]
             },
             {
-              "tittle": "Blogs",
-              "hasSubRoute": true,
-              "showSubRoute": false,
-              "customSubmenuTwo": true,
-              "subMenusTwo": [
-                {
-                  "tittle": "All Blogs",
-                  "hasSubRoute": false,
-                  "showSubRoute": false,
-                  "route": "/blog/all-blog",
-                  "active_link": "/blog/all-blog",
-                  "subRoutes": []
-                },
-                {
-                  "tittle": "Blog Tags",
-                  "hasSubRoute": false,
-                  "showSubRoute": false,
-                  "route": "/blog/blog-tag",
-                  "active_link": "/blog/blog-tag",
-                  "subRoutes": []
-                },
-                {
-                  "tittle": "Categories",
-                  "hasSubRoute": false,
-                  "showSubRoute": false,
-                  "route": "/blog/blog-categories",
-                  "active_link": "/blog/blog-categories",
-                  "subRoutes": []
-                },
-                {
-                  "tittle": "Blog Comments",
-                  "hasSubRoute": false,
-                  "showSubRoute": false,
-                  "route": "/blog/blog-comments",
-                  "active_link": "/blog/blog-comments",
-                  "subRoutes": []
-                }
-              ]
-            },
-            {
               "tittle": "Location",
               "hasSubRoute": true,
               "showSubRoute": false,

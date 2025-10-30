@@ -164,7 +164,7 @@ import CallHistoryModal from "@/components/modal/call-history-modal.vue";
 import ContactsModal from "@/components/modal/contacts-modal.vue";
 import faqModal from "@/components/modal/faq-modal.vue";
 import testimonialsModal from "@/components/modal/testimonials-modal.vue";
-import blogCategoriesModal from "@/components/modal/blog-categories-modal.vue";
+
 import pagesModal from "@/components/modal/pages-modal.vue";
 import TodoListModal from "@/components/modal/todo-list-modal.vue";
 import ProductsModal from "@/components/modal/products-modal.vue";
@@ -187,7 +187,7 @@ import AccountListModal from "@/components/modal/account-list-modal.vue";
 import MoneyTransferModal from "@/components/modal/money-transfer-modal.vue";
 import BillersModal from "@/components/modal/billers-modal.vue";
 import onlineOrdersModal from "@/components/modal/online-orders-modal.vue";
-import AllBlogModal from "@/components/modal/all-blog-modal.vue";
+
 
 
 
@@ -360,7 +360,7 @@ app.component('call-history-modal', CallHistoryModal)
 app.component('contacts-modal', ContactsModal)
 app.component('faq-modal',faqModal)
 app.component('testimonials-modal',testimonialsModal)
-app.component('blog-categories-modal',blogCategoriesModal)
+
 app.component('pages-modal',pagesModal)
 app.component('todo-list-modal', TodoListModal)
 app.component('products-modal', ProductsModal)
@@ -383,7 +383,7 @@ app.component('account-list-modal', AccountListModal)
 app.component('money-transfer-modal', MoneyTransferModal)
 app.component('billers-modal', BillersModal)
 app.component('online-orders-modal',onlineOrdersModal)
-app.component('all-blog-modal', AllBlogModal)
+
 
 app.component(VueFeather.name, VueFeather);
 app.component("vue-select", VueSelect);

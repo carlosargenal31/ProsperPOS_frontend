@@ -253,9 +253,7 @@ export default {
               <template #bodyCell="{ column, record }">
                 <template v-if="column.key === 'Product_Name'">
                   <div class="d-flex align-items-center p-3 px-2">
-                    <a class="avatar avatar-md me-2">
-                      <img :src="getImageUrl(record.Image)" alt="product">
-                    </a>
+                    
                     <a href="javascript:void(0);">{{record.Product_Name}}</a>
                   </div>
                 </template>

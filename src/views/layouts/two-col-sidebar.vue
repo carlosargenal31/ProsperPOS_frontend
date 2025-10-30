@@ -307,15 +307,7 @@
                                         <li><router-link to="/page/pages">Pages</router-link></li>
                                     </ul>
                                 </li>
-                                <li class="submenu">
-                                    <a href="javascript:void(0);"><span>Blog</span><span class="menu-arrow"></span></a>
-                                    <ul>
-                                        <li><router-link to="/blog/all-blog">All Blog</router-link></li>
-                                        <li><router-link to="/blog/blog-tag">Blog Tags</router-link></li>
-                                        <li><router-link to="/blog/blog-categories">Categories</router-link></li>
-                                        <li><router-link to="/blog/blog-comments">Blog Comments</router-link></li>
-                                    </ul>
-                                </li>
+                                
                                 <li class="submenu">
                                     <a href="javascript:void(0);"><span>Location</span><span class="menu-arrow"></span></a>
                                     <ul>

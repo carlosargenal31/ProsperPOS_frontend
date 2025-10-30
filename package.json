@@ -19,7 +19,7 @@
     "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vueform/slider": "^2.1.10",
     "ant-design-vue": "^4.2.6",
-    "axios": "^1.12.2",
+    "axios": "^1.13.1",
     "bootstrap": "^5.3.7",
     "bootstrap-icons": "^1.13.1",
     "boxicons": "^2.1.4",

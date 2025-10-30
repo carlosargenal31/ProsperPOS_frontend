@@ -8,7 +8,7 @@
         <div class="mb-3">
           <h1 class="mb-1">Bienvenido, Admin</h1>
           <p class="fw-medium">
-            You have <span class="text-primary fw-bold">200+</span> Orders, Today
+            Tienes <span class="text-primary fw-bold">200+</span> Pedidos, Hoy
           </p>
         </div>
         <div class="input-icon-start position-relative mb-3">
@@ -19,14 +19,14 @@
             type="text"
             class="form-control date-range bookingrange"
             ref="dateRangeInput"
-            placeholder="Search Product"
+            placeholder="Buscar Producto"
           />
         </div>
       </div>
 
       <div class="alert bg-orange-transparent alert-dismissible fade show mb-4">
         <div>
-          <span><i class="ti ti-info-circle fs-14 text-orange me-2"></i>Your Product </span> <span class="text-orange fw-semibold"> Apple Iphone 15 is running Low, </span> already below 5 Pcs., <a href="javascript:void(0);" class="link-orange text-decoration-underline fw-semibold" data-bs-toggle="modal" data-bs-target="#add-stock">Add Stock</a>
+          <span><i class="ti ti-info-circle fs-14 text-orange me-2"></i>Tu Producto </span> <span class="text-orange fw-semibold"> Apple Iphone 15 está Bajo en Inventario, </span> ya por debajo de 5 Pzs., <a href="javascript:void(0);" class="link-orange text-decoration-underline fw-semibold" data-bs-toggle="modal" data-bs-target="#add-stock">Agregar Stock</a>
         </div>
         <button type="button" class="btn-close text-gray-9 fs-14" data-bs-dismiss="alert" aria-label="Close"><i class="ti ti-x"></i></button>
       </div>
@@ -39,7 +39,7 @@
                 <i class="ti ti-file-text fs-24"></i>
               </span>
               <div class="ms-2">
-                <p class="text-white mb-1">Total Sales</p>
+                <p class="text-white mb-1">Ventas Totales</p>
                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
                   <h4 class="text-white">$48,988,078</h4>
                   <span class="badge badge-soft-primary"
@@ -57,7 +57,7 @@
                 <i class="ti ti-repeat fs-24"></i>
               </span>
               <div class="ms-2">
-                <p class="text-white mb-1">Total Sales Return</p>
+                <p class="text-white mb-1">Devoluciones de Ventas</p>
                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
                   <h4 class="text-white">$16,478,145</h4>
                   <span class="badge badge-soft-danger"
@@ -75,7 +75,7 @@
                 <i class="ti ti-gift fs-24"></i>
               </span>
               <div class="ms-2">
-                <p class="text-white mb-1">Total Purchase</p>
+                <p class="text-white mb-1">Compras Totales</p>
                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
                   <h4 class="text-white">$24,145,789</h4>
                   <span class="badge badge-soft-success"
@@ -93,7 +93,7 @@
                 <i class="ti ti-brand-pocket fs-24"></i>
               </span>
               <div class="ms-2">
-                <p class="text-white mb-1">Total Purchase Return</p>
+                <p class="text-white mb-1">Devoluciones de Compras</p>
                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
                   <h4 class="text-white">$18,458,747</h4>
                   <span class="badge badge-soft-success"
@@ -116,7 +116,7 @@
               >
                 <div>
                   <h4 class="mb-1">$8,458,798</h4>
-                  <p>Profit</p>
+                  <p>Ganancias</p>
                 </div>
                 <span class="revenue-icon bg-cyan-transparent text-cyan">
                   <i class="fa-solid fa-layer-group fs-16"></i>
@@ -124,12 +124,12 @@
               </div>
               <div class="d-flex align-items-center justify-content-between">
                 <p class="mb-0">
-                  <span class="fs-13 fw-bold text-success">+35%</span> vs Last Month
+                  <span class="fs-13 fw-bold text-success">+35%</span> vs Mes Anterior
                 </p>
                 <router-link
                   to="/reports/profit-and-loss"
                   class="text-decoration-underline fs-13 fw-medium"
-                  >View All</router-link
+                  >Ver Todo</router-link
                 >
               </div>
             </div>
@@ -146,7 +146,7 @@
               >
                 <div>
                   <h4 class="mb-1">$48,988,78</h4>
-                  <p>Invoice Due</p>
+                  <p>Facturas Pendientes</p>
                 </div>
                 <span class="revenue-icon bg-teal-transparent text-teal">
                   <i class="ti ti-chart-pie fs-16"></i>
@@ -154,12 +154,12 @@
               </div>
               <div class="d-flex align-items-center justify-content-between">
                 <p class="mb-0">
-                  <span class="fs-13 fw-bold text-success">+35%</span> vs Last Month
+                  <span class="fs-13 fw-bold text-success">+35%</span> vs Mes Anterior
                 </p>
                 <router-link
                   to="/reports/invoice-report"
                   class="text-decoration-underline fs-13 fw-medium"
-                  >View All</router-link
+                  >Ver Todo</router-link
                 >
               </div>
             </div>
@@ -176,7 +176,7 @@
               >
                 <div>
                   <h4 class="mb-1">$8,980,097</h4>
-                  <p>Total Expenses</p>
+                  <p>Gastos Totales</p>
                 </div>
                 <span class="revenue-icon bg-orange-transparent text-orange">
                   <i class="ti ti-lifebuoy fs-16"></i>
@@ -184,12 +184,12 @@
               </div>
               <div class="d-flex align-items-center justify-content-between">
                 <p class="mb-0">
-                  <span class="fs-13 fw-bold text-success">+41%</span> vs Last Month
+                  <span class="fs-13 fw-bold text-success">+41%</span> vs Mes Anterior
                 </p>
                 <router-link
                   to="/expenses/expenses-list"
                   class="text-decoration-underline fs-13 fw-medium"
-                  >View All</router-link
+                  >Ver Todo</router-link
                 >
               </div>
             </div>
@@ -206,7 +206,7 @@
               >
                 <div>
                   <h4 class="mb-1">$78,458,798</h4>
-                  <p>Total Payment Returns</p>
+                  <p>Devoluciones de Pagos</p>
                 </div>
                 <span class="revenue-icon bg-indigo-transparent text-indigo">
                   <i class="ti ti-hash fs-16"></i>
@@ -214,12 +214,12 @@
               </div>
               <div class="d-flex align-items-center justify-content-between">
                 <p class="mb-0">
-                  <span class="fs-13 fw-bold text-danger">-20%</span> vs Last Month
+                  <span class="fs-13 fw-bold text-danger">-20%</span> vs Mes Anterior
                 </p>
                 <router-link
                   to="/sales-report/sales-report"
                   class="text-decoration-underline fs-13 fw-medium"
-                  >View All</router-link
+                  >Ver Todo</router-link
                 >
               </div>
             </div>
@@ -237,26 +237,26 @@
                 <span class="title-icon bg-soft-primary fs-16 me-2"
                   ><i class="ti ti-shopping-cart"></i
                 ></span>
-                <h5 class="card-title mb-0">Sales & Purchase</h5>
+                <h5 class="card-title mb-0">Ventas y Compras</h5>
               </div>
               <ul class="nav btn-group custom-btn-group">
 									<a class="btn btn-outline-light" href="javascript:void(0);">1D</a>
-									<a class="btn btn-outline-light" href="javascript:void(0);">1W</a>
+									<a class="btn btn-outline-light" href="javascript:void(0);">1S</a>
 									<a class="btn btn-outline-light" href="javascript:void(0);">1M</a>
 									<a class="btn btn-outline-light" href="javascript:void(0);">3M</a>
 									<a class="btn btn-outline-light" href="javascript:void(0);">6M</a>
-									<a class="btn btn-outline-light active" href="javascript:void(0);">1Y</a>
+									<a class="btn btn-outline-light active" href="javascript:void(0);">1A</a>
 								</ul>
             </div>
             <div class="card-body pb-0">
                 <div>
 									<div class="d-flex align-items-center gap-2">
 										<div class="border p-2 br-8">
-											<p class="d-inline-flex align-items-center mb-1"><i class="ti ti-circle-filled fs-8 text-primary-300 me-1"></i>Total Purchase</p>
+											<p class="d-inline-flex align-items-center mb-1"><i class="ti ti-circle-filled fs-8 text-primary-300 me-1"></i>Compras Totales</p>
 											<h4>3K</h4>
 										</div>
 										<div class="border p-2 br-8">
-											<p class="d-inline-flex align-items-center mb-1"><i class="ti ti-circle-filled fs-8 text-primary me-1"></i>Total Sales</p>
+											<p class="d-inline-flex align-items-center mb-1"><i class="ti ti-circle-filled fs-8 text-primary me-1"></i>Ventas Totales</p>
 											<h4>1K</h4>
 										</div>
 									</div>
@@ -274,7 +274,7 @@
         </div>
         <!-- /Sales & Purchase -->
 
-        <!-- Top Selling Products -->
+        <!-- Overall Information -->
         <div class="col-xxl-4 col-xl-5 d-flex">
           <div class="card flex-fill">
             <div class="card-header">
@@ -282,7 +282,7 @@
                 <span class="title-icon bg-soft-info fs-16 me-2"
                   ><i class="ti ti-info-circle"></i
                 ></span>
-                <h5 class="card-title mb-0">Overall Information</h5>
+                <h5 class="card-title mb-0">Información General</h5>
               </div>
             </div>
             <div class="card-body">
@@ -292,7 +292,7 @@
                     <div class="mb-3 text-info fs-24">
                       <i class="ti ti-user-check"></i>
                     </div>
-                    <p class="mb-1">Suppliers</p>
+                    <p class="mb-1">Proveedores</p>
                     <h5>6987</h5>
                   </div>
                 </div>
@@ -301,7 +301,7 @@
                     <div class="mb-3 text-orange fs-24">
                       <i class="ti ti-users"></i>
                     </div>
-                    <p class="mb-1">Customer</p>
+                    <p class="mb-1">Clientes</p>
                     <h5>4896</h5>
                   </div>
                 </div>
@@ -310,7 +310,7 @@
                     <div class="mb-3 text-teal fs-24">
                       <i class="ti ti-shopping-cart"></i>
                     </div>
-                    <p class="mb-1">Orders</p>
+                    <p class="mb-1">Pedidos</p>
                     <h5>487</h5>
                   </div>
                 </div>
@@ -320,7 +320,7 @@
               <div
                 class="d-flex align-items-center justify-content-between flex-wrap gap-3"
               >
-                <h6>Customers Overview</h6>
+                <h6>Resumen de Clientes</h6>
                 <div class="dropdown dropdown-wraper">
                   <a
                     href="javascript:void(0);"
@@ -328,17 +328,17 @@
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
-                    <i class="ti ti-calendar me-1"></i>Today
+                    <i class="ti ti-calendar me-1"></i>Hoy
                   </a>
                   <ul class="dropdown-menu p-3">
                     <li>
-                      <a href="javascript:void(0);" class="dropdown-item">Today</a>
+                      <a href="javascript:void(0);" class="dropdown-item">Hoy</a>
                     </li>
                     <li>
-                      <a href="javascript:void(0);" class="dropdown-item">Weekly</a>
+                      <a href="javascript:void(0);" class="dropdown-item">Semanal</a>
                     </li>
                     <li>
-                      <a href="javascript:void(0);" class="dropdown-item">Monthly</a>
+                      <a href="javascript:void(0);" class="dropdown-item">Mensual</a>
                     </li>
                   </ul>
                 </div>
@@ -359,7 +359,7 @@
                     <div class="col-sm-6">
                       <div class="text-center border-end">
                         <h2 class="mb-1">5.5K</h2>
-                        <p class="text-orange mb-2">First Time</p>
+                        <p class="text-orange mb-2">Primera Vez</p>
                         <span
                           class="badge badge-success badge-xs d-inline-flex align-items-center"
                           ><i class="ti ti-arrow-up-left me-1"></i>25%</span
@@ -369,7 +369,7 @@
                     <div class="col-sm-6">
                       <div class="text-center">
                         <h2 class="mb-1">3.5K</h2>
-                        <p class="text-teal mb-2">Return</p>
+                        <p class="text-teal mb-2">Recurrente</p>
                         <span
                           class="badge badge-success badge-xs d-inline-flex align-items-center"
                           ><i class="ti ti-arrow-up-left me-1"></i>21%</span
@@ -382,6 +382,7 @@
             </div>
           </div>
         </div>
+        <!-- /Overall Information -->
       </div>
 
       <div class="row">
@@ -392,21 +393,21 @@
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
               <div class="d-inline-flex align-items-center">
                 <span class="title-icon bg-soft-pink fs-16 me-2"><i class="ti ti-box"></i></span>
-                <h5 class="card-title mb-0">Top Selling Products</h5>
+                <h5 class="card-title mb-0">Productos Más Vendidos</h5>
               </div>
               <div class="dropdown">
                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-sm btn-white" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="ti ti-calendar me-1"></i>Today
+                  <i class="ti ti-calendar me-1"></i>Hoy
                 </a>
                 <ul class="dropdown-menu p-3">
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Today</a>
+                    <a href="javascript:void(0);" class="dropdown-item">Hoy</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Weekly</a>
+                    <a href="javascript:void(0);" class="dropdown-item">Semanal</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Monthly</a>
+                    <a href="javascript:void(0);" class="dropdown-item">Mensual</a>
                   </li>
                 </ul>
               </div>
@@ -421,7 +422,7 @@
                     <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Charger Cable - Lighting</a></h6>
                     <div class="d-flex align-items-center item-list">			
                       <p>$187</p>
-                      <p>247+ Sales</p>
+                      <p>247+ Ventas</p>
                     </div>
                   </div>
                 </div>
@@ -436,7 +437,7 @@
                     <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Yves Saint Eau De Parfum</a></h6>
                     <div class="d-flex align-items-center item-list">			
                       <p>$145</p>
-                      <p>289+ Sales</p>
+                      <p>289+ Ventas</p>
                     </div>
                   </div>
                 </div>
@@ -451,7 +452,7 @@
                     <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Apple Airpods 2</a></h6>
                     <div class="d-flex align-items-center item-list">			
                       <p>$458</p>
-                      <p>300+ Sales</p>
+                      <p>300+ Ventas</p>
                     </div>
                   </div>
                 </div>
@@ -466,7 +467,7 @@
                     <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Vacuum Cleaner</a></h6>
                     <div class="d-flex align-items-center item-list">			
                       <p>$139</p>
-                      <p>225+ Sales</p>
+                      <p>225+ Ventas</p>
                     </div>
                   </div>
                 </div>
@@ -481,7 +482,7 @@
                     <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Samsung Galaxy S21 Fe 5g</a></h6>
                     <div class="d-flex align-items-center item-list">			
                       <p>$898</p>
-                      <p>365+ Sales</p>
+                      <p>365+ Ventas</p>
                     </div>
                   </div>
                 </div>
@@ -498,9 +499,9 @@
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
               <div class="d-inline-flex align-items-center">
                 <span class="title-icon bg-soft-danger fs-16 me-2"><i class="ti ti-alert-triangle"></i></span>
-                <h5 class="card-title mb-0">Low Stock Products</h5>
+                <h5 class="card-title mb-0">Productos con Bajo Stock</h5>
               </div>								
-              <router-link to="/inventory/low-stocks" class="fs-13 fw-medium text-decoration-underline">View All</router-link>
+              <router-link to="/inventory/low-stocks" class="fs-13 fw-medium text-decoration-underline">Ver Todo</router-link>
             </div>
             <div class="card-body">
               <div class="d-flex align-items-center justify-content-between mb-4">
@@ -514,7 +515,7 @@
                   </div>
                 </div>
                 <div class="text-end">
-                  <p class="fs-13 mb-1">Instock</p>
+                  <p class="fs-13 mb-1">En Stock</p>
                   <h6 class="text-orange fw-medium">08</h6>
                 </div>
               </div>
@@ -529,7 +530,7 @@
                   </div>
                 </div>
                 <div class="text-end">
-                  <p class="fs-13 mb-1">Instock</p>
+                  <p class="fs-13 mb-1">En Stock</p>
                   <h6 class="text-orange fw-medium">14</h6>
                 </div>
               </div>
@@ -544,7 +545,7 @@
                   </div>
                 </div>
                 <div class="text-end">
-                  <p class="fs-13 mb-1">Instock</p>
+                  <p class="fs-13 mb-1">En Stock</p>
                   <h6 class="text-orange fw-medium">21</h6>
                 </div>
               </div>
@@ -559,7 +560,7 @@
                   </div>
                 </div>
                 <div class="text-end">
-                  <p class="fs-13 mb-1">Instock</p>
+                  <p class="fs-13 mb-1">En Stock</p>
                   <h6 class="text-orange fw-medium">12</h6>
                 </div>
               </div>
@@ -574,7 +575,7 @@
                   </div>
                 </div>
                 <div class="text-end">
-                  <p class="fs-13 mb-1">Instock</p>
+                  <p class="fs-13 mb-1">En Stock</p>
                   <h6 class="text-orange fw-medium">10</h6>
                 </div>
               </div>
@@ -589,21 +590,21 @@
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
               <div class="d-inline-flex align-items-center">
                 <span class="title-icon bg-soft-pink fs-16 me-2"><i class="ti ti-box"></i></span>
-                <h5 class="card-title mb-0">Recent Sales</h5>
+                <h5 class="card-title mb-0">Ventas Recientes</h5>
               </div>
               <div class="dropdown">
                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-sm btn-white"  data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="ti ti-calendar me-1"></i>Weekly
+                  <i class="ti ti-calendar me-1"></i>Semanal
                 </a>
                 <ul class="dropdown-menu p-3">
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Today</a>
+                    <a href="javascript:void(0);" class="dropdown-item">Hoy</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Weekly</a>
+                    <a href="javascript:void(0);" class="dropdown-item">Semanal</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Monthly</a>
+                    <a href="javascript:void(0);" class="dropdown-item">Mensual</a>
                   </li>
                 </ul>
               </div>
@@ -617,14 +618,14 @@
                   <div class="ms-2">
                     <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Apple Watch Series 9</a></h6>
                     <div class="d-flex align-items-center item-list">			
-                      <p>Electronics</p>
+                      <p>Electrónica</p>
                       <p class="text-gray-9">$640</p>
                     </div>
                   </div>
                 </div>
                 <div class="text-end">
-                  <p class="fs-13 mb-1">Today</p>
-                  <span class="badge bg-purple badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Processing</span>
+                  <p class="fs-13 mb-1">Hoy</p>
+                  <span class="badge bg-purple badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Procesando</span>
                 </div>									
               </div>
               <div class="d-flex align-items-center justify-content-between mb-4">
@@ -635,14 +636,14 @@
                   <div class="ms-2">
                     <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Gold Bracelet</a></h6>
                     <div class="d-flex align-items-center item-list">			
-                      <p>Fashion</p>
+                      <p>Moda</p>
                       <p class="text-gray-9">$126</p>
                     </div>
                   </div>
                 </div>
                 <div class="text-end">
-                  <p class="fs-13 mb-1">Today</p>
-                  <span class="badge badge-danger badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Cancelled</span>
+                  <p class="fs-13 mb-1">Hoy</p>
+                  <span class="badge badge-danger badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Cancelado</span>
                 </div>									
               </div>
               <div class="d-flex align-items-center justify-content-between mb-4">
@@ -653,14 +654,14 @@
                   <div class="ms-2">
                     <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Parachute Down Duvet</a></h6>
                     <div class="d-flex align-items-center item-list">			
-                      <p>Health</p>
+                      <p>Salud</p>
                       <p class="text-gray-9">$69</p>
                     </div>
                   </div>
                 </div>
                 <div class="text-end">
-                  <p class="fs-13 mb-1">15 Jan 2025</p>
-                  <span class="badge badge-cyan badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Onhold</span>
+                  <p class="fs-13 mb-1">15 Ene 2025</p>
+                  <span class="badge badge-cyan badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>En Espera</span>
                 </div>									
               </div>
               <div class="d-flex align-items-center justify-content-between mb-4">
@@ -671,14 +672,14 @@
                   <div class="ms-2">
                     <h6 class="fw-bold mb-1"><a href="javascript:void(0);">YETI Rambler Tumbler</a></h6>
                     <div class="d-flex align-items-center item-list">			
-                      <p>Sports</p>
+                      <p>Deportes</p>
                       <p class="text-gray-9">$65</p>
                     </div>
                   </div>
                 </div>
                 <div class="text-end">
-                  <p class="fs-13 mb-1">12 Jan 2025</p>
-                  <span class="badge bg-purple badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Processing</span>
+                  <p class="fs-13 mb-1">12 Ene 2025</p>
+                  <span class="badge bg-purple badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Procesando</span>
                 </div>									
               </div>
               <div class="d-flex align-items-center justify-content-between mb-0">
@@ -689,14 +690,14 @@
                   <div class="ms-2">
                     <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Osmo Genius Starter Kit</a></h6>
                     <div class="d-flex align-items-center item-list">			
-                      <p>Lifestyles</p>
+                      <p>Estilo de Vida</p>
                       <p class="text-gray-9">$87.56</p>
                     </div>
                   </div>
                 </div>
                 <div class="text-end">
-                  <p class="fs-13 mb-1">11 Jan 2025</p>
-                  <span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completed</span>
+                  <p class="fs-13 mb-1">11 Ene 2025</p>
+                  <span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span>
                 </div>									
               </div>
             </div>
@@ -714,7 +715,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
               <div class="d-inline-flex align-items-center">
                 <span class="title-icon bg-soft-danger fs-16 me-2"><i class="ti ti-alert-triangle"></i></span>
-                <h5 class="card-title mb-0">Sales Statics</h5>
+                <h5 class="card-title mb-0">Estadísticas de Ventas</h5>
               </div>
               <div class="dropdown">
                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-sm btn-white"  data-bs-toggle="dropdown" aria-expanded="false">
@@ -725,10 +726,10 @@
                     <a href="javascript:void(0);" class="dropdown-item">2025</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">2022</a>
+                    <a href="javascript:void(0);" class="dropdown-item">2024</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">2021</a>
+                    <a href="javascript:void(0);" class="dropdown-item">2023</a>
                   </li>
                 </ul>
               </div>
@@ -737,11 +738,11 @@
               <div class="d-flex align-items-center flex-wrap gap-2">
                 <div class="border p-2 br-8">
                   <h5 class="d-inline-flex align-items-center text-teal">$12,189<span class="badge badge-success badge-xs d-inline-flex align-items-center ms-2"><i class="ti ti-arrow-up-left me-1"></i>25%</span></h5>
-                  <p>Revenue</p>
+                  <p>Ingresos</p>
                 </div>
                 <div class="border p-2 br-8">
                   <h5 class="d-inline-flex align-items-center text-orange">$48,988,078<span class="badge badge-danger badge-xs d-inline-flex align-items-center ms-2"><i class="ti ti-arrow-down-right me-1"></i>25%</span></h5>
-                  <p>Expense</p>
+                  <p>Gastos</p>
                 </div>
               </div>
               <div id="sales-statistics">
@@ -763,17 +764,17 @@
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-3">
               <div class="d-inline-flex align-items-center">
                 <span class="title-icon bg-soft-orange fs-16 me-2"><i class="ti ti-flag"></i></span>
-                <h5 class="card-title mb-0">Recent Transactions</h5>
+                <h5 class="card-title mb-0">Transacciones Recientes</h5>
               </div>
-              <router-link to="/sales/online-orders" class="fs-13 fw-medium text-decoration-underline">View All</router-link>
+              <router-link to="/sales/online-orders" class="fs-13 fw-medium text-decoration-underline">Ver Todo</router-link>
             </div>
             <div class="card-body p-0">
               <ul class="nav nav-tabs nav-justified transaction-tab">
-                <li class="nav-item"><a class="nav-link active" href="#sale" data-bs-toggle="tab">Sale</a></li>
-                <li class="nav-item"><a class="nav-link" href="#purchase-transaction" data-bs-toggle="tab">Purchase</a></li>
-                <li class="nav-item"><a class="nav-link" href="#quotation" data-bs-toggle="tab">Quotation</a></li>
-                <li class="nav-item"><a class="nav-link" href="#expenses" data-bs-toggle="tab">Expenses</a></li>
-                <li class="nav-item"><a class="nav-link" href="#invoices" data-bs-toggle="tab">Invoices</a></li>
+                <li class="nav-item"><a class="nav-link active" href="#sale" data-bs-toggle="tab">Venta</a></li>
+                <li class="nav-item"><a class="nav-link" href="#purchase-transaction" data-bs-toggle="tab">Compra</a></li>
+                <li class="nav-item"><a class="nav-link" href="#quotation" data-bs-toggle="tab">Cotización</a></li>
+                <li class="nav-item"><a class="nav-link" href="#expenses" data-bs-toggle="tab">Gastos</a></li>
+                <li class="nav-item"><a class="nav-link" href="#invoices" data-bs-toggle="tab">Facturas</a></li>
               </ul>
               <div class="tab-content">
                 <div class="tab-pane show active" id="sale">
@@ -781,9 +782,9 @@
                     <table class="table table-borderless custom-table">
                       <thead class="thead-light">
                         <tr>
-                          <th>Date</th>
-                          <th>Customer</th>
-                          <th>Status</th>
+                          <th>Fecha</th>
+                          <th>Cliente</th>
+                          <th>Estado</th>
                           <th>Total</th>
                         </tr>
                       </thead>
@@ -801,7 +802,7 @@
                               </div>
                             </div>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completed</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
                           <td class="fs-16 fw-bold text-gray-9">$4,560</td>
                         </tr>
                         <tr>
@@ -817,7 +818,7 @@
                               </div>
                             </div>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completed</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
                           <td class="fs-16 fw-bold text-gray-9">$3,569</td>
                         </tr>
                         <tr>
@@ -833,7 +834,7 @@
                               </div>
                             </div>
                           </td>
-                          <td><span class="badge badge-pink badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Draft</span></td>
+                          <td><span class="badge badge-pink badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Borrador</span></td>
                           <td class="fs-16 fw-bold text-gray-9">$4,560</td>
                         </tr>
                         <tr>
@@ -849,7 +850,7 @@
                               </div>
                             </div>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completed</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
                           <td class="fs-16 fw-bold text-gray-9">$2,155</td>
                         </tr>
                         <tr>
@@ -865,7 +866,7 @@
                               </div>
                             </div>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completed</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
                           <td class="fs-16 fw-bold text-gray-9">$5,123</td>
                         </tr>
                       </tbody>
@@ -877,9 +878,9 @@
                     <table class="table table-borderless custom-table">
                       <thead class="thead-light">
                         <tr>
-                          <th>Date</th>
-                          <th>Supplier</th>
-                          <th>Status</th>
+                          <th>Fecha</th>
+                          <th>Proveedor</th>
+                          <th>Estado</th>
                           <th>Total</th>
                         </tr>
                       </thead>
@@ -889,7 +890,7 @@
                           <td>
                             <a href="javascript:void(0);" class="fw-semibold">Electro Mart</a>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completed</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
                           <td class="text-gray-9">$1000</td>
                         </tr>
                         <tr>
@@ -897,7 +898,7 @@
                           <td>
                             <a href="javascript:void(0);" class="fw-semibold">Quantum Gadgets</a>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completed</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
                           <td class="text-gray-9">$1500</td>
                         </tr>
                         <tr>
@@ -905,7 +906,7 @@
                           <td>
                             <a href="javascript:void(0);" class="fw-semibold">Prime Bazaar</a>
                           </td>
-                          <td><span class="badge badge-cyan badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pending</span></td>
+                          <td><span class="badge badge-cyan badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pendiente</span></td>
                           <td class="text-gray-9">$2000</td>
                         </tr>
                         <tr>
@@ -913,7 +914,7 @@
                           <td>
                             <a href="javascript:void(0);" class="fw-semibold">Alpha Mobiles</a>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completed</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
                           <td class="text-gray-9">$1200</td>
                         </tr>
                         <tr>
@@ -921,7 +922,7 @@
                           <td>
                             <a href="javascript:void(0);" class="fw-semibold">Aesthetic Bags</a>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completed</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
                           <td class="text-gray-9">$1300</td>
                         </tr>
                         <tr>
@@ -929,15 +930,15 @@
                           <td>
                             <a href="javascript:void(0);" class="fw-semibold">Sigma Chairs</a>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completed</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
                           <td class="text-gray-9">$1600</td>
                         </tr>
                         <tr>
                           <td>26 May 2025</td>
                           <td>
-                            <a href="javascript:void(0);" class="fw-semibold">A-Z Store	s</a>
+                            <a href="javascript:void(0);" class="fw-semibold">A-Z Stores</a>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completed</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
                           <td class="text-gray-9">$1100</td>
                         </tr>
                       </tbody>
@@ -949,9 +950,9 @@
                     <table class="table table-borderless custom-table">
                       <thead class="thead-light">
                         <tr>
-                          <th>Date</th>
-                          <th>Customer</th>
-                          <th>Status</th>
+                          <th>Fecha</th>
+                          <th>Cliente</th>
+                          <th>Estado</th>
                           <th>Total</th>
                         </tr>
                       </thead>
@@ -969,7 +970,7 @@
                               </div>
                             </div>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Sent</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Enviado</span></td>
                           <td class="text-gray-9">$4,560</td>
                         </tr>
                         <tr>
@@ -985,7 +986,7 @@
                               </div>
                             </div>
                           </td>
-                          <td><span class="badge badge-warning badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Ordered</span></td>
+                          <td><span class="badge badge-warning badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Ordenado</span></td>
                           <td class="text-gray-9">$3,569</td>
                         </tr>
                         <tr>
@@ -1001,7 +1002,7 @@
                               </div>
                             </div>
                           </td>
-                          <td><span class="badge badge-cyan badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pending</span></td>
+                          <td><span class="badge badge-cyan badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pendiente</span></td>
                           <td class="text-gray-9">$4,560</td>
                         </tr>
                         <tr>
@@ -1017,7 +1018,7 @@
                               </div>
                             </div>
                           </td>
-                          <td><span class="badge badge-warning badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Ordered</span></td>
+                          <td><span class="badge badge-warning badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Ordenado</span></td>
                           <td class="text-gray-9">$2,155</td>
                         </tr>
                         <tr>
@@ -1033,7 +1034,7 @@
                               </div>
                             </div>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Sent</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Enviado</span></td>
                           <td class="text-gray-9">$5,123</td>
                         </tr>
                       </tbody>
@@ -1045,9 +1046,9 @@
                     <table class="table table-borderless custom-table">
                       <thead class="thead-light">
                         <tr>
-                          <th>Date</th>
-                          <th>Expenses</th>
-                          <th>Status</th>
+                          <th>Fecha</th>
+                          <th>Gastos</th>
+                          <th>Estado</th>
                           <th>Total</th>
                         </tr>
                       </thead>
@@ -1055,46 +1056,46 @@
                         <tr>
                           <td>24 May 2025</td>
                           <td>
-                            <h6 class="fw-medium"><a href="javascript:void(0);">Electricity Payment</a></h6>
+                            <h6 class="fw-medium"><a href="javascript:void(0);">Pago de Electricidad</a></h6>
                             <span class="fs-13 text-orange">#EX849</span>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Approved</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Aprobado</span></td>
                           <td class="text-gray-9">$200</td>
                         </tr>
                         <tr>
                           <td>23 May 2025</td>
                           <td>
-                            <h6 class="fw-medium"><a href="javascript:void(0);">Electricity Payment</a></h6>
+                            <h6 class="fw-medium"><a href="javascript:void(0);">Pago de Electricidad</a></h6>
                             <span class="fs-13 text-orange">#EX849</span>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Approved</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Aprobado</span></td>
                           <td class="text-gray-9">$200</td>
                         </tr>
                         <tr>
                           <td>22 May 2025</td>
                           <td>
-                            <h6 class="fw-medium"><a href="javascript:void(0);">Stationery Purchase</a></h6>
+                            <h6 class="fw-medium"><a href="javascript:void(0);">Compra de Papelería</a></h6>
                             <span class="fs-13 text-orange">#EX848</span>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Approved</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Aprobado</span></td>
                           <td class="text-gray-9">$50</td>
                         </tr>
                         <tr>
                           <td>21 May 2025</td>
                           <td>
-                            <h6 class="fw-medium"><a href="javascript:void(0);">AC Repair Service</a></h6>
+                            <h6 class="fw-medium"><a href="javascript:void(0);">Servicio de Reparación AC</a></h6>
                             <span class="fs-13 text-orange">#EX847</span>
                           </td>
-                          <td><span class="badge badge-cyan badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pending</span></td>
+                          <td><span class="badge badge-cyan badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pendiente</span></td>
                           <td class="text-gray-9">$800</td>
                         </tr>
                         <tr>
                           <td>21 May 2025</td>
                           <td>
-                            <h6 class="fw-medium"><a href="javascript:void(0);">Client Meeting</a></h6>
+                            <h6 class="fw-medium"><a href="javascript:void(0);">Reunión con Cliente</a></h6>
                             <span class="fs-13 text-orange">#EX846</span>
                           </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Approved</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Aprobado</span></td>
                           <td class="text-gray-9">$100</td>
                         </tr>
                       </tbody>
@@ -1106,10 +1107,10 @@
                     <table class="table table-borderless custom-table">
                       <thead class="thead-light">
                         <tr>
-                          <th>Customer</th>
-                          <th>Due Date</th>
-                          <th>Status</th>
-                          <th>Amount</th>
+                          <th>Cliente</th>
+                          <th>Fecha de Vencimiento</th>
+                          <th>Estado</th>
+                          <th>Monto</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1126,7 +1127,7 @@
                             </div>
                           </td>
                           <td>24 May 2025</td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Paid</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pagado</span></td>
                           <td class="text-gray-9">$1300</td>
                         </tr>
                         <tr>
@@ -1142,7 +1143,7 @@
                             </div>
                           </td>
                           <td>23 May 2025</td>
-                          <td><span class="badge badge-warning badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Overdue</span></td>
+                          <td><span class="badge badge-warning badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Vencido</span></td>
                           <td class="text-gray-9">$1250</td>
                         </tr>
                         <tr>
@@ -1158,7 +1159,7 @@
                             </div>
                           </td>
                           <td>22 May 2025</td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Paid</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pagado</span></td>
                           <td class="text-gray-9">$1700</td>
                         </tr>
                         <tr>
@@ -1174,7 +1175,7 @@
                             </div>
                           </td>
                           <td>21 May 2025</td>
-                          <td><span class="badge badge-danger badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Unpaid</span></td>
+                          <td><span class="badge badge-danger badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Sin Pagar</span></td>
                           <td class="text-gray-9">$1500</td>
                         </tr>
                         <tr>
@@ -1190,7 +1191,7 @@
                             </div>
                           </td>
                           <td>21 May 2025</td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Paid</span></td>
+                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pagado</span></td>
                           <td class="text-gray-9">$1000</td>
                         </tr>
                       </tbody>
@@ -1216,12 +1217,12 @@
                 <span class="title-icon bg-soft-orange fs-16 me-2"
                   ><i class="ti ti-users"></i
                 ></span>
-                <h5 class="card-title mb-0">Top Customers</h5>
+                <h5 class="card-title mb-0">Mejores Clientes</h5>
               </div>
               <router-link
                 to="/ecommerce/customers"
                 class="fs-13 fw-medium text-decoration-underline"
-                >View All</router-link
+                >Ver Todo</router-link
               >
             </div>
             <div class="card-body">
@@ -1240,7 +1241,7 @@
                       <p class="d-inline-flex align-items-center">
                         <i class="ti ti-map-pin me-1"></i>USA
                       </p>
-                      <p>24 Orders</p>
+                      <p>24 Pedidos</p>
                     </div>
                   </div>
                 </div>
@@ -1263,7 +1264,7 @@
                       <p class="d-inline-flex align-items-center">
                         <i class="ti ti-map-pin me-1"></i>UAE
                       </p>
-                      <p>22 Orders</p>
+                      <p>22 Pedidos</p>
                     </div>
                   </div>
                 </div>
@@ -1286,7 +1287,7 @@
                       <p class="d-inline-flex align-items-center">
                         <i class="ti ti-map-pin me-1"></i>Germany
                       </p>
-                      <p>14 Orders</p>
+                      <p>14 Pedidos</p>
                     </div>
                   </div>
                 </div>
@@ -1309,7 +1310,7 @@
                       <p class="d-inline-flex align-items-center">
                         <i class="ti ti-map-pin me-1"></i>Belgium
                       </p>
-                      <p>08 Orders</p>
+                      <p>08 Pedidos</p>
                     </div>
                   </div>
                 </div>
@@ -1330,7 +1331,7 @@
                       <p class="d-inline-flex align-items-center">
                         <i class="ti ti-map-pin me-1"></i>Greenland
                       </p>
-                      <p>14 Orders</p>
+                      <p>14 Pedidos</p>
                     </div>
                   </div>
                 </div>
@@ -1353,7 +1354,7 @@
                 <span class="title-icon bg-soft-orange fs-16 me-2"
                   ><i class="ti ti-users"></i
                 ></span>
-                <h5 class="card-title mb-0">Top Categories</h5>
+                <h5 class="card-title mb-0">Mejores Categorías</h5>
               </div>
               <div class="dropdown">
                 <a
@@ -1362,17 +1363,17 @@
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  <i class="ti ti-calendar me-1"></i>Weekly
+                  <i class="ti ti-calendar me-1"></i>Semanal
                 </a>
                 <ul class="dropdown-menu p-3">
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Today</a>
+                    <a href="javascript:void(0);" class="dropdown-item">Hoy</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Weekly</a>
+                    <a href="javascript:void(0);" class="dropdown-item">Semanal</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Monthly</a>
+                    <a href="javascript:void(0);" class="dropdown-item">Mensual</a>
                   </li>
                 </ul>
               </div>
@@ -1392,40 +1393,38 @@
                 </div>
                 <div>
                   <div class="category-item category-primary">
-                    <p class="fs-13 mb-1">Electronics</p>
+                    <p class="fs-13 mb-1">Electrónica</p>
                     <h2 class="d-flex align-items-center">
-                      698<span class="fs-13 fw-normal text-default ms-1">Sales</span>
+                      698<span class="fs-13 fw-normal text-default ms-1">Ventas</span>
                     </h2>
                   </div>
                   <div class="category-item category-orange">
-                    <p class="fs-13 mb-1">Sports</p>
+                    <p class="fs-13 mb-1">Deportes</p>
                     <h2 class="d-flex align-items-center">
-                      545<span class="fs-13 fw-normal text-default ms-1">Sales</span>
+                      545<span class="fs-13 fw-normal text-default ms-1">Ventas</span>
                     </h2>
                   </div>
                   <div class="category-item category-secondary">
-                    <p class="fs-13 mb-1">Lifestyles</p>
+                    <p class="fs-13 mb-1">Estilo de Vida</p>
                     <h2 class="d-flex align-items-center">
-                      456<span class="fs-13 fw-normal text-default ms-1">Sales</span>
+                      456<span class="fs-13 fw-normal text-default ms-1">Ventas</span>
                     </h2>
                   </div>
                 </div>
               </div>
-              <h6 class="mb-2">Category Statistics</h6>
+              <h6 class="mb-2">Estadísticas por Categoría</h6>
               <div class="border br-8">
                 <div
                   class="d-flex align-items-center justify-content-between border-bottom p-2"
                 >
                   <p class="d-inline-flex align-items-center mb-0">
-                    <i class="ti ti-square-rounded-filled text-indigo fs-8 me-2"></i>Total
-                    Number Of Categories
+                    <i class="ti ti-square-rounded-filled text-indigo fs-8 me-2"></i>Número Total de Categorías
                   </p>
                   <h5>698</h5>
                 </div>
                 <div class="d-flex align-items-center justify-content-between p-2">
                   <p class="d-inline-flex align-items-center mb-0">
-                    <i class="ti ti-square-rounded-filled text-orange fs-8 me-2"></i>Total
-                    Number Of Products
+                    <i class="ti ti-square-rounded-filled text-orange fs-8 me-2"></i>Número Total de Productos
                   </p>
                   <h5>7899</h5>
                 </div>
@@ -1445,7 +1444,7 @@
                 <span class="title-icon bg-soft-indigo fs-16 me-2"
                   ><i class="ti ti-package"></i
                 ></span>
-                <h5 class="card-title mb-0">Order Statistics</h5>
+                <h5 class="card-title mb-0">Estadísticas de Pedidos</h5>
               </div>
               <div class="dropdown">
                 <a
@@ -1454,17 +1453,17 @@
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  <i class="ti ti-calendar me-1"></i>Weekly
+                  <i class="ti ti-calendar me-1"></i>Semanal
                 </a>
                 <ul class="dropdown-menu p-3">
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Today</a>
+                    <a href="javascript:void(0);" class="dropdown-item">Hoy</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Weekly</a>
+                    <a href="javascript:void(0);" class="dropdown-item">Semanal</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Monthly</a>
+                    <a href="javascript:void(0);" class="dropdown-item">Mensual</a>
                   </li>
                 </ul>
               </div>
@@ -1565,12 +1564,12 @@ export default {
           startDate: start,
           endDate: end,
           ranges: {
-              Today: [moment(), moment()],
-              Yesterday: [moment().subtract(1, "days"), moment().subtract(1, "days")],
-              "Last 7 Days": [moment().subtract(6, "days"), moment()],
-              "Last 30 Days": [moment().subtract(29, "days"), moment()],
-              "This Month": [moment().startOf("month"), moment().endOf("month")],
-              "Last Month": [
+              "Hoy": [moment(), moment()],
+              "Ayer": [moment().subtract(1, "days"), moment().subtract(1, "days")],
+              "Últimos 7 Días": [moment().subtract(6, "days"), moment()],
+              "Últimos 30 Días": [moment().subtract(29, "days"), moment()],
+              "Este Mes": [moment().startOf("month"), moment().endOf("month")],
+              "Mes Anterior": [
               moment().subtract(1, "month").startOf("month"),
               moment().subtract(1, "month").endOf("month"),
             ],
