@@ -482,24 +482,11 @@ const routes = [
     path: '/pos',
     component: () => import('@/views/pages/pos/pos-index.vue'),
     children: [
-      { path: '', redirect: '/pos/pos-1' },
-      { path: "pos-1", component: () => import('@/views/pages/pos/pos-1/pos-one.vue') },
-      { path: "pos-2", component: () => import('@/views/pages/pos/pos-2/pos-two.vue') },
-      { path: "pos-3", component: () => import('@/views/pages/pos/pos-3/pos-three.vue') },
-      { path: "pos-5", component: () => import('@/views/pages/pos/pos-5/pos-5.vue') },
-      { path: "pos-4", component: () => import('@/views/pages/pos/pos-4/pos-4.vue') },
+      { path: '', redirect: '/pos/pos-5' },
+      { path: "pos-5", component: () => import('@/views/pages/pos/pos-5/pos-5.vue') }
     ]
   },
-  {
-    path: '/call',
-    component: () => import('@/views/pages/application/call/pos-call.vue'),
-    children: [
-      { path: '', redirect: '/call/video-call' },
-      { path: "video-call", component: () => import('@/views/pages/application/call/video-call.vue') },
-      { path: "audio-call", component: () => import('@/views/pages/application/call/audio-call.vue') },
-      { path: "call-history", component: () => import('@/views/pages/application/call/call-history.vue') },
-    ]
-  },
+  
   {
     path: '/dashboard',
     component: () => import('@/views/pages/dashboard/pos-dashboard.vue'),

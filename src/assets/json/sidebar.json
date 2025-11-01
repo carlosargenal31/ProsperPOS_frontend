@@ -524,5 +524,20 @@
         "showSubRoute": false
       }
     ]
+  },
+  {
+    "tittle": "Ayuda",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Manual de Usuario",
+        "icon": "ti ti-file-text",
+        "route": "/users/users-list",
+        "active_link": "/users/users-list",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
   }
 ]

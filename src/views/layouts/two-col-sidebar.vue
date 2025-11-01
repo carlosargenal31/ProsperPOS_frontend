@@ -63,10 +63,8 @@
                     <div class="tab-content" id="v-pills-tabContent">
                         <div class="tab-pane fade show active" id="dashboard">
                             <ul>
-                                <li class="menu-title"><span>MAIN</span></li>
-                                <li><router-link to="/dashboard/" class="active">Admin Dashboard</router-link></li>
-                                <li><router-link to="/dashboard/admin-dashboard-2">Admin Dashboard 2</router-link></li>
-                                <li><router-link to="/dashboard/sales-dashboard">Sales Dashboard</router-link></li>
+                                <li class="menu-title"><span>Centro de Control</span></li>
+                                <li><router-link to="/dashboard/admin-dashboard" class="active">Panel Administrativo</router-link></li>
                             </ul>
                         </div>
                         <div class="tab-pane fade" id="super-admin">
@@ -80,38 +78,7 @@
                                 <li><router-link to="/super-admin/purchase-transaction">Purchase Transaction</router-link></li>
                             </ul>
                         </div>
-                        <div class="tab-pane fade" id="application">
-                            <ul>
-                                <li><router-link to="/application/chat">Chat</router-link></li>
-                                <li class="submenu submenu-two"><a href="javascript:void(0);">Call<span class="menu-arrow inside-submenu"></span></a>
-                                    <ul>
-                                        <li><router-link to="/call/video-call">Video Call</router-link></li>
-                                        <li><router-link to="/call/audio-call">Audio Call</router-link></li>
-                                        <li><router-link to="/call/call-history">Call History</router-link></li>
-                                    </ul>
-                                </li>
-                                <li><router-link to="/application/calendar">Calendar</router-link></li>
-                                <li><router-link to="/application/contacts">Contacts</router-link></li>
-                                <li><router-link to="/application/email">Email</router-link></li>
-                                <li><router-link to="/application/todo">To Do</router-link></li>
-                                <li><router-link to="/application/notes">Notes</router-link></li>
-                                <li><router-link to="/application/file-manager">File Manager</router-link></li>
-                                <li><router-link to="/application/projects">Projects</router-link></li>
-                                <li class="submenu submenu-two"><a href="javascript:void(0);">Ecommerce<span class="menu-arrow inside-submenu"></span></a>
-                                    <ul>
-                                        <li><router-link to="/ecommerce/products">Products</router-link></li>
-                                        <li><router-link to="/ecommerce/orders">Orders</router-link></li>
-                                        <li><router-link to="/ecommerce/customers">Customers</router-link></li>
-                                        <li><router-link to="/ecommerce/cart">Cart</router-link></li>
-                                        <li><router-link to="/ecommerce/checkout">Checkout</router-link></li>
-                                        <li><router-link to="/ecommerce/wishlist">Wishlist</router-link></li>
-                                        <li><router-link to="/ecommerce/reviews">Reviews</router-link></li>
-                                    </ul>
-                                </li>
-                                <li><router-link to="/application/social-feed">Social Feed</router-link></li>
-                                <li><router-link to="/application/search-list">Search List</router-link></li>
-                            </ul>
-                        </div>
+                        
                         <div class="tab-pane fade" id="layout">
                             <ul>
                                 <li class="menu-title"><span>LAYOUT</span></li>
@@ -165,10 +132,6 @@
                                 <li class="submenu">
                                     <a href="javascript:void(0);"><span>POS</span><span class="menu-arrow"></span></a>
                                     <ul>
-                                        <li><router-link to="/pos/pos-1">POS 1</router-link></li>
-                                        <li><router-link to="/pos/pos-2">POS 2</router-link></li>
-                                        <li><router-link to="/pos/pos-3">POS 3</router-link></li>
-                                        <li><router-link to="/pos/pos-4">POS 4</router-link></li>
                                         <li><router-link to="/pos/pos-5">POS 5</router-link></li>
                                     </ul>
                                 </li>

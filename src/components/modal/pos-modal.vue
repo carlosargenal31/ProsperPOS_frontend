@@ -1397,7 +1397,7 @@ export default {
     },
     methods: {
     submitForm() {
-      this.$router.push("/pos/pos-1");
+      this.$router.push("/pos/pos-5");
     },
   },
 }

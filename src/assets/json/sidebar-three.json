@@ -26,89 +26,6 @@
             "subRoutes": []
           }
         ]
-      },
-      {
-        "tittle": "Application",
-        "hasSubRoute": true,
-        "showSubRoute": true,
-        "icon": "smartphone",
-        "base": "application",
-        "subRoutes": [
-          {
-            "tittle": "Chat",
-            "route": "/application/chat",
-            "hasSubRoute": false,
-            "showSubRoute": false,
-            "customSubmenuTwo": false
-          },
-          {
-            "tittle": "Call",
-            "hasSubRoute": true,
-            "showSubRoute": true,
-            "icon": "smartphone",
-            "base": "application",
-            "subRoutes": [
-              {
-                "tittle": "Video Call",
-                "route": "/call/video-call",
-                "hasSubRoute": false,
-                "showSubRoute": false,
-                "subRoutes": []
-              },
-              {
-                "tittle": "Audio Call",
-                "route": "/call/audio-call",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "tittle": "Call History",
-                "route": "/call/call-history",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              }
-            ]
-          },
-          {
-            "tittle": "Calendar",
-            "route": "/application/calendar",
-            "hasSubRoute": false,
-            "showSubRoute": false,
-            "customSubmenuTwo": false
-          },
-          {
-            "tittle": "Email",
-            "hasSubRoute": false,
-            "showSubRoute": false,
-            "route": "/application/email",
-            "customSubmenuTwo": false,
-            "subRoutes": []
-          },
-          {
-            "tittle": "To Do",
-            "hasSubRoute": false,
-            "showSubRoute": false,
-            "route": "/application/todo",
-            "customSubmenuTwo": false,
-            "subRoutes": []
-          },
-          {
-            "tittle": "Notes",
-            "hasSubRoute": false,
-            "showSubRoute": false,
-            "route": "/application/notes",
-            "customSubmenuTwo": false,
-            "subRoutes": []
-          },
-          {
-            "tittle": "File Manager",
-            "hasSubRoute": false,
-            "showSubRoute": false,
-            "route": "/application/file-manager",
-            "customSubmenuTwo": false,
-            "subRoutes": []
-          }
-        ]
       }
     ]
   },
@@ -250,7 +167,7 @@
             "tittle": "POS",
             "hasSubRoute": false,
             "showSubRoute": false,
-            "route": "/pos/pos-1",
+            "route": "/pos/pos-5",
             "subRoutes": []
           }
         ]

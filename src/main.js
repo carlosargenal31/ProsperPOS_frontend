@@ -29,7 +29,6 @@ import Breadcrumb from "@/components/breadcrumb/layout-breadcrumb.vue";
 import CounterIndex from "@/components/counter-index.vue";
 import PosCounter from "@/views/pages/pos/pos-counter.vue";
 import CheckCounter from "@/views/pages/application/ecommerce/check-counter.vue";
-import PosCounter2 from "@/views/pages/pos/pos-2/pos-counter-2.vue";
 
 /********* Page component**********/
 import Product_Header from "@/views/pages/inventory/product-list/product-header.vue";
@@ -60,27 +59,6 @@ import CallHistoryTable from "@/views/pages/application/call/call-history-table.
 import recentFile from '@/views/pages/application/files/recent-file.vue';
 import recentFolder from '@/views/pages/application/files/recent-folder.vue';
 import recentVideo from '@/views/pages/application/files/recent-video.vue';
-import AllPos1 from "@/views/pages/pos/pos-1/all-pos1.vue";
-import headphonesPos1 from "@/views/pages/pos/pos-1/headphones-pos1.vue";
-import shoesPos1 from "@/views/pages/pos/pos-1/shoes-pos1.vue";
-import mobilesPos1 from "@/views/pages/pos/pos-1/mobiles-pos1.vue";
-import watchesPos1 from "@/views/pages/pos/pos-1/watches-pos1.vue";
-import laptopsPos1 from "@/views/pages/pos/pos-1/laptops-pos1.vue";
-import appliancesPos1 from "@/views/pages/pos/pos-1/appliances-pos1.vue";
-import AllPos2 from "@/views/pages/pos/pos-2/all-pos2.vue";
-import headphonesPos2 from "@/views/pages/pos/pos-2/headphones-pos2.vue";
-import shoesPos2 from "@/views/pages/pos/pos-2/shoes-pos2.vue";
-import mobilesPos2 from "@/views/pages/pos/pos-2/mobiles-pos2.vue";
-import watchesPos2 from "@/views/pages/pos/pos-2/watches-pos2.vue";
-import laptopsPos2 from "@/views/pages/pos/pos-2/laptops-pos2.vue";
-import AllPos4 from "@/views/pages/pos/pos-4/all-pos4.vue";
-import shoesPos4 from "@/views/pages/pos/pos-4/shoes-pos4.vue";
-import homeneedPos4 from "@/views/pages/pos/pos-4/homeneed-pos4.vue";
-import laptopsPos4 from "@/views/pages/pos/pos-4/laptops-pos4.vue";
-import watchesPos4 from "@/views/pages/pos/pos-4/watches-pos4.vue";
-import mobilesPos4 from "@/views/pages/pos/pos-4/mobiles-pos4.vue";
-import headphonesPos4 from "@/views/pages/pos/pos-4/headphones-pos4.vue";
-import headphonesonePos4 from "@/views/pages/pos/pos-4/headphonesone-pos4.vue";
 import AllPos5 from "@/views/pages/pos/pos-5/all-pos5.vue";
 import shoesPos5 from "@/views/pages/pos/pos-5/shoes-pos5.vue";
 import homeneedPos5 from "@/views/pages/pos/pos-5/homeneed-pos5.vue";
@@ -90,7 +68,6 @@ import mobilesPos5 from "@/views/pages/pos/pos-5/mobiles-pos5.vue";
 import headphonesPos5 from "@/views/pages/pos/pos-5/headphones-pos5.vue";
 import headphonesonePos5 from "@/views/pages/pos/pos-5/headphonesone-pos5.vue";
 import Pos5Carousel from "@/views/pages/pos/pos-5/pos5-carousel.vue";
-import Pos4Carousel from "@/views/pages/pos/pos-4/pos4-carousel.vue";
 import AccountListTable from "@/views/pages/finance/account-list-table.vue";
 import AccountTypeTable from "@/views/pages/finance/account-type-table.vue";
 
@@ -220,7 +197,7 @@ app.component("layout-breadcrumb", Breadcrumb);
 app.component('counter-index', CounterIndex);
 app.component('pos-counter', PosCounter);
 app.component('checkout-counter', CheckCounter);
-app.component('pos-counter-2', PosCounter2);
+
 
 /********* Page component**********/
 app.component("product-header", Product_Header);
@@ -251,27 +228,6 @@ app.component('call-history-table', CallHistoryTable);
 app.component('recent-file',recentFile);
 app.component('recent-folder',recentFolder);
 app.component('recent-video',recentVideo);
-app.component('all-pos1',AllPos1);
-app.component('headphones-pos1',headphonesPos1);
-app.component('shoes-pos1',shoesPos1);
-app.component('mobiles-pos1',mobilesPos1);
-app.component('watches-pos1',watchesPos1);
-app.component('laptops-pos1',laptopsPos1);
-app.component('appliances-pos1',appliancesPos1);
-app.component('all-pos2',AllPos2);
-app.component('headphones-pos2',headphonesPos2);
-app.component('shoes-pos2',shoesPos2);
-app.component('mobiles-pos2',mobilesPos2);
-app.component('watches-pos2',watchesPos2);
-app.component('laptops-pos2',laptopsPos2);
-app.component('all-pos4',AllPos4);
-app.component('homeneed-pos4',homeneedPos4);
-app.component('headphones-pos4',headphonesPos4);
-app.component('headphonesone-pos4',headphonesonePos4);
-app.component('shoes-pos4',shoesPos4);
-app.component('laptops-pos4',laptopsPos4);
-app.component('watches-pos4',watchesPos4);
-app.component('mobiles-pos4',mobilesPos4);
 app.component('all-pos5',AllPos5);
 app.component('homeneed-pos5',homeneedPos5);
 app.component('headphones-pos5',headphonesPos5);
@@ -281,7 +237,6 @@ app.component('laptops-pos5',laptopsPos5);
 app.component('watches-pos5',watchesPos5);
 app.component('mobiles-pos5',mobilesPos5);
 app.component('pos5-carousel',Pos5Carousel);
-app.component('pos4-carousel',Pos4Carousel);
 app.component('account-list-table', AccountListTable);
 app.component('account-type-table', AccountTypeTable);
 

@@ -56,30 +56,6 @@
             </template>							
         </ul>
     </li>
-    <li class="submenu-open">
-        <h6 class="submenu-hdr">Ayuda</h6>
-        <ul>
-            <li><a href="javascript:void(0);"><i class="ti ti-file-text fs-16 me-2"></i><span>Manual de Usuario</span></a></li>
-            
-            <li class="submenu">
-                
-                <ul>
-                    <li><a href="javascript:void(0);">Level 1.1</a></li>
-                    <li class="submenu submenu-two"><a href="javascript:void(0);">Level 1.2<span class="menu-arrow inside-submenu"></span></a>
-                        <ul>
-                            <li><a href="javascript:void(0);">Level 2.1</a></li>
-                            <li class="submenu submenu-two submenu-three"><a href="javascript:void(0);">Level 2.2<span class="menu-arrow inside-submenu inside-submenu-two"></span></a>
-                                <ul>
-                                    <li><a href="javascript:void(0);">Level 3.1</a></li>
-                                    <li><a href="javascript:void(0);">Level 3.2</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </li>
-        </ul>
-    </li>
   </ul>
 </template>
 
