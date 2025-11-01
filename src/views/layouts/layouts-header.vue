@@ -73,39 +73,9 @@
                 </li>
                 <!-- /Search -->
 
-                <!-- Select Store -->
-                <li class="nav-item dropdown has-arrow main-drop select-store-dropdown">
-                    <a href="javascript:void(0);" class="dropdown-toggle nav-link select-store"
-                        data-bs-toggle="dropdown">
-                        <span class="user-info">
-                            <span class="user-letter">
-                                <img src="@/assets/img/store/store-01.png" alt="Store Logo" class="img-fluid">
-                            </span>
-                            <span class="user-detail">
-                                <span class="user-name">Freshmart</span>
-                            </span>
-                        </span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right">
-                        <a href="javascript:void(0);" class="dropdown-item">
-                            <img src="@/assets/img/store/store-01.png" alt="Store Logo" class="img-fluid">Freshmart
-                        </a>
-                        <a href="javascript:void(0);" class="dropdown-item">
-                            <img src="@/assets/img/store/store-02.png" alt="Store Logo" class="img-fluid">Grocery Apex
-                        </a>
-                        <a href="javascript:void(0);" class="dropdown-item">
-                            <img src="@/assets/img/store/store-03.png" alt="Store Logo" class="img-fluid">Grocery Bevy
-                        </a>
-                        <a href="javascript:void(0);" class="dropdown-item">
-                            <img src="@/assets/img/store/store-04.png" alt="Store Logo" class="img-fluid">Grocery Eden
-                        </a>
-                    </div>
-                </li>
-                <!-- /Select Store -->
-
                 <li class="nav-item dropdown link-nav">
                     <a href="javascript:void(0);" class="btn btn-primary btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                        <i class="ti ti-circle-plus me-1"></i>Add New
+                        <i class="ti ti-circle-plus me-1"></i>Agregar Nuevo
                     </a>
                     <div class="dropdown-menu dropdown-xl dropdown-menu-center">
                         <div class="row g-2">
@@ -114,7 +84,7 @@
                                     <span class="link-icon">
                                         <i class="ti ti-brand-codepen"></i>
                                     </span>
-                                    <p>Category</p>
+                                    <p>Categoría</p>
                                 </router-link>
                             </div>
                             <div class="col-md-2">
@@ -122,31 +92,31 @@
                                     <span class="link-icon">
                                         <i class="ti ti-square-plus"></i>
                                     </span>
-                                    <p>Product</p>
+                                    <p>Producto</p>
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/inventory/category-list" class="link-item">
+                                <router-link to="/purchases/purchase-list" class="link-item">
                                     <span class="link-icon">
                                         <i class="ti ti-shopping-bag"></i>
                                     </span>
-                                    <p>Purchase</p>
+                                    <p>Compra</p>
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/sales/online-orders" class="link-item">
+                                <router-link to="/pos/pos-5" class="link-item">
                                     <span class="link-icon">
                                         <i class="ti ti-shopping-cart"></i>
                                     </span>
-                                    <p>Sale</p>
+                                    <p>Venta</p>
                                 </router-link>
                             </div>
                             <div class="col-md-2">
                                 <router-link to="/expenses/expenses-list" class="link-item">
                                     <span class="link-icon">
-                                        <i class="ti ti-file-text"></i>
+                                        <i class="ti ti-truck"></i>
                                     </span>
-                                    <p>Expense</p>
+                                    <p>Envío</p>
                                 </router-link>
                             </div>
                             <div class="col-md-2">
@@ -154,7 +124,7 @@
                                     <span class="link-icon">
                                         <i class="ti ti-device-floppy"></i>
                                     </span>
-                                    <p>Quotation</p>
+                                    <p>Cotización</p>
                                 </router-link>
                             </div>
                             <div class="col-md-2">
@@ -162,7 +132,7 @@
                                     <span class="link-icon">
                                         <i class="ti ti-copy"></i>
                                     </span>
-                                    <p>Return</p>
+                                    <p>Devolución</p>
                                 </router-link>
                             </div>
                             <div class="col-md-2">
@@ -170,7 +140,7 @@
                                     <span class="link-icon">
                                         <i class="ti ti-user"></i>
                                     </span>
-                                    <p>User</p>
+                                    <p>Usuario</p>
                                 </router-link>
                             </div>
                             <div class="col-md-2">
@@ -178,15 +148,15 @@
                                     <span class="link-icon">
                                         <i class="ti ti-users"></i>
                                     </span>
-                                    <p>Customer</p>
+                                    <p>Cliente</p>
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/sales-report/sales-report" class="link-item">
+                                <router-link to="/inventory/brand-list" class="link-item">
                                     <span class="link-icon">
                                         <i class="ti ti-shield"></i>
                                     </span>
-                                    <p>Biller</p>
+                                    <p>Marca</p>
                                 </router-link>
                             </div>
                             <div class="col-md-2">
@@ -194,15 +164,15 @@
                                     <span class="link-icon">
                                         <i class="ti ti-user-check"></i>
                                     </span>
-                                    <p>Supplier</p>
+                                    <p>Proveedor</p>
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/stock/stock-transfer" class="link-item">
+                                <router-link to="/stock/manage-stocks" class="link-item">
                                     <span class="link-icon">
-                                        <i class="ti ti-truck"></i>
+                                        <i class="ti ti-stack-3"></i>
                                     </span>
-                                    <p>Transfer</p>
+                                    <p>Inventario</p>
                                 </router-link>
                             </div>
                         </div>
@@ -210,112 +180,16 @@
                 </li>
                 
                 <li class="nav-item pos-nav">
-                    <router-link to="/pos/pos-1" class="btn btn-dark btn-md d-inline-flex align-items-center">
+                    <router-link to="/pos/pos-5" class="btn btn-dark btn-md d-inline-flex align-items-center">
                         <i class="ti ti-device-laptop me-1"></i>POS
                     </router-link>
                 </li>
-
-                <!-- Flag -->
-                <li class="nav-item dropdown has-arrow flag-nav nav-item-box">
-                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);"
-                        role="button">
-                        <img src="@/assets/img/flags/us-flag.svg" alt="Language" class="img-fluid">
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right">
-                        <a href="javascript:void(0);" class="dropdown-item">
-                            <img src="@/assets/img/flags/english.svg" alt="" height="16">English
-                        </a>
-                        <a href="javascript:void(0);" class="dropdown-item">
-                            <img src="@/assets/img/flags/arabic.svg" alt="" height="16">Arabic
-                        </a>
-                    </div>
-                </li>
-                <!-- /Flag -->
 
                 <li class="nav-item nav-item-box">
                     <a href="javascript:void(0);" id="btnFullscreen" @click="initFullScreen">
                         <i class="ti ti-maximize"></i>
                     </a>
                 </li>
-                <li class="nav-item nav-item-box">
-                    <router-link to="/application/email">
-                        <i class="ti ti-mail"></i>
-                        <span class="badge rounded-pill">1</span>
-                    </router-link>
-                </li>
-                <!-- Notifications -->
-                <li class="nav-item dropdown nav-item-box">
-                    <a href="javascript:void(0);" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
-                        <i class="ti ti-bell"></i>
-                    </a>
-                    <div class="dropdown-menu notifications">
-                        <div class="topnav-dropdown-header">
-                            <h5 class="notification-title">Notifications</h5>
-                            <a href="javascript:void(0)" class="clear-noti">Mark all as read</a>
-                        </div>
-                        <div class="noti-content">
-                            <ul class="notification-list">
-                                <li class="notification-message">
-                                    <router-link to="/activities">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="@/assets/img/profiles/avatar-13.jpg">
-                                            </span>
-                                            <div class="flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">James Kirwin</span> confirmed his order.  Order No: #78901.Estimated delivery: 2 days</p>
-                                                <p class="noti-time">4 mins ago</p>
-                                            </div>
-                                        </div>
-                                    </router-link>
-                                </li>
-                                <li class="notification-message">
-                                    <router-link to="/activities">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="@/assets/img/profiles/avatar-03.jpg">
-                                            </span>
-                                            <div class="flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Leo Kelly</span> cancelled his order scheduled for  17 Jan 2025</p>
-                                                <p class="noti-time">10 mins ago</p>
-                                            </div>
-                                        </div>
-                                    </router-link>
-                                </li>
-                                <li class="notification-message">
-                                    <router-link to="/activities" class="recent-msg">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="@/assets/img/profiles/avatar-17.jpg">
-                                            </span>
-                                            <div class="flex-grow-1">
-                                                <p class="noti-details">Payment of $50 received for Order #67890 from <span class="noti-title">Antonio Engle</span></p>
-                                                <p class="noti-time">05 mins ago</p>
-                                            </div>
-                                        </div>
-                                    </router-link>
-                                </li>
-                                <li class="notification-message">
-                                    <router-link to="/activities" class="recent-msg">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="@/assets/img/profiles/avatar-02.jpg">
-                                            </span>
-                                            <div class="flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Andrea</span> confirmed his order.  Order No: #73401.Estimated delivery: 3 days</p>
-                                                <p class="noti-time">4 mins ago</p>
-                                            </div>
-                                        </div>
-                                    </router-link>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="topnav-dropdown-footer d-flex align-items-center gap-3">
-                            <a href="#" class="btn btn-secondary btn-md w-100">Cancel</a>
-                            <router-link to="/activities" class="btn btn-primary btn-md w-100">View all</router-link>
-                        </div>
-                    </div>
-                </li>
-                <!-- /Notifications -->
 
                 <li class="nav-item nav-item-box">
                     <router-link to="/settings/general-settings"><i class="ti ti-settings"></i></router-link>

@@ -1,330 +1,399 @@
+<!-- ===================================================================
+     PROSPERPOS - MODAL DE USUARIOS (VERSIÓN CORREGIDA FINAL)
+     =================================================================== -->
+
 <template>
-  <!-- Add User -->
-  <div class="modal fade" id="add-user">
-    <div class="modal-dialog modal-dialog-centered">
+  <!-- Modal de Agregar/Editar Usuario -->
+  <div class="modal fade" :id="editMode ? 'edit-user' : 'add-user'" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
-        <div class="page-wrapper-new p-0">
-          <div class="content">
-            <div class="modal-header">
-              <div class="page-title">
-                <h4>Add User</h4>
-              </div>
-              <button
-                type="button"
-                class="close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body custom-modal-body p-3">
-              <form @submit.prevent="submitForm">
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="new-employee-field">
-                      <div class="profile-pic-upload mb-2">
-                        <div class="profile-pic">
-                          <span><i class="ti ti-circle-plus me-1"></i>Add Image</span>
-                        </div>
-                        <div class="mb-0">
-                          <div class="image-upload mb-0">
-                            <input type="file" />
-                            <div class="image-uploads">
-                              <h4>Upload Image</h4>
-                            </div>
-                          </div>
-                          <p class="fs-13 mt-2">JPEG, PNG up to 2 MB</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label"
-                        >User<span class="text-danger ms-1">*</span></label
-                      >
-                      <input type="text" class="form-control" />
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label"
-                        >Role<span class="text-danger ms-1">*</span></label
-                      >
-                      <vue-select :options="ListUs" v-model="selected" placeholder="Choose" />
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label"
-                        >Email<span class="text-danger ms-1">*</span></label
-                      >
-                      <input type="email" class="form-control" />
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label"
-                        >Phone<span class="text-danger ms-1">*</span></label
-                      >
-                      <input type="tel" class="form-control" />
-                    </div>
-                  </div>
-
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label"
-                        >Password<span class="text-danger ms-1">*</span></label
-                      >
-                      <div class="pass-group">
-                        <input type="password" class="pass-input form-control" />
-                        <i class="ti ti-eye-off toggle-password"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label"
-                        >Confirm Password<span class="text-danger ms-1">*</span></label
-                      >
-                      <div class="pass-group">
-                        <input type="password" class="pass-input form-control" />
-                        <i class="ti ti-eye-off toggle-password"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div
-                      class="status-toggle modal-status d-flex justify-content-between align-items-center"
-                    >
-                      <span class="status-label">Status</span>
-                      <input type="checkbox" id="user1" class="check" checked="" />
-                      <label for="user1" class="checktoggle"> </label>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn me-2 btn-secondary fs-13 fw-medium p-2 px-3 shadow-none"
-                data-bs-dismiss="modal"
-              >
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-primary fs-13 fw-medium p-2 px-3">
-                Add User
-              </button>
-            </div>
-          </div>
+        <div class="modal-header">
+          <h5 class="modal-title" id="userModalLabel">
+            <i :class="editMode ? 'ti ti-edit' : 'ti ti-user-plus'" class="me-2"></i>
+            {{ editMode ? 'Editar Usuario' : 'Nuevo Usuario' }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-      </div>
-    </div>
-  </div>
-  <!-- /Add User -->
-
-  <!-- Edit User -->
-  <div class="modal fade" id="edit-user">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="page-wrapper-new p-0">
-          <div class="content">
-            <div class="modal-header">
-              <div class="page-title">
-                <h4>Edit User</h4>
+        
+        <div class="modal-body">
+          <form @submit.prevent="handleSubmit" id="userForm">
+            <div class="row">
+              <!-- Nombre -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  Nombre <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  v-model="form.first_name" 
+                  placeholder="Ingrese el nombre"
+                  required 
+                />
               </div>
-              <button
-                type="button"
-                class="close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body custom-modal-body p-3">
-              <form @submit.prevent="submitForm">
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="new-employee-field">
-                      <div class="profile-pic-upload image-field">
-                        <div class="profile-pic p-2">
-                          <img
-                            src="@/assets/img/users/user-49.png"
-                            class="object-fit-cover h-100 rounded-1"
-                            alt="user"
-                          />
-                          <button type="button" class="close rounded-1">
-                            <span aria-hidden="true">&times;</span>
-                          </button>
-                        </div>
-                        <div class="mb-3">
-                          <div class="image-upload mb-0">
-                            <input type="file" />
-                            <div class="image-uploads">
-                              <h4>Change Image</h4>
-                            </div>
-                          </div>
-                          <p class="mt-2">JPEG, PNG up to 2 MB</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label"
-                        >User<span class="text-danger ms-1">*</span></label
-                      >
-                      <input type="text" class="form-control" value="Henry Bryant" />
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label"
-                        >Role<span class="text-danger ms-1">*</span></label
-                      >
-                      <vue-select
-                        :options="ListUsOne"
-                        v-model="selectedOne"
-                        placeholder="Admin"
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label"
-                        >Email<span class="text-danger ms-1">*</span></label
-                      >
-                      <input
-                        type="email"
-                        class="form-control"
-                        value="henry@example.com"
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label"
-                        >Phone<span class="text-danger ms-1">*</span></label
-                      >
-                      <input type="tel" class="form-control" value="+12498345785" />
-                    </div>
-                  </div>
 
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label"
-                        >Password<span class="text-danger ms-1">*</span></label
-                      >
-                      <div class="pass-group">
-                        <input
-                          type="password"
-                          class="pass-input form-control"
-                          value="********"
-                        />
-                        <i class="ti ti-eye-off toggle-password"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label"
-                        >Confirm Password<span class="text-danger ms-1">*</span></label
-                      >
-                      <div class="pass-group">
-                        <input
-                          type="password"
-                          class="pass-input form-control"
-                          value="********"
-                        />
-                        <i class="ti ti-eye-off toggle-password"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div
-                      class="status-toggle modal-status d-flex justify-content-between align-items-center"
-                    >
-                      <span class="status-label">Status</span>
-                      <input type="checkbox" id="user2" class="check" checked="" />
-                      <label for="user2" class="checktoggle"> </label>
-                    </div>
-                  </div>
+              <!-- Apellido -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  Apellido <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  v-model="form.last_name" 
+                  placeholder="Ingrese el apellido"
+                  required 
+                />
+              </div>
+
+              <!-- Email -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  Correo Electrónico <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="email" 
+                  class="form-control" 
+                  v-model="form.email" 
+                  placeholder="usuario@ejemplo.com"
+                  required 
+                />
+              </div>
+
+              <!-- Teléfono -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  Teléfono
+                </label>
+                <input 
+                  type="tel" 
+                  class="form-control" 
+                  v-model="form.phone" 
+                  placeholder="9999-9999"
+                />
+              </div>
+
+              <!-- Rol -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  Rol <span class="text-danger">*</span>
+                </label>
+                <select 
+                  class="form-select" 
+                  v-model="form.role_id" 
+                  required
+                >
+                  <option value="">Seleccionar rol</option>
+                  <option 
+                    v-for="role in roles" 
+                    :key="role.id" 
+                    :value="role.id"
+                  >
+                    {{ role.name }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Tienda (opcional) -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  Tienda
+                </label>
+                <select 
+                  class="form-select" 
+                  v-model="form.store_id"
+                >
+                  <option value="">Sin asignar</option>
+                  <!-- Aquí puedes agregar las tiendas dinámicamente -->
+                </select>
+              </div>
+
+              <!-- Contraseña (solo para nuevo usuario) -->
+              <div class="col-md-6 mb-3" v-if="!editMode">
+                <label class="form-label">
+                  Contraseña <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <input 
+                    :type="showPassword ? 'text' : 'password'" 
+                    class="form-control" 
+                    v-model="form.password" 
+                    placeholder="Mínimo 8 caracteres"
+                    :required="!editMode"
+                    minlength="8"
+                  />
+                  <button 
+                    class="btn btn-outline-secondary" 
+                    type="button"
+                    @click="showPassword = !showPassword"
+                  >
+                    <i :class="showPassword ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+                  </button>
                 </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn me-2 btn-secondary fs-13 fw-medium p-2 px-3 shadow-none"
-                data-bs-dismiss="modal"
-              >
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-primary fs-13 fw-medium p-2 px-3">
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- /Edit User -->
+                <small class="text-muted">La contraseña debe tener al menos 8 caracteres</small>
+              </div>
 
-  <!-- delete modal -->
-  <div class="modal fade" id="delete-modal">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="page-wrapper-new p-0">
-          <div class="content p-5 px-3 text-center">
-            <span class="rounded-circle d-inline-flex p-2 bg-danger-transparent mb-2"
-              ><i class="ti ti-trash fs-24 text-danger"></i
-            ></span>
-            <h4 class="fs-20 fw-bold mb-2 mt-1">Delete User</h4>
-            <p class="mb-0 fs-16">Are you sure you want to delete user?</p>
-            <div class="modal-footer-btn mt-3 d-flex justify-content-center">
-              <button
-                type="button"
-                class="btn me-2 btn-secondary fs-13 fw-medium p-2 px-3 shadow-none"
-                data-bs-dismiss="modal"
-              >
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-primary fs-13 fw-medium p-2 px-3">
-                Yes Delete
-              </button>
+              <!-- Confirmar Contraseña (solo para nuevo usuario) -->
+              <div class="col-md-6 mb-3" v-if="!editMode">
+                <label class="form-label">
+                  Confirmar Contraseña <span class="text-danger">*</span>
+                </label>
+                <input 
+                  :type="showPassword ? 'text' : 'password'" 
+                  class="form-control" 
+                  v-model="form.confirm_password" 
+                  placeholder="Repetir contraseña"
+                  :required="!editMode"
+                />
+              </div>
+
+              <!-- Estado (solo para edición) -->
+              <div class="col-md-6 mb-3" v-if="editMode">
+                <label class="form-label">
+                  Estado <span class="text-danger">*</span>
+                </label>
+                <select 
+                  class="form-select" 
+                  v-model="form.status"
+                  required
+                >
+                  <option value="active">Activo</option>
+                  <option value="inactive">Inactivo</option>
+                  <option value="suspended">Suspendido</option>
+                </select>
+              </div>
             </div>
-          </div>
+
+            <!-- Mensaje de error -->
+            <div v-if="formError" class="alert alert-danger alert-dismissible fade show" role="alert">
+              <i class="ti ti-alert-circle me-2"></i>
+              {{ formError }}
+              <button type="button" class="btn-close" @click="formError = ''"></button>
+            </div>
+
+            <!-- Mensaje de validación de contraseñas -->
+            <div v-if="!editMode && form.password && form.confirm_password && form.password !== form.confirm_password" class="alert alert-warning">
+              <i class="ti ti-alert-triangle me-2"></i>
+              Las contraseñas no coinciden
+            </div>
+          </form>
+        </div>
+        
+        <div class="modal-footer">
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            data-bs-dismiss="modal"
+            @click="resetForm"
+          >
+            <i class="ti ti-x me-1"></i>
+            Cancelar
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-primary" 
+            @click="handleSubmit"
+            :disabled="isSaving || (!editMode && form.password !== form.confirm_password)"
+          >
+            <span v-if="isSaving">
+              <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+              Guardando...
+            </span>
+            <span v-else>
+              <i class="ti ti-check me-1"></i>
+              {{ editMode ? 'Actualizar' : 'Guardar' }}
+            </span>
+          </button>
         </div>
       </div>
     </div>
   </div>
 </template>
+
 <script>
+import { userService } from '@/services/api.service';
+
 export default {
+  name: 'UsersListModal',
+  
+  // ✅ Declarar eventos emitidos
+  emits: ['userSaved', 'deleteConfirmed'],
+  
+  props: {
+    editMode: {
+      type: Boolean,
+      default: false
+    },
+    userData: {
+      type: Object,
+      default: null
+    },
+    roles: {
+      type: Array,
+      default: () => []
+    }
+  },
+  
   data() {
     return {
-      selected: [],
-      selectedOne: [],
-      ListUs: [
-        {label: "Choose", value: "Choose"}, 
-        {label: "Manager", value: "Manager"}, 
-        {label: "Admin", value: "Admin"}
-      ],
-      ListUsOne: [
-        {label: "Admin", value: "Admin"}, 
-        {label: "Manager", value: "Manager"}, 
-        {label: "Store Keeper", value: "Store Keeper"}, 
-      ],
+      form: {
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: '',
+        role_id: '',
+        store_id: '',
+        password: '',
+        confirm_password: '',
+        status: 'active'
+      },
+      showPassword: false,
+      isSaving: false,
+      formError: ''
     };
   },
-  methods: {
-    submitForm() {
-      this.$router.push("/users/users-list");
+  
+  watch: {
+    userData: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal && this.editMode) {
+          this.form = {
+            first_name: newVal.first_name || '',
+            last_name: newVal.last_name || '',
+            email: newVal.email || '',
+            phone: newVal.phone || '',
+            role_id: newVal.role_id || '',
+            store_id: newVal.store_id || '',
+            status: newVal.status || 'active',
+            password: '',
+            confirm_password: ''
+          };
+        }
+      }
     },
+    
+    editMode(newVal) {
+      if (!newVal) {
+        this.resetForm();
+      }
+    }
   },
+  
+  methods: {
+    async handleSubmit() {
+      // Validar contraseñas para nuevo usuario
+      if (!this.editMode && this.form.password !== this.form.confirm_password) {
+        this.formError = 'Las contraseñas no coinciden';
+        return;
+      }
+
+      // Validar longitud de contraseña
+      if (!this.editMode && this.form.password.length < 8) {
+        this.formError = 'La contraseña debe tener al menos 8 caracteres';
+        return;
+      }
+
+      this.isSaving = true;
+      this.formError = '';
+
+      try {
+        let response;
+        
+        if (this.editMode) {
+          // Actualizar usuario existente
+          const updateData = {
+            first_name: this.form.first_name,
+            last_name: this.form.last_name,
+            email: this.form.email,
+            phone: this.form.phone,
+            role_id: parseInt(this.form.role_id),
+            store_id: this.form.store_id ? parseInt(this.form.store_id) : null,
+            status: this.form.status
+          };
+          
+          response = await userService.updateUser(this.userData.id, updateData);
+        } else {
+          // Crear nuevo usuario
+          const newUserData = {
+            first_name: this.form.first_name,
+            last_name: this.form.last_name,
+            email: this.form.email,
+            phone: this.form.phone,
+            role_id: parseInt(this.form.role_id),
+            store_id: this.form.store_id ? parseInt(this.form.store_id) : null,
+            password: this.form.password
+          };
+          
+          response = await userService.createUser(newUserData);
+        }
+
+        if (response.success) {
+          // Emitir evento de éxito
+          this.$emit('userSaved');
+          
+          // Cerrar modal
+          const modalElement = document.getElementById(this.editMode ? 'edit-user' : 'add-user');
+          const modal = window.bootstrap.Modal.getInstance(modalElement);
+          if (modal) {
+            modal.hide();
+          }
+          
+          // Resetear formulario
+          this.resetForm();
+          
+          // Mostrar mensaje de éxito (opcional)
+          console.log('Usuario guardado exitosamente');
+        }
+      } catch (error) {
+        console.error('Error al guardar usuario:', error);
+        this.formError = error.response?.data?.message || 'Error al guardar el usuario';
+      } finally {
+        this.isSaving = false;
+      }
+    },
+    
+    resetForm() {
+      this.form = {
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: '',
+        role_id: '',
+        store_id: '',
+        password: '',
+        confirm_password: '',
+        status: 'active'
+      };
+      this.showPassword = false;
+      this.formError = '';
+    }
+  }
 };
 </script>
+
+<style scoped>
+.modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.modal-header .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.alert {
+  border-radius: 0.5rem;
+}
+</style>

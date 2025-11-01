@@ -13,7 +13,6 @@ import VueEasyLightbox from "vue-easy-lightbox"
 
 /********* Layout component**********/
 import Header from "@/views/layouts/layouts-header.vue";
-
 import Sidebar from "@/views/layouts/layouts-sidebar.vue";
 import FilesSidebar from "@/views/layouts/files-sidebar.vue";
 import Settings_Sidebar from "@/views/layouts/settings-sidebar.vue";
@@ -33,7 +32,6 @@ import CheckCounter from "@/views/pages/application/ecommerce/check-counter.vue"
 import PosCounter2 from "@/views/pages/pos/pos-2/pos-counter-2.vue";
 
 /********* Page component**********/
-
 import Product_Header from "@/views/pages/inventory/product-list/product-header.vue";
 import Inputsize from "@/views/pages/uiinterface/forms/form-elements/formbasic/input-size.vue";
 import Carouselthree from "@/views/pages/uiinterface/baseui/carousel/carousel-three.vue";
@@ -53,7 +51,6 @@ import lowKanban from '@/views/pages/application/kanban-view/low-kanban.vue';
 import mediumKanban from '@/views/pages/application/kanban-view/medium-kanban.vue';
 import NotesCarousel from "@/views/pages/application/notes-carousel.vue";
 import VectorMap from "@/views/pages/dashboard/vector-map.vue";
-
 
 import SubscriptionTable from "@/views/pages/super-admin/subscription/subscription-table.vue";
 import PackagesTable from "@/views/pages/super-admin/packages/packages-table.vue";
@@ -164,7 +161,6 @@ import CallHistoryModal from "@/components/modal/call-history-modal.vue";
 import ContactsModal from "@/components/modal/contacts-modal.vue";
 import faqModal from "@/components/modal/faq-modal.vue";
 import testimonialsModal from "@/components/modal/testimonials-modal.vue";
-
 import pagesModal from "@/components/modal/pages-modal.vue";
 import TodoListModal from "@/components/modal/todo-list-modal.vue";
 import ProductsModal from "@/components/modal/products-modal.vue";
@@ -188,9 +184,6 @@ import MoneyTransferModal from "@/components/modal/money-transfer-modal.vue";
 import BillersModal from "@/components/modal/billers-modal.vue";
 import onlineOrdersModal from "@/components/modal/online-orders-modal.vue";
 
-
-
-
 import "bootstrap/dist/css/bootstrap.min.css";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -207,7 +200,6 @@ import 'leaflet/dist/leaflet.css';
 import "@/assets/css/feather.css"; 
 import '@/assets/scss/main.scss'
 
-
 const app = createApp(App);
 
 /********* Layout component**********/
@@ -218,17 +210,17 @@ app.component("settings-sidebar", Settings_Sidebar);
 app.component("two-col-sidebar", TwoCol_Sidebar);
 app.component("side-settings", SideSettings);
 app.component("theme-settings", ThemeSettings);
-app.component('vertical-sidebar', verticalSidebar)
-app.component('pos-header', PosHeader)
-app.component('horizontal-header', HorizontalHeader)
-app.component('pos-loader', PosLoader)
+app.component('vertical-sidebar', verticalSidebar);
+app.component('pos-header', PosHeader);
+app.component('horizontal-header', HorizontalHeader);
+app.component('pos-loader', PosLoader);
 
 /********* Breadcrumb component**********/
 app.component("layout-breadcrumb", Breadcrumb);
-app.component('counter-index', CounterIndex)
-app.component('pos-counter', PosCounter)
-app.component('checkout-counter', CheckCounter)
-app.component('pos-counter-2', PosCounter2)
+app.component('counter-index', CounterIndex);
+app.component('pos-counter', PosCounter);
+app.component('checkout-counter', CheckCounter);
+app.component('pos-counter-2', PosCounter2);
 
 /********* Page component**********/
 app.component("product-header", Product_Header);
@@ -242,56 +234,56 @@ app.component("pos-payment", Payment);
 app.component("pos-return", Return);
 app.component("salestax-report", Salestax_Report);
 app.component("out-of-stocks", Out_Of_Stocks);
-app.component('social-image',socialImage)
-app.component('social-carousel',socialCarousel)
-app.component('all-kanban',allKanban)
-app.component('high-kanban',highKanban)
-app.component('low-kanban',lowKanban)
-app.component('medium-kanban',mediumKanban)
+app.component('social-image',socialImage);
+app.component('social-carousel',socialCarousel);
+app.component('all-kanban',allKanban);
+app.component('high-kanban',highKanban);
+app.component('low-kanban',lowKanban);
+app.component('medium-kanban',mediumKanban);
 app.component("notes-carousel", NotesCarousel);
 app.component("vector-map", VectorMap);
 
-app.component('subscription-table', SubscriptionTable)
-app.component('packages-table', PackagesTable)
-app.component('domain-table', DomainTable)
-app.component('purchase-table', PurchaseTable)
-app.component('call-history-table', CallHistoryTable)
-app.component('recent-file',recentFile)
-app.component('recent-folder',recentFolder)
-app.component('recent-video',recentVideo)
-app.component('all-pos1',AllPos1)
-app.component('headphones-pos1',headphonesPos1)
-app.component('shoes-pos1',shoesPos1)
-app.component('mobiles-pos1',mobilesPos1)
-app.component('watches-pos1',watchesPos1)
-app.component('laptops-pos1',laptopsPos1)
-app.component('appliances-pos1',appliancesPos1)
-app.component('all-pos2',AllPos2)
-app.component('headphones-pos2',headphonesPos2)
-app.component('shoes-pos2',shoesPos2)
-app.component('mobiles-pos2',mobilesPos2)
-app.component('watches-pos2',watchesPos2)
-app.component('laptops-pos2',laptopsPos2)
-app.component('all-pos4',AllPos4)
-app.component('homeneed-pos4',homeneedPos4)
-app.component('headphones-pos4',headphonesPos4)
-app.component('headphonesone-pos4',headphonesonePos4)
-app.component('shoes-pos4',shoesPos4)
-app.component('laptops-pos4',laptopsPos4)
-app.component('watches-pos4',watchesPos4)
-app.component('mobiles-pos4',mobilesPos4)
-app.component('all-pos5',AllPos5)
-app.component('homeneed-pos5',homeneedPos5)
-app.component('headphones-pos5',headphonesPos5)
-app.component('headphonesone-pos5',headphonesonePos5)
-app.component('shoes-pos5',shoesPos5)
-app.component('laptops-pos5',laptopsPos5)
-app.component('watches-pos5',watchesPos5)
-app.component('mobiles-pos5',mobilesPos5)
-app.component('pos5-carousel',Pos5Carousel)
-app.component('pos4-carousel',Pos4Carousel)
-app.component('account-list-table', AccountListTable)
-app.component('account-type-table', AccountTypeTable)
+app.component('subscription-table', SubscriptionTable);
+app.component('packages-table', PackagesTable);
+app.component('domain-table', DomainTable);
+app.component('purchase-table', PurchaseTable);
+app.component('call-history-table', CallHistoryTable);
+app.component('recent-file',recentFile);
+app.component('recent-folder',recentFolder);
+app.component('recent-video',recentVideo);
+app.component('all-pos1',AllPos1);
+app.component('headphones-pos1',headphonesPos1);
+app.component('shoes-pos1',shoesPos1);
+app.component('mobiles-pos1',mobilesPos1);
+app.component('watches-pos1',watchesPos1);
+app.component('laptops-pos1',laptopsPos1);
+app.component('appliances-pos1',appliancesPos1);
+app.component('all-pos2',AllPos2);
+app.component('headphones-pos2',headphonesPos2);
+app.component('shoes-pos2',shoesPos2);
+app.component('mobiles-pos2',mobilesPos2);
+app.component('watches-pos2',watchesPos2);
+app.component('laptops-pos2',laptopsPos2);
+app.component('all-pos4',AllPos4);
+app.component('homeneed-pos4',homeneedPos4);
+app.component('headphones-pos4',headphonesPos4);
+app.component('headphonesone-pos4',headphonesonePos4);
+app.component('shoes-pos4',shoesPos4);
+app.component('laptops-pos4',laptopsPos4);
+app.component('watches-pos4',watchesPos4);
+app.component('mobiles-pos4',mobilesPos4);
+app.component('all-pos5',AllPos5);
+app.component('homeneed-pos5',homeneedPos5);
+app.component('headphones-pos5',headphonesPos5);
+app.component('headphonesone-pos5',headphonesonePos5);
+app.component('shoes-pos5',shoesPos5);
+app.component('laptops-pos5',laptopsPos5);
+app.component('watches-pos5',watchesPos5);
+app.component('mobiles-pos5',mobilesPos5);
+app.component('pos5-carousel',Pos5Carousel);
+app.component('pos4-carousel',Pos4Carousel);
+app.component('account-list-table', AccountListTable);
+app.component('account-type-table', AccountTypeTable);
 
 /********* Modal component**********/
 app.component("manage-stocks-modal", ManageStocksModal);
@@ -349,48 +341,47 @@ app.component("storage-settings-modal", StorageSettingsModal);
 app.component("ban-ip-address-modal", BanIpAddressModal);
 app.component("file-manager-modal", FileManagerModal);
 app.component("notes-modal", NotesModal);
-app.component("security-settings-modal",SecuritySettingsModal)
-app.component("signature-modal",signatureModal)
-app.component('companies-modal', CompaniesModal)
-app.component('subscription-modal', SubscriptionModal)
-app.component('packages-modal', PackagesModal)
-app.component('domain-modal', DomainModal)
-app.component('purchase-modal', PurchaseModal)
-app.component('call-history-modal', CallHistoryModal)
-app.component('contacts-modal', ContactsModal)
-app.component('faq-modal',faqModal)
-app.component('testimonials-modal',testimonialsModal)
-
-app.component('pages-modal',pagesModal)
-app.component('todo-list-modal', TodoListModal)
-app.component('products-modal', ProductsModal)
-app.component('orders-modal', OrdersModal)
-app.component('checkout-modal', CheckoutModal)
-app.component('wishlist-modal', WishlistModal)
-app.component('reviews-modal', ReviewsModal)
-app.component('pos5-modal', pos5Modal)
-app.component('pos-one-modal', PosOneModal)
-app.component('pos-two-modal', PosTwoModal)
-app.component('low-stocks-modal', LowStocksModal)
-app.component('coupons-modal', CouponsModal)
-app.component('gift-cards-modal', GiftCardsModal)
-app.component('discount-plan-modal', DiscountPlanModal)
-app.component('discount-list-modal', DiscountListModal)
-app.component('expenses-category-modal', ExpensesCategoryModal)
-app.component('income-list-modal', IncomeListModal)
-app.component('income-category-modal', IncomeCategoryModal)
-app.component('account-list-modal', AccountListModal)
-app.component('money-transfer-modal', MoneyTransferModal)
-app.component('billers-modal', BillersModal)
-app.component('online-orders-modal',onlineOrdersModal)
-
+app.component("security-settings-modal",SecuritySettingsModal);
+app.component("signature-modal",signatureModal);
+app.component('companies-modal', CompaniesModal);
+app.component('subscription-modal', SubscriptionModal);
+app.component('packages-modal', PackagesModal);
+app.component('domain-modal', DomainModal);
+app.component('purchase-modal', PurchaseModal);
+app.component('call-history-modal', CallHistoryModal);
+app.component('contacts-modal', ContactsModal);
+app.component('faq-modal',faqModal);
+app.component('testimonials-modal',testimonialsModal);
+app.component('pages-modal',pagesModal);
+app.component('todo-list-modal', TodoListModal);
+app.component('products-modal', ProductsModal);
+app.component('orders-modal', OrdersModal);
+app.component('checkout-modal', CheckoutModal);
+app.component('wishlist-modal', WishlistModal);
+app.component('reviews-modal', ReviewsModal);
+app.component('pos5-modal', pos5Modal);
+app.component('pos-one-modal', PosOneModal);
+app.component('pos-two-modal', PosTwoModal);
+app.component('low-stocks-modal', LowStocksModal);
+app.component('coupons-modal', CouponsModal);
+app.component('gift-cards-modal', GiftCardsModal);
+app.component('discount-plan-modal', DiscountPlanModal);
+app.component('discount-list-modal', DiscountListModal);
+app.component('expenses-category-modal', ExpensesCategoryModal);
+app.component('income-list-modal', IncomeListModal);
+app.component('income-category-modal', IncomeCategoryModal);
+app.component('account-list-modal', AccountListModal);
+app.component('money-transfer-modal', MoneyTransferModal);
+app.component('billers-modal', BillersModal);
+app.component('online-orders-modal',onlineOrdersModal);
 
 app.component(VueFeather.name, VueFeather);
 app.component("vue-select", VueSelect);
 app.component("date-picker", DatePicker);
 app.component('IconHome', IconHome);
+
 app.use(VueApexCharts);
-app.use(FlagIcon)
-app.use(VueEasyLightbox)
-.use(Antd)
-app.use(router).mount('#app'); 
+app.use(FlagIcon);
+app.use(VueEasyLightbox);
+app.use(Antd);
+app.use(router).mount('#app');

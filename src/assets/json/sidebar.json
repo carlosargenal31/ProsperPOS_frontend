@@ -54,6 +54,10 @@
             "route": "/sales/sales-returns"
           },
           {
+            "menuValue": "Envíos",
+            "route": "/sales/pos-orders"
+          },
+          {
             "menuValue": "En Linea",
             "route": "/sales/online-orders"
           },
@@ -153,6 +157,11 @@
             "menuValue": "Manejo de Inventario",
             "route": "/stock/manage-stocks",
             "active_link": "/stock/manage-stocks"
+          },
+          {
+            "menuValue": "Ajuste de Existencias",
+            "route": "/stock/stock-adjustment",
+            "active_link": "/stock/stock-adjustment"
           }
         ]
       },
@@ -217,7 +226,7 @@
     ]
   },
   {
-    "tittle": "Personas y Entidades",
+    "tittle": "Personas y Lugares",
     "showAsTab": true,
     "separateRoute": false,
     "menu": [
@@ -252,6 +261,33 @@
         "active_link" : "/people/warehouse",
         "hasSubRoute": false,
         "showSubRoute": false
+      },
+      {
+        "menuValue": "Ubicaciones",
+        "icon": "ti ti-map-pin",
+        "active_link": "reports",
+        "hasSubRoute": true,
+        "showSubRoute": false,
+        "subMenus": [
+          {
+            "menuValue": "Países",
+            "route": "/location/countries",
+            "hasSubRoute": false,
+            "showSubRoute": false
+          },
+          {
+            "menuValue": "Departamentos",
+            "route": "/location/states",
+            "hasSubRoute": false,
+            "showSubRoute": false
+          },
+          {
+            "menuValue": "Ciudades",
+            "route": "/location/cities",
+            "hasSubRoute": false,
+            "showSubRoute": false
+          }
+        ]
       }
     ]
   },
@@ -326,61 +362,12 @@
     ]
   },
   {
-    "tittle": "Content (CMS)",
+    "tittle": "Gestión de Usuarios",
     "showAsTab": true,
     "separateRoute": false,
     "menu": [
       {
-        "menuValue": "Pages",
-        "icon": "ti ti-page-break",
-        "active_link": "reports",
-        "hasSubRoute": true,
-        "showSubRoute": false,
-        "subMenus": [
-          {
-            "menuValue": "Pages",
-            "route": "/page/pages",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          }
-        ]
-      },
-      {
-        "menuValue": "Location",
-        "icon": "ti ti-map-pin",
-        "active_link": "reports",
-        "hasSubRoute": true,
-        "showSubRoute": false,
-        "subMenus": [
-          {
-            "menuValue": "Countries",
-            "route": "/location/countries",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "States",
-            "route": "/location/states",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "Cities",
-            "route": "/location/cities",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "tittle": "User Management",
-    "showAsTab": true,
-    "separateRoute": false,
-    "menu": [
-      {
-        "menuValue": "Users",
+        "menuValue": "Usuarios",
         "icon": "ti ti-shield-up",
         "route": "/users/users-list",
         "active_link": "/users/users-list",
@@ -388,7 +375,7 @@
         "showSubRoute": false
       },
       {
-        "menuValue": "Roles & Permissions",
+        "menuValue": "Roles y Permisos",
         "icon": "ti ti-jump-rope",
         "route": "/users/roles-permissions",
         "active_link": "/users/roles-permissions",
@@ -396,7 +383,7 @@
         "showSubRoute": false
       },
       {
-        "menuValue": "Delete Account Request",
+        "menuValue": "Eliminación de Cuenta",
         "icon": "ti ti-trash-x",
         "route": "/users/delete-account",
         "active_link": "/users/delete-account",
@@ -406,377 +393,77 @@
     ]
   },
   {
-    "tittle": "Pages",
+    "tittle": "Ajustes",
     "showAsTab": true,
     "separateRoute": false,
     "menu": [
       {
-        "menuValue": "Profile",
-        "icon": "ti ti-user-circle",
-        "route": "/pages/profile",
-        "active_link": "/pages/profile",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Authentication",
-        "icon": "ti ti-shield",
-        "hasSubRouteTwo": true,
-        "showSubRoute": false,
-        "subMenus": [
-          {
-            "menuValue": "Login",
-            "customSubmenuTwo": true,
-            "hasSubRoute": true,
-            "showSubRoute": false,
-            "subMenusTwo": [
-              {
-                "menuValue": "Cover",
-                "route": "/",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Illustration",
-                "route": "/authentication/signin-2",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Basic",
-                "route": "/authentication/signin-3",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              }
-            ]
-          },
-          {
-            "menuValue": "Register",
-            "customSubmenuTwo": true,
-            "hasSubRoute": true,
-            "showSubRoute": false,
-            "subMenusTwo": [
-              {
-                "menuValue": "Cover",
-                "route": "/register",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Illustration",
-                "route": "/authentication/register-2",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Basic",
-                "route": "/authentication/register-3",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              }
-            ]
-          },
-          {
-            "menuValue": "Forgot Password",
-            "customSubmenuTwo": true,
-            "hasSubRoute": true,
-            "showSubRoute": false,
-            "subMenusTwo": [
-              {
-                "menuValue": "Cover",
-                "route": "/forgot-password",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Illustration",
-                "route": "/authentication/forgot-password-2",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Basic",
-                "route": "/authentication/forgot-password-3",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              }
-            ]
-          },
-          {
-            "menuValue": "Reset Password",
-            "customSubmenuTwo": true,
-            "hasSubRoute": true,
-            "showSubRoute": false,
-            "subMenusTwo": [
-              {
-                "menuValue": "Cover",
-                "route": "/reset-password",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Illustration",
-                "route": "/authentication/reset-password-2",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Basic",
-                "route": "/authentication/reset-password-3",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              }
-            ]
-          },
-          {
-            "menuValue": "Email Verification",
-            "customSubmenuTwo": true,
-            "hasSubRoute": true,
-            "showSubRoute": false,
-            "subMenusTwo": [
-              {
-                "menuValue": "Cover",
-                "route": "/email-verification",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Illustration",
-                "route": "/authentication/email-verification-2",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Basic",
-                "route": "/authentication/email-verification-3",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              }
-            ]
-          },
-          {
-            "menuValue": "2 Step Verification",
-            "customSubmenuTwo": true,
-            "hasSubRoute": true,
-            "showSubRoute": false,
-            "subMenusTwo": [
-              {
-                "menuValue": "Cover",
-                "route": "/two-step-verification",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Illustration",
-                "route": "/authentication/two-step-verification-2",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Basic",
-                "route": "/authentication/two-step-verification-3",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              }
-            ]
-          },
-          {
-            "menuValue": "Lock Screen",
-            "route": "/authentication/lock-screen",
-            "hasSubRoute": false,
-            "showSubRoute": false,
-            "customSubmenuTwo": false
-          }
-        ]
-      },
-      {
-        "menuValue": "Error Pages",
-        "icon": "ti ti-file-x",
-        "hasSubRoute": true,
-        "showSubRoute": false,
-        "subMenus": [
-          {
-            "menuValue": "404 Error",
-            "route": "/error/error-404",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "500 Error",
-            "route": "/error/error-500",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          }
-        ]
-      },
-      {
-        "menuValue": "Blank Page",
-        "icon": "ti ti-file",
-        "route": "/pages/blank-page",
-        "active_link": "/pages/blank-page",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Pricing",
-        "icon": "ti ti-currency-dollar",
-        "route": "/pages/pricing",
-        "active_link": "/pages/pricing",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Coming Soon",
-        "icon": "ti ti-send",
-        "route": "/pages/coming-soon",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Under Maintenance",
-        "icon": "ti ti-alert-triangle",
-        "route": "/pages/under-maintenance",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      }
-    ]
-  },
-  {
-    "tittle": "Settings",
-    "showAsTab": true,
-    "separateRoute": false,
-    "menu": [
-      {
-        "menuValue": "General Settings",
+        "menuValue": "Ajustes Generales",
         "icon": "ti ti-settings",
         "active_link": "settings",
         "hasSubRoute": true,
         "showSubRoute": false,
         "subMenus": [
           {
-            "menuValue": "Profile",
+            "menuValue": "Perfil",
             "route": "/settings/general-settings",
             "active_link": "/settings/general-settings",              
             "hasSubRoute": false,
             "showSubRoute": false
           },
           {
-            "menuValue": "Security",
+            "menuValue": "Seguridad",
             "route": "/settings/security-settings",
             "active_link": "/settings/security-settings",
             "hasSubRoute": false,
             "showSubRoute": false
           },
           {
-            "menuValue": "Notifications",
-            "route": "/settings/notification",
-            "active_link": "/settings/notification",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "Connected Apps",
-            "route": "/settings/connected-apps",
-            "active_link": "/settings/connected-apps",
+            "menuValue": "Control de Páginas",
+            "route": "/page/pages",
+            "active_link": "/page/pages",
             "hasSubRoute": false,
             "showSubRoute": false
           }
         ]
       },
       {
-        "menuValue": "Website Settings",
+        "menuValue": "Ajustes de Sitio Web",
         "icon": "ti ti-world",
         "active_link": "website-settings",
         "hasSubRoute": true,
         "showSubRoute": false,
         "subMenus": [
           {
-            "menuValue": "System Settings",
-            "route": "/website-settings/system-settings",
-            "active_link": "/website-settings/system-settings",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "Company Settings",
+            "menuValue": "Ajustes de Empresa",
             "route": "/website-settings/company-settings",
             "active_link": "/website-settings/company-settings",
             "hasSubRoute": false,
             "showSubRoute": false
           },
           {
-            "menuValue": "Localization",
+            "menuValue": "Localización",
             "route": "/website-settings/localization-settings",
             "active_link": "/website-settings/localization-settings",
             "hasSubRoute": false,
             "showSubRoute": false
           },
           {
-            "menuValue": "Prefixes",
-            "route": "/website-settings/prefixes",
-            "active_link": "/website-settings/prefixes",
+            "menuValue": "Ajustes de Factura",
+            "route": "/app-settings/invoice-settings",
+            "active_link": "/app-settings/invoice-settings",
             "hasSubRoute": false,
             "showSubRoute": false
           },
           {
-            "menuValue": "Preference",
-            "route": "/website-settings/preference",
-            "active_link": "/website-settings/preference",
+            "menuValue": "Plantilla de Factura",
+            "route": "/app-settings/invoice-templates",
+            "active_link": "/app-settings/invoice-templates",
             "hasSubRoute": false,
             "showSubRoute": false
           },
           {
-            "menuValue": "Appearance",
-            "route": "/website-settings/appearance",
-            "active_link": "/website-settings/appearance",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "Social Authentication",
-            "route": "/website-settings/social-authentication",
-            "active_link": "/website-settings/social-authentication",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "Language",
-            "route": "/website-settings/language-settings",
-            "active_link": "/website-settings/language-settings",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          }
-        ]
-      },
-      {
-        "menuValue": "App Settings",
-        "hasSubRoute": true,
-        "showSubRoute": false,
-        "icon": "ti ti-device-mobile",
-        "active_link": "app-settings",
-        "subMenus": [
-          {
-            "menuValue": "Invoice",
-            "active_link": "app-settings",
-            "hasSubRoute": true,
-            "showSubRoute": false,
-            "subMenus": [
-              {
-                "menuValue": "Invoice Settings",
-                "route": "/app-settings/invoice-settings",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Invoice Template",
-                "route": "/app-settings/invoice-templates",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              }
-            ]
-          },
-          {
-            "menuValue": "Printer",
+            "menuValue": "Impresora",
             "route": "/app-settings/printer-settings",
             "active_link": "/app-settings/printer-settings",
             "hasSubRoute": false,
@@ -790,107 +477,38 @@
             "showSubRoute": false
           },
           {
-            "menuValue": "Custom Fields",
+            "menuValue": "Campos Personalizados",
             "route": "/app-settings/custom-fields",
             "active_link": "/app-settings/custom-fields",
             "hasSubRoute": false,
             "showSubRoute": false
           }
+          
         ]
       },
       {
-        "menuValue": "System Settings",
-        "icon": "ti ti-device-desktop",
-        "hasSubRoute": true,
-        "showSubRoute": false,
-        "active_link": "system-settings",
-        "subMenus": [
-          {
-            "menuValue": "Email",
-            "active_link": "system-settings",
-            "hasSubRoute": true,
-            "showSubRoute": false,
-            "subMenus": [
-              {
-                "menuValue": "Email Settings",
-                "route": "/system-settings/email-settings",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "Email Template",
-                "route": "/system-settings/email-templates",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              }
-            ]
-          },
-          {
-            "menuValue": "SMS",
-            "active_link": "system-settings",
-            "hasSubRoute": true,
-            "showSubRoute": false,
-            "subMenus": [
-              {
-                "menuValue": "SMS Settings",
-                "route": "/system-settings/sms-settings",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              },
-              {
-                "menuValue": "SMS Template",
-                "route": "/system-settings/sms-templates",
-                "hasSubRoute": false,
-                "showSubRoute": false
-              }
-            ]
-          },
-          {
-            "menuValue": "OTP",
-            "route": "/system-settings/otp-settings",
-            "active_link": "/system-settings/otp-settings",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "GDPR Cookies",
-            "route": "/system-settings/gdpr-settings",
-            "active_link": "/system-settings/gdpr-settings",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          }
-        ]
-      },
-      {
-        "menuValue": "Financial Settings",
+        "menuValue": "Ajustes Financieros",
         "icon": "ti ti-settings-dollar",
         "hasSubRoute": true,
         "showSubRoute": false,
         "active_link": "financial-settings",
         "subMenus": [
           {
-            "menuValue": "Payment Gateway",
-            "route": "/financial-settings/payment-gateway-settings",
-            "active_link": "/financial-settings/payment-gateway-settings",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "Bank Accounts",
+            "menuValue": "Cuentas Bancarias",
             "route": "/financial-settings/bank-settings-grid",
             "active_link": "/financial-settings/bank-settings-grid",
             "hasSubRoute": false,
             "showSubRoute": false
           },
           {
-            "menuValue": "Tax Rates",
+            "menuValue": "Tasas de Impuesto",
             "route": "/financial-settings/tax-rates",
             "active_link": "/financial-settings/tax-rates",
             "hasSubRoute": false,
             "showSubRoute": false
           },
           {
-            "menuValue": "Currencies",
+            "menuValue": "Monedas",
             "route": "/financial-settings/currency-settings",
             "active_link": "/financial-settings/currency-settings",
             "hasSubRoute": false,
@@ -899,30 +517,7 @@
         ]
       },
       {
-        "menuValue": "Other Settings",
-        "icon": "ti ti-settings-2",
-        "hasSubRoute": true,
-        "showSubRoute": false,
-        "active_link": "other-settings",
-        "subMenus": [
-          {
-            "menuValue": "Storage",
-            "route": "/other-settings/storage-settings",
-            "active_link": "/other-settings/storage-settings",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "Ban IP Address",
-            "route": "/other-settings/ban-ip-address",
-            "active_link": "/other-settings/ban-ip-address",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          }
-        ]
-      },
-      {
-        "menuValue": "Logout",
+        "menuValue": "Cerrar Sesión",
         "icon": "ti ti-logout",
         "route": "/",
         "hasSubRoute": false,

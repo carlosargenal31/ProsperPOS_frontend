@@ -65,7 +65,7 @@
         </div>
         <div class="text-start sidebar-profile-info ms-2">
           <h6 class="fs-14 fw-bold mb-1">Adrian Herman</h6>
-          <p class="fs-12">System Admin</p>
+          <p class="fs-12">Sem Admin</p>
         </div>
       </div>
       <div class="d-flex align-items-center justify-content-between menu-item mb-3">
@@ -88,6 +88,7 @@
           </router-link>
         </div>
         <div class="notification-item">
+          
           <router-link
             to="/activities"
             class="btn btn-sm btn-icon bg-light position-relative"

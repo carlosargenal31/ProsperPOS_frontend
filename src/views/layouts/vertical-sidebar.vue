@@ -57,12 +57,12 @@
         </ul>
     </li>
     <li class="submenu-open">
-        <h6 class="submenu-hdr">Help</h6>
+        <h6 class="submenu-hdr">Ayuda</h6>
         <ul>
-            <li><a href="javascript:void(0);"><i class="ti ti-file-text fs-16 me-2"></i><span>Documentation</span></a></li>
-            <li><a href="javascript:void(0);"><i class="ti ti-exchange fs-16 me-2"></i><span>Changelog </span><span class="badge bg-primary badge-xs text-white fs-10 ms-2">v2.1.4</span></a></li>
+            <li><a href="javascript:void(0);"><i class="ti ti-file-text fs-16 me-2"></i><span>Manual de Usuario</span></a></li>
+            
             <li class="submenu">
-                <a href="javascript:void(0);"><i class="ti ti-menu-2 fs-16 me-2"></i><span>Multi Level</span><span class="menu-arrow"></span></a>
+                
                 <ul>
                     <li><a href="javascript:void(0);">Level 1.1</a></li>
                     <li class="submenu submenu-two"><a href="javascript:void(0);">Level 1.2<span class="menu-arrow inside-submenu"></span></a>

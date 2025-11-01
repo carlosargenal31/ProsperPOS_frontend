@@ -5,8 +5,8 @@
     <div class="sidebar-themesettings offcanvas offcanvas-end" id="theme-setting">
     <div class="offcanvas-header d-flex align-items-center justify-content-between bg-dark">
         <div>
-            <h3 class="mb-1 text-white">Theme Customizer</h3>
-            <p class="text-light">Choose your themes & layouts etc.</p>
+            <h3 class="mb-1 text-white">Personalizador de Tema</h3>
+            <p class="text-light">Elige tus temas y diseños, etc.</p>
         </div>
         <a href="#" class="custom-btn-close d-flex align-items-center justify-content-center text-white"  data-bs-dismiss="offcanvas"><i class="ti ti-x"></i></a>
     </div>
@@ -15,7 +15,7 @@
             <div class="accordion-item border px-3 layout-select">
                 <h2 class="accordion-header">
                     <button class="accordion-button text-dark bg-transparent fs-16 px-0 py-3" type="button" data-bs-toggle="collapse" data-bs-target="#layoutsetting" aria-expanded="true" aria-controls="collapsecustomicon1One">
-                        Select Layouts
+                        Seleccionar Diseño
                     </button>
                 </h2>
                 <div id="layoutsetting" class="accordion-collapse collapse show"  >
@@ -28,7 +28,7 @@
                                         <span class="d-block mb-2 layout-img">
                                             <img src="@/assets/img/theme/default.svg" alt="img">
                                         </span>                                     
-                                        <span class="layout-type">Default</span>
+                                        <span class="layout-type">Predeterminado</span>
                                     </label>
                                 </div>
                             </div>
@@ -50,7 +50,7 @@
                                         <span class="d-block mb-2 layout-img">
                                             <img src="@/assets/img/theme/two-column.svg" alt="img">
                                         </span>                                    
-                                        <span class="layout-type">Two Column</span>
+                                        <span class="layout-type">Dos Columnas</span>
                                     </label>
                                 </div>
                             </div>
@@ -72,7 +72,7 @@
                                         <span class="d-block mb-2 layout-img">
                                             <img src="@/assets/img/theme/detached.svg" alt="img">
                                         </span>                                    
-                                        <span class="layout-type">Detached</span>
+                                        <span class="layout-type">Despegado</span>
                                     </label>
                                 </div>
                             </div>
@@ -83,7 +83,7 @@
                                         <span class="d-block mb-2 layout-img">
                                             <img src="@/assets/img/theme/without-header.svg" alt="img">
                                         </span>                                    
-                                        <span class="layout-type">Without Header</span>
+                                        <span class="layout-type">Sin Encabezado</span>
                                     </label>
                                 </div>
                             </div>
@@ -95,7 +95,7 @@
             <div class="accordion-item border px-3 layout-select">
                 <h2 class="accordion-header">
                     <button class="accordion-button text-dark fs-16 bg-transparent px-0 py-3" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarsetting" aria-expanded="true">
-                        Layout Width
+                        Ancho del Diseño
                     </button>
                 </h2>
                 <div id="sidebarsetting" class="accordion-collapse collapse show">
@@ -105,14 +105,14 @@
                                 <input type="radio" name="width" id="fluidWidth" value="fluid" checked>
                                 <label for="fluidWidth" class="d-block rounded fs-12">
                                     <i class="ti ti-layout-list me-1"></i>
-                                    Fluid Layout
+                                    Diseño Fluido
                                 </label>
                             </div>
                             <div class="theme-width m-1">
                                 <input type="radio" name="width" id="boxWidth" value="box">
                                 <label for="boxWidth" class="d-block rounded fs-12">
                                  <i class="ti ti-layout-distribute-horizontal me-1"></i>
-                                    Boxed Layout
+                                    Diseño en Caja
                                 </label>
                             </div>
                         </div>  
@@ -122,12 +122,12 @@
             <div class="accordion-item border px-3">
                 <h2 class="accordion-header">
                     <button class="accordion-button text-dark fs-16 px-0 py-3 bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#colorsetting" aria-expanded="true">
-                        Top Bar Color
+                        Color de la Barra Superior
                     </button>
                 </h2>
                 <div id="colorsetting" class="accordion-collapse collapse show"	>
                     <div class="accordion-body pb-1 px-0 py-3 border-top">
-                       <p class="mb-2 text-gray-9">Solid Colors</p>
+                       <p class="mb-2 text-gray-9">Colores Sólidos</p>
                        <div class="d-flex align-items-center flex-wrap">
                             <div class="theme-colorselect theme-colorselect-rounded mb-3 me-3">
                                 <input type="radio" name="topbar" id="whiteTopbar" value="white" checked>
@@ -162,7 +162,7 @@
                                 <div class="pickr-topbar"></div>
                             </div>
                         </div>
-                        <p class="mb-2 text-gray-9">Gradient Colors</p>
+                        <p class="mb-2 text-gray-9">Colores Degradados</p>
                        <div class="d-flex align-items-center flex-wrap">
                             <div class="theme-colorselect theme-colorselect-rounded mb-3 me-3">
                                 <input type="radio" name="topbar" id="topbar-color-7" value="topbarcolorseven">
@@ -203,12 +203,12 @@
             <div class="accordion-item border px-3 layout-select">
                 <h2 class="accordion-header">
                     <button class="accordion-button text-dark fs-16 px-0 py-3 bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarsettings" aria-expanded="true">
-                        Sidebar Color
+                        Color de la Barra Lateral
                     </button>
                 </h2>
                 <div id="sidebarsettings" class="accordion-collapse collapse show">
                     <div class="accordion-body px-0 py-3 border-top">
-                       <p class="mb-2 text-gray-9">Solid Colors</p>
+                       <p class="mb-2 text-gray-9">Colores Sólidos</p>
                        <div class="d-flex align-items-center">
                             <div class="theme-colorselect m-1 me-3">
                                 <input type="radio" name="sidebar" id="lightSidebar" value="light" checked>
@@ -250,7 +250,7 @@
                                 <div class="pickr-container-background"></div>
                             </div>
                         </div>
-                        <p class="mb-2 text-gray-9">Gradient Colors</p>
+                        <p class="mb-2 text-gray-9">Colores Degradados</p>
                         <div class="d-flex align-items-center">
                             <div class="theme-colorselect m-1 me-3">
                                 <input type="radio" name="sidebar" id="bgcolor7Sidebar" value="sidebarcolorseven">
@@ -299,7 +299,7 @@
             <div class="accordion-item border px-3">
                 <h2 class="accordion-header">
                     <button class="accordion-button text-dark fs-16 px-0 py-3 bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#modesetting" aria-expanded="true">
-                       Theme Mode
+                       Modo de Tema
                     </button>
                 </h2>
                 <div id="modesetting" class="accordion-collapse collapse show">
@@ -308,19 +308,19 @@
                             <div class="theme-mode flex-fill text-center w-100 me-3">
                                 <input type="radio" name="theme" id="lightTheme" value="light" checked>
                                 <label for="lightTheme" class="rounded fw-medium w-100">                            
-                                    <span class="d-inline-flex rounded me-2"><i class="ti ti-sun-filled"></i></span>Light
+                                    <span class="d-inline-flex rounded me-2"><i class="ti ti-sun-filled"></i></span>Claro
                                 </label>
                             </div>
                             <div class="theme-mode flex-fill text-center w-100 me-3">
                                 <input type="radio" name="theme" id="darkTheme" value="dark" >
                                 <label for="darkTheme" class="rounded fw-medium w-100">                         
-                                    <span class="d-inline-flex rounded me-2"><i class="ti ti-moon-filled"></i></span>Dark
+                                    <span class="d-inline-flex rounded me-2"><i class="ti ti-moon-filled"></i></span>Oscuro
                                 </label>
                             </div>
                             <div class="theme-mode flex-fill w-100 text-center">
                                 <input type="radio" name="theme" id="systemTheme" value="system">
                                 <label for="systemTheme" class="rounded fw-medium w-100">                         
-                                    <span class="d-inline-flex rounded me-2"><i class="ti ti-device-laptop"></i></span>System 
+                                    <span class="d-inline-flex rounded me-2"><i class="ti ti-device-laptop"></i></span>Sistema
                                 </label>
                             </div>
                         </div>
@@ -330,7 +330,7 @@
             <div class="accordion-item border px-3 layout-select">
                 <h2 class="accordion-header">
                     <button class="accordion-button text-dark fs-16 px-0 py-3 bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarbgsetting" aria-expanded="true">
-                        Sidebar Background
+                        Fondo de la Barra Lateral
                     </button>
                 </h2>
                 <div id="sidebarbgsetting" class="accordion-collapse collapse show">
@@ -379,7 +379,7 @@
             <div class="accordion-item border px-3">
                 <h2 class="accordion-header">
                     <button class="accordion-button text-dark fs-16 px-0 py-3 bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarcolor" aria-expanded="true">
-                        Theme Colors
+                        Colores del Tema
                     </button>
                 </h2>
                 <div id="sidebarcolor" class="accordion-collapse collapse show"	 >
@@ -426,7 +426,7 @@
         <div class="p-3 pt-0">
             <div class="row gx-3">
                 <div class="col-6">
-                    <a href="#" id="resetbutton" class="btn btn-light close-theme w-100"><i class="ti ti-restore me-1"></i>Reset</a>
+                    <a href="#" id="resetbutton" class="btn btn-light close-theme w-100"><i class="ti ti-restore me-1"></i>Restablecer</a>
                 </div>
                 
             </div>

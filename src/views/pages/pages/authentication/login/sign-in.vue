@@ -145,8 +145,8 @@
               <!-- Credenciales de desarrollo -->
               <div v-if="isDevelopment" class="alert alert-info mt-3">
                 <strong>Modo Desarrollo:</strong><br>
-                Email: <code>admin@prosperpos.hn</code><br>
-                Contraseña: <code>Admin123!</code>
+                Email: <code>admin@prosperpos.com</code><br>
+                Contraseña: <code>admin123</code>
               </div>
             </div>
           </form>
@@ -316,8 +316,8 @@ export default {
 
     // Auto-llenar en desarrollo
     if (isDevelopment.value) {
-      formData.email = 'admin@prosperpos.hn';
-      formData.password = 'Admin123!';
+      formData.email = 'admin@prosperpos.com';
+      formData.password = 'admin123';
     }
 
     return {

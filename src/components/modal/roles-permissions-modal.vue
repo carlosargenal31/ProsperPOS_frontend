@@ -1,103 +1,96 @@
 <template>
-  <!-- Add Role -->
+  <!-- Modal Agregar Rol -->
   <div class="modal fade" id="add-units">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <div class="page-title">
-            <h4>Create Role</h4>
-          </div>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+          <div class="page-title"><h4>Crear Rol</h4></div>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         </div>
-        <form @submit.prevent="submitForm">
+        <form @submit.prevent="handleSubmit">
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label">Role Name</label>
-              <input type="text" class="form-control" />
+              <label class="form-label">Nombre del Rol<span class="text-danger">*</span></label>
+              <input type="text" class="form-control" v-model="formData.role_name" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Descripción</label>
+              <textarea class="form-control" rows="3" v-model="formData.description"></textarea>
             </div>
             <div class="d-flex align-items-center justify-content-between">
-              <label class="form-label">Status</label>
+              <label class="form-label">Estado</label>
               <label class="switch">
-                <input type="checkbox" checked />
+                <input type="checkbox" v-model="formData.is_active" />
                 <span class="slider round"></span>
               </label>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
-              Cancel
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+              <span v-if="isSubmitting"><span class="spinner-border spinner-border-sm me-1"></span>Guardando...</span>
+              <span v-else>Crear Rol</span>
             </button>
-            <button type="submit" class="btn btn-primary">Create Role</button>
           </div>
         </form>
       </div>
     </div>
   </div>
-  <!-- /Add Role -->
 
-  <!-- Edit Role -->
+  <!-- Modal Editar Rol -->
   <div class="modal fade" id="edit_role">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <div class="page-title">
-            <h4>Edit Role</h4>
-          </div>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+          <div class="page-title"><h4>Editar Rol</h4></div>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         </div>
-        <form @submit.prevent="submitForm">
+        <form @submit.prevent="handleUpdate">
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label">Role Name</label>
-              <input type="text" class="form-control" value="sales Man" />
+              <label class="form-label">Nombre del Rol<span class="text-danger">*</span></label>
+              <input type="text" class="form-control" v-model="editFormData.role_name" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Descripción</label>
+              <textarea class="form-control" rows="3" v-model="editFormData.description"></textarea>
             </div>
             <div class="d-flex align-items-center justify-content-between">
-              <label class="form-label">Status</label>
+              <label class="form-label">Estado</label>
               <label class="switch">
-                <input type="checkbox" checked />
+                <input type="checkbox" v-model="editFormData.is_active" />
                 <span class="slider round"></span>
               </label>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
-              Cancel
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+              <span v-if="isSubmitting"><span class="spinner-border spinner-border-sm me-1"></span>Guardando...</span>
+              <span v-else>Guardar Cambios</span>
             </button>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
           </div>
         </form>
       </div>
     </div>
   </div>
-  <!-- /Edit Role -->
 
-  <!-- Delete Product -->
+  <!-- Modal Eliminar -->
   <div class="modal fade modal-default" id="delete_modal">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body p-0">
           <div class="success-wrap text-center">
-            <form @submit.prevent="submitForm">
-              <div class="icon-success bg-danger-transparent text-danger mb-2">
-                <i class="ti ti-trash"></i>
-              </div>
-              <h3 class="mb-2">Delete Role</h3>
-              <p class="fs-16 mb-3">Are you sure you want to delete role?</p>
-              <div
-                class="d-flex align-items-center justify-content-center gap-2 flex-wrap"
-              >
-                <button
-                  type="button"
-                  class="btn btn-md btn-secondary"
-                  data-bs-dismiss="modal"
-                >
-                  No, Cancel
+            <form @submit.prevent="handleDelete">
+              <div class="icon-success bg-danger-transparent text-danger mb-2"><i class="ti ti-trash"></i></div>
+              <h3 class="mb-2">Eliminar Rol</h3>
+              <p class="fs-16 mb-3">¿Está seguro que desea eliminar este rol?</p>
+              <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                <button type="button" class="btn btn-md btn-secondary" data-bs-dismiss="modal">No, Cancelar</button>
+                <button type="submit" class="btn btn-md btn-primary" :disabled="isSubmitting">
+                  <span v-if="isSubmitting"><span class="spinner-border spinner-border-sm me-1"></span>Eliminando...</span>
+                  <span v-else>Sí, Eliminar</span>
                 </button>
-                <button type="submit" class="btn btn-md btn-primary">Yes, Delete</button>
               </div>
             </form>
           </div>
@@ -105,19 +98,79 @@
       </div>
     </div>
   </div>
-  <!-- /Delete Product -->
 </template>
 
 <script>
+import { roleService } from '@/services/api.service';
+
 export default {
+  props: {
+    editMode: { type: Boolean, default: false },
+    roleData: { type: Object, default: null },
+  },
   data() {
     return {
-      methods: {
-        submitForm() {
-          this.$router.push("/users/roles-permissions");
-        },
-      },
+      formData: { role_name: '', description: '', is_active: true },
+      editFormData: { role_name: '', description: '', is_active: true },
+      isSubmitting: false,
     };
+  },
+  watch: {
+    roleData: {
+      handler(newVal) {
+        if (newVal && this.editMode) {
+          this.editFormData = { ...newVal };
+        }
+      },
+      immediate: true,
+      deep: true,
+    },
+  },
+  methods: {
+    async handleSubmit() {
+      this.isSubmitting = true;
+      try {
+        const response = await roleService.createRole(this.formData);
+        if (response.success) {
+          const modal = bootstrap.Modal.getInstance(document.getElementById('add-units'));
+          modal.hide();
+          this.resetForm();
+          this.$emit('role-saved');
+        }
+      } catch (error) {
+        alert(error.response?.data?.message || 'Error al crear rol');
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
+    async handleUpdate() {
+      this.isSubmitting = true;
+      try {
+        const response = await roleService.updateRole(this.editFormData.id, this.editFormData);
+        if (response.success) {
+          const modal = bootstrap.Modal.getInstance(document.getElementById('edit_role'));
+          modal.hide();
+          this.$emit('role-saved');
+        }
+      } catch (error) {
+        alert(error.response?.data?.message || 'Error al actualizar rol');
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
+    async handleDelete() {
+      this.isSubmitting = true;
+      try {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('delete_modal'));
+        modal.hide();
+        this.$emit('delete-confirmed');
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
+    resetForm() {
+      this.formData = { role_name: '', description: '', is_active: true };
+    },
   },
 };
 </script>
