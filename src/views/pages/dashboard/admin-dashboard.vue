@@ -24,12 +24,6 @@
         </div>
       </div>
 
-      <div class="alert bg-orange-transparent alert-dismissible fade show mb-4">
-        <div>
-          <span><i class="ti ti-info-circle fs-14 text-orange me-2"></i>Tu Producto </span> <span class="text-orange fw-semibold"> Apple Iphone 15 está Bajo en Inventario, </span> ya por debajo de 5 Pzs., <a href="javascript:void(0);" class="link-orange text-decoration-underline fw-semibold" data-bs-toggle="modal" data-bs-target="#add-stock">Agregar Stock</a>
-        </div>
-        <button type="button" class="btn-close text-gray-9 fs-14" data-bs-dismiss="alert" aria-label="Close"><i class="ti ti-x"></i></button>
-      </div>
 
       <div class="row">
         <div class="col-xl-3 col-sm-6 col-12 d-flex">

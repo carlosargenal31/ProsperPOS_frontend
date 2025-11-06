@@ -36,7 +36,7 @@
                         </a>
                         <form action="#" class="dropdown">
                             <div class="searchinputs input-group dropdown-toggle" id="dropdownMenuClickable" data-bs-toggle="dropdown" data-bs-auto-close="false">
-                                <input type="text" placeholder="Search">
+                                <input type="text" placeholder="Buscar">
                                 <div class="search-addon">
                                     <span><i class="ti ti-search"></i></span>
                                 </div>
@@ -208,15 +208,13 @@
                                 <img src="@/assets/img/profiles/avator1.jpg" alt="">
                             </span>
                             <div>
-                                <h6 class="fw-medium">John Smilga</h6>
+                                <h6 class="fw-medium">Carlos Argeñal</h6>
                                 <p>Admin</p>
                             </div>
                         </div>
-                        <router-link class="dropdown-item" to="/pages/profile"><i class="ti ti-user-circle me-2"></i>MyProfile</router-link>
-                        <router-link class="dropdown-item" to="/sales-report/sales-report"><i class="ti ti-file-text me-2"></i>Reports</router-link>
-                        <router-link class="dropdown-item" to="/settings/general-settings"><i class="ti ti-settings-2 me-2"></i>Settings</router-link>
+                        <router-link class="dropdown-item" to="/settings/general-settings"><i class="ti ti-user-circle me-2"></i>Mi Perfil</router-link>
                         <hr class="my-2">
-                        <router-link class="dropdown-item logout pb-0" to="/"><i class="ti ti-logout me-2"></i>Logout</router-link>
+                        <router-link class="dropdown-item logout pb-0" to="/"><i class="ti ti-logout me-2"></i>Cerrar sesión</router-link>
                     </div>
                 </li>
             </ul>
@@ -227,9 +225,9 @@
                 <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
                     aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
                 <div class="dropdown-menu dropdown-menu-right">
-                    <router-link class="dropdown-item" to="/pages/profile">My Profile</router-link>
-                    <router-link class="dropdown-item" to="/settings/general-settings">Settings</router-link>
-                    <router-link class="dropdown-item" to="/">Logout</router-link>
+                    <router-link class="dropdown-item" to="/pages/profile">Mi Perfil</router-link>
+                    <router-link class="dropdown-item" to="/settings/general-settings">Ajustes</router-link>
+                    <router-link class="dropdown-item" to="/">Cerrar sesión</router-link>
                 </div>
             </div>
             <!-- /Mobile Menu -->

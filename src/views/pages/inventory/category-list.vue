@@ -6,39 +6,20 @@
       <div class="page-header">
         <div class="add-item d-flex">
           <div class="page-title">
-            <h4>Category</h4>
-            <h6>Manage your categories</h6>
+            <h4>Categorías</h4>
+            <h6>Administra tus categorías</h6>
           </div>
         </div>
         <ul class="table-top-head">
-          <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"
-              ><img src="@/assets/img/icons/pdf.svg" alt="img"
-            /></a>
-          </li>
-          <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"
-              ><img src="@/assets/img/icons/excel.svg" alt="img"
-            /></a>
-          </li>
-          <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"
-              ><i class="ti ti-refresh"></i
-            ></a>
-          </li>
-          <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header" @click="toggleHeader"><i class="ti ti-chevron-up"></i></a>
-          </li>
+          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="PDF"><img src="@/assets/img/icons/pdf.svg" alt="img" /></a></li>
+          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="@/assets/img/icons/excel.svg" alt="img" /></a></li>
+          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar" @click="loadCategories"><i class="ti ti-refresh"></i></a></li>
+          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Contraer" id="collapse-header" @click="toggleHeader"><i class="ti ti-chevron-up"></i></a></li>
         </ul>
-        <div class="page-btn">
-          <a
-            href="javascript:void(0);"
-            class="btn btn-added"
-            data-bs-toggle="modal"
-            data-bs-target="#add-category"
-            ><vue-feather type="plus-circle" class="me-2"></vue-feather>Add New
-            Category</a
-          >
+        <div class="page-btn" v-if="canCreate">
+          <a href="#" class="btn btn-primary btn-md d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#add-category" @click="prepareAdd">
+            <i class="ti ti-circle-plus me-1"></i>Agregar Categoría
+          </a>
         </div>
       </div>
       <!-- /product list -->
@@ -46,104 +27,40 @@
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap row-gap-3">
           <div class="search-set">
             <div class="search-input">
-              <a href="#" class="btn-searchset"><i data-feather="search" class="feather-search"></i></a>
-              <input type="search" class="form-control form-control-sm" placeholder="Search">
+              <a href="javascript:void(0);" class="btn-searchset"><i class="ti ti-search fs-14 feather-search"></i></a>
+              <input type="search" class="form-control form-control-sm" placeholder="Buscar" v-model="searchQuery" @input="handleSearch" />
             </div>
           </div>
           <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
             <div class="dropdown me-2">
-              <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                Category
-              </a>
-              <ul class="dropdown-menu  dropdown-menu-end p-3">
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Computers</a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Electronics</a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Shoe</a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Electronics</a>
-                </li>
-              </ul>
-            </div>
-            <div class="dropdown me-2">
-              <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                Status
-              </a>
-              <ul class="dropdown-menu  dropdown-menu-end p-3">
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Computers</a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Electronics</a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Shoe</a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Electronics</a>
-                </li>
-              </ul>
-            </div>
-            <div class="dropdown">
-              <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                Sort By : Last 7 Days
-              </a>
-              <ul class="dropdown-menu  dropdown-menu-end p-3">
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Recently Added</a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Ascending</a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Desending</a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Last Month</a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1">Last 7 Days</a>
-                </li>
+              <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">{{ selectedStatusLabel }}</a>
+              <ul class="dropdown-menu dropdown-menu-end p-3">
+                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus(true)">Activo</a></li>
+                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus(false)">Inactivo</a></li>
+                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus(null)">Todos</a></li>
               </ul>
             </div>
           </div>
         </div>
         <div class="card-body">
-          <div class="table-responsive">
-            <a-table
-              class="table datanew"
-              :columns="columns"
-              :data-source="data"
-              :row-selection="{}"
-            >
+          <div v-if="loading" class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>
+          <div v-else-if="error" class="alert alert-danger m-3">{{ error }}</div>
+          <div v-else class="custom-datatable-filter table-responsive">
+            <a-table class="table datatable thead-light" :columns="columns" :data-source="categories" :row-selection="rowSelection" :pagination="paginationConfig" @change="handleTableChange">
               <template #bodyCell="{ column, record }">
-                <template v-if="column.key === 'Status'">
-                    <span class="badge bg-success fw-medium fs-10">{{ record.Status }}</span>
+                <template v-if="column.key === 'id'"><div><span class="badge bg-light text-dark">CAT-{{ String(record.id).padStart(4, '0') }}</span></div></template>
+                <template v-else-if="column.key === 'name'"><div>{{ record.name }}</div></template>
+                <template v-else-if="column.key === 'description'"><div>{{ record.description || '-' }}</div></template>
+                <template v-else-if="column.key === 'created_at'"><div>{{ formatDate(record.created_at) }}</div></template>
+                <template v-else-if="column.key === 'is_active'">
+                  <span :class="['badge d-inline-flex align-items-center badge-xs', record.is_active ? 'badge-success' : 'badge-danger']">
+                    <i class="ti ti-point-filled me-1"></i>{{ record.is_active ? 'Activo' : 'Inactivo' }}
+                  </span>
                 </template>
                 <template v-else-if="column.key === 'action'">
-                  <div class="action-table-data">
-                    <div class="edit-delete-action">
-                      <a
-                        class="me-2 p-2"
-                        href="javascript:void(0);"
-                        data-bs-toggle="modal"
-                        data-bs-target="#edit-category"
-                      >
-                        <i data-feather="edit" class="feather-edit"></i>
-                      </a>
-                      <a
-                        class="confirm-text p-2"
-                        @click="showConfirmation"
-                        href="javascript:void(0);"
-                      >
-                        <i data-feather="trash-2" class="feather-trash-2"></i>
-                      </a>
-                    </div>
+                  <div class="action-icon d-inline-flex">
+                    <a v-if="canEdit" href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#edit-category" @click="editCategory(record)" title="Editar"><i class="ti ti-edit"></i></a>
+                    <a v-if="canDelete" href="#" data-bs-toggle="modal" data-bs-target="#delete_modal" class="d-flex align-items-center p-2 border rounded" @click="confirmDelete(record)" title="Eliminar"><i class="ti ti-trash"></i></a>
                   </div>
                 </template>
               </template>
@@ -154,131 +71,135 @@
       <!-- /product list -->
     </div>
   </div>
-  <category-list-modal></category-list-modal>
 </template>
 <script>
+import { categoryService } from '@/services/api.service';
+import { hasPermission } from '@/utils/permissions';
+
 const columns = [
-  {
-    title: "Category",
-    dataIndex: "Category",
-    sorter: {
-      compare: (a, b) => {
-        a = a.Category.toLowerCase();
-        b = b.Category.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "Category slug",
-    dataIndex: "Categoryslug",
-    sorter: {
-      compare: (a, b) => {
-        a = a.Categoryslug.toLowerCase();
-        b = b.Categoryslug.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "Created On",
-    dataIndex: "CreatedOn",
-    sorter: {
-      compare: (a, b) => {
-        a = a.CreatedOn.toLowerCase();
-        b = b.CreatedOn.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "Status",
-    dataIndex: "Status",
-    key: "Status",
-    sorter: {
-      compare: (a, b) => {
-        a = a.Status.toLowerCase();
-        b = b.Status.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "",
-    key: "action",
-    sorter: true,
-  },
+  { title: 'Código', dataIndex: 'id', key: 'id', sorter: true, width: 100 },
+  { title: 'Categoría', dataIndex: 'name', key: 'name', sorter: true },
+  { title: 'Descripción', dataIndex: 'description', key: 'description', sorter: false },
+  { title: 'Fecha de Creación', dataIndex: 'created_at', key: 'created_at', sorter: true },
+  { title: 'Estado', dataIndex: 'is_active', key: 'is_active', sorter: true },
+  { title: '', key: 'action', sorter: false },
 ];
-const data = [
-  {
-    Category: "Laptop",
-    Categoryslug: "laptop",
-    CreatedOn: "25 May 2024",
-    Status: "Active",
-  },
-  {
-    Category: "Electronics",
-    Categoryslug: "electronics",
-    CreatedOn: "24 Jun 2024",
-    Status: "Active",
-  },
-  {
-    Category: "Shoe",
-    Categoryslug: "shoe",
-    CreatedOn: "23 Jul 2024",
-    Status: "Active",
-  },
-  {
-    Category: "Speaker",
-    Categoryslug: "speaker",
-    CreatedOn: "22 Aug 2024",
-    Status: "Active",
-  },
-  {
-    Category: "Furniture",
-    Categoryslug: "furniture",
-    CreatedOn: "21 Sep 2024",
-    Status: "Active",
-  },
-  {
-    Category: "Bags",
-    Categoryslug: "bags",
-    CreatedOn: "20 Sep 2024",
-    Status: "Active",
-  },
-  {
-    Category: "Phone",
-    Categoryslug: "phone",
-    CreatedOn: "20 Sep 2024",
-    Status: "Active",
-  },
-  {
-    Category: "Chairs",
-    Categoryslug: "chairs",
-    CreatedOn: "20 Sep 2024",
-    Status: "Active",
-  },
-];
-import { ref } from "vue";
-const currentDate = ref(new Date());
+
 export default {
+  computed: {
+    canCreate() {
+      return hasPermission('categories.create');
+    },
+    canEdit() {
+      return hasPermission('categories.update');
+    },
+    canDelete() {
+      return hasPermission('categories.delete');
+    }
+  },
   data() {
     return {
-      filter: false,
-      startdate: currentDate,
-      dateFormat: "dd-MM-yyyy",
-      CategoryListSort: ["Sort by Date", "Newest", "Oldest"],
-      CategorySelect: ["Choose Category", "Laptop", "Electronics", "Shoe"],
-      CategoryStatus: ["Choose Status", "Active", "Inactive"],
-      data,
+      categories: [],
       columns,
+      loading: false,
+      error: null,
+      searchQuery: '',
+      selectedStatus: null,
+      selectedStatusLabel: 'Estado',
+      editMode: false,
+      selectedCategory: null,
+      categoryToDelete: null,
+      paginationConfig: { current: 1, pageSize: 10, total: 0, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'] },
+      rowSelection: { onChange: () => {}, onSelect: () => {}, onSelectAll: () => {} },
     };
   },
+  mounted() {
+    this.loadCategories();
+  },
   methods: {
-    toggleHeader() {
-      document.getElementById("collapse-header").classList.toggle("active");
-      document.body.classList.toggle("header-collapse");
+    async loadCategories() {
+      this.loading = true;
+      this.error = null;
+      try {
+        const params = { page: this.paginationConfig.current, limit: this.paginationConfig.pageSize };
+        if (this.searchQuery) params.search = this.searchQuery;
+        if (this.selectedStatus !== null) params.is_active = this.selectedStatus;
+        const response = await categoryService.getCategories(params);
+        if (response.success) {
+          // El backend devuelve directamente el array en response.data
+          this.categories = Array.isArray(response.data) ? response.data : [];
+          this.paginationConfig.total = this.categories.length;
+        }
+      } catch (error) {
+        this.error = error.response?.data?.message || 'Error al cargar categorías';
+        console.error('Error al cargar categorías:', error);
+      } finally {
+        this.loading = false;
+      }
     },
+    handleSearch() {
+      clearTimeout(this.searchTimeout);
+      this.searchTimeout = setTimeout(() => {
+        this.paginationConfig.current = 1;
+        this.loadCategories();
+      }, 500);
+    },
+    filterByStatus(status) {
+      this.selectedStatus = status;
+      this.selectedStatusLabel = status === null ? 'Estado' : (status ? 'Activo' : 'Inactivo');
+      this.paginationConfig.current = 1;
+      this.loadCategories();
+    },
+    handleTableChange(pagination) {
+      this.paginationConfig.current = pagination.current;
+      this.paginationConfig.pageSize = pagination.pageSize;
+      this.loadCategories();
+    },
+    prepareAdd() {
+      this.cleanupModals();
+      this.editMode = false;
+      this.selectedCategory = null;
+    },
+    editCategory(category) {
+      this.cleanupModals();
+      this.editMode = true;
+      this.selectedCategory = { ...category };
+    },
+    confirmDelete(category) {
+      this.categoryToDelete = category;
+    },
+    async deleteCategory() {
+      if (!this.categoryToDelete) return;
+      try {
+        const response = await categoryService.deleteCategory(this.categoryToDelete.id);
+        if (response.success) this.loadCategories();
+      } catch (error) {
+        console.error('Error al eliminar categoría:', error);
+      }
+    },
+    handleCategorySaved() {
+      this.editMode = false;
+      this.selectedCategory = null;
+      this.loadCategories();
+    },
+    formatDate(dateString) {
+      if (!dateString) return '';
+      return new Date(dateString).toLocaleDateString('es-HN', { year: 'numeric', month: 'short', day: 'numeric' });
+    },
+    toggleHeader() {
+      document.getElementById('collapse-header').classList.toggle('active');
+      document.body.classList.toggle('header-collapse');
+    },
+    cleanupModals() {
+      const backdrops = document.querySelectorAll('.modal-backdrop');
+      backdrops.forEach(backdrop => backdrop.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    },
+  },
+  beforeUnmount() {
+    this.cleanupModals();
   },
 };
 </script>

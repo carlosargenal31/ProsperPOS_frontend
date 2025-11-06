@@ -212,6 +212,7 @@
 
 <script>
 import { userService } from '@/services/api.service';
+import { Modal } from 'bootstrap';
 
 export default {
   name: 'UsersListModal',
@@ -331,17 +332,19 @@ export default {
         if (response.success) {
           // Emitir evento de éxito
           this.$emit('userSaved');
-          
+
           // Cerrar modal
           const modalElement = document.getElementById(this.editMode ? 'edit-user' : 'add-user');
-          const modal = window.bootstrap.Modal.getInstance(modalElement);
-          if (modal) {
-            modal.hide();
+          if (modalElement) {
+            const modal = Modal.getInstance(modalElement);
+            if (modal) {
+              modal.hide();
+            }
           }
-          
+
           // Resetear formulario
           this.resetForm();
-          
+
           // Mostrar mensaje de éxito (opcional)
           console.log('Usuario guardado exitosamente');
         }

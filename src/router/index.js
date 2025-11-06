@@ -254,7 +254,7 @@ const routes = [
       { path: '', redirect: '/users/users-list' },
       { path: "users-list", component: () => import('@/views/pages/users/users-list.vue') },
       { path: "roles-permissions", component: () => import('@/views/pages/users/roles-permissions.vue') },
-      { path: "permissions", component: () => import('@/views/pages/users/pos-permissions.vue') },
+      { path: "permissions", component: () => import('@/views/pages/users/permissions.vue') },
       { path: "delete-account", component: () => import('@/views/pages/users/delete-account.vue') },
     ]
   },

@@ -61,11 +61,12 @@
 
 <script>
 import side_bar_data from "@/assets/json/sidebar.json";
+import { canAccessModule } from '@/utils/permissions';
 
 export default {
   data() {
       return {
-          side_bar_data: side_bar_data,
+          side_bar_data: this.filterSidebarByPermissions(side_bar_data),
           openMenuItem: null,
           openSubmenuOneItem: null,
       }
@@ -113,7 +114,7 @@ export default {
       OpenMenu(menu) {
           this.side_bar_data.forEach((item) => {
               item.menu.forEach((subMenu) => {
-                  subMenu.showSubRoute = false; 
+                  subMenu.showSubRoute = false;
               });
           });
           this.openMenuItem = this.openMenuItem === menu ? null : menu;
@@ -121,6 +122,99 @@ export default {
       openSubmenuOne(subMenus) {
           this.openSubmenuOneItem = this.openSubmenuOneItem === subMenus ? null : subMenus;
       },
+
+      /**
+       * Mapa de rutas a módulos de permisos
+       */
+      getModuleForRoute(route) {
+          const moduleMapping = {
+              '/users/users-list': 'users',
+              '/users/roles-permissions': 'roles',
+              '/users/delete-account': 'users',
+              '/inventory/product-list': 'products',
+              '/inventory/category-list': 'categories',
+              '/inventory/sub-categories': 'categories',
+              '/inventory/brand-list': 'brands',
+              '/inventory/units': 'products',
+              '/inventory/barcode': 'products',
+              '/ecommerce/customers': 'customers',
+              '/people/suppliers': 'suppliers',
+              '/people/store-list': 'stores',
+              '/people/warehouse': 'warehouses',
+              '/sales': 'sales',
+              '/sales/sales-returns': 'sales',
+              '/sales/pos-orders': 'sales',
+              '/sales/online-orders': 'sales',
+              '/sales/quotation-list': 'quotations',
+              '/purchases/purchase-list': 'purchases',
+              '/purchases/purchase-returns': 'purchases',
+              '/reports/purchase-report': 'purchases',
+              '/reports/invoice-report': 'reports',
+              '/sales-report/sales-report': 'reports',
+              '/sales-report/best-sellers': 'reports',
+              '/supplier-report/supplier-report': 'reports',
+              '/customer-report/customer-report': 'reports',
+              '/reports/profit-and-loss': 'reports',
+              '/reports/annual-report': 'reports',
+              '/stock/manage-stocks': 'inventory',
+              '/stock/stock-adjustment': 'inventory',
+              '/inventory-report/inventory-report': 'inventory',
+              '/inventory-report/stock-history': 'inventory',
+              '/inventory-report/sold-stock': 'inventory',
+              '/hrm/employees-grid': 'employees',
+              '/hrm/department-grid': 'employees',
+              '/hrm/designation': 'employees',
+              '/coupons': 'sales',
+              '/discount/discount-list': 'sales',
+              '/pos/pos-5': 'sales',
+          };
+
+          return moduleMapping[route] || null;
+      },
+
+      /**
+       * Filtrar sidebar basado en permisos del usuario
+       */
+      filterSidebarByPermissions(sidebarData) {
+          return sidebarData.map(section => {
+              // Filtrar menús de cada sección
+              const filteredMenu = section.menu.filter(menu => {
+                  // Si no tiene ruta y no tiene submenús, mostrar por defecto (Dashboard, Ajustes, etc.)
+                  if (!menu.route && !menu.subMenus) {
+                      return true;
+                  }
+
+                  // Si tiene ruta directa, verificar permiso
+                  if (menu.route && !menu.hasSubRoute) {
+                      const module = this.getModuleForRoute(menu.route);
+                      // Si no hay módulo definido, mostrar por defecto (páginas sin permisos)
+                      if (!module) return true;
+                      return canAccessModule(module);
+                  }
+
+                  // Si tiene submenús, filtrar los submenús
+                  if (menu.subMenus && menu.subMenus.length > 0) {
+                      menu.subMenus = menu.subMenus.filter(subMenu => {
+                          if (!subMenu.route) return true;
+
+                          const module = this.getModuleForRoute(subMenu.route);
+                          if (!module) return true;
+                          return canAccessModule(module);
+                      });
+
+                      // Solo mostrar el menú padre si tiene al menos un submenú visible
+                      return menu.subMenus.length > 0;
+                  }
+
+                  return true;
+              });
+
+              return {
+                  ...section,
+                  menu: filteredMenu
+              };
+          }).filter(section => section.menu.length > 0); // Remover secciones vacías
+      }
   }
 }
 </script>

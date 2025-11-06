@@ -64,7 +64,7 @@
           />
         </div>
         <div class="text-start sidebar-profile-info ms-2">
-          <h6 class="fs-14 fw-bold mb-1">Adrian Herman</h6>
+          <h6 class="fs-14 fw-bold mb-1">Carlos Argeñal</h6>
           <p class="fs-12">Sem Admin</p>
         </div>
       </div>

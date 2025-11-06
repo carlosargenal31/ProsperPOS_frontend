@@ -11,7 +11,7 @@
           <div class="modal-body">
             <div class="mb-3">
               <label class="form-label">Nombre del Rol<span class="text-danger">*</span></label>
-              <input type="text" class="form-control" v-model="formData.role_name" required />
+              <input type="text" class="form-control" v-model="formData.name" required />
             </div>
             <div class="mb-3">
               <label class="form-label">Descripción</label>
@@ -49,7 +49,7 @@
           <div class="modal-body">
             <div class="mb-3">
               <label class="form-label">Nombre del Rol<span class="text-danger">*</span></label>
-              <input type="text" class="form-control" v-model="editFormData.role_name" required />
+              <input type="text" class="form-control" v-model="editFormData.name" required />
             </div>
             <div class="mb-3">
               <label class="form-label">Descripción</label>
@@ -102,16 +102,20 @@
 
 <script>
 import { roleService } from '@/services/api.service';
+import { Modal } from 'bootstrap';
 
 export default {
+  // Declarar eventos emitidos
+  emits: ['roleSaved', 'deleteConfirmed'],
+
   props: {
     editMode: { type: Boolean, default: false },
     roleData: { type: Object, default: null },
   },
   data() {
     return {
-      formData: { role_name: '', description: '', is_active: true },
-      editFormData: { role_name: '', description: '', is_active: true },
+      formData: { name: '', description: '', is_active: true },
+      editFormData: { name: '', description: '', is_active: true },
       isSubmitting: false,
     };
   },
@@ -127,18 +131,54 @@ export default {
     },
   },
   methods: {
+    generateSlug(name) {
+      return name
+        .toLowerCase()
+        .trim()
+        .replace(/[áàäâ]/g, 'a')
+        .replace(/[éèëê]/g, 'e')
+        .replace(/[íìïî]/g, 'i')
+        .replace(/[óòöô]/g, 'o')
+        .replace(/[úùüû]/g, 'u')
+        .replace(/ñ/g, 'n')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '_')
+        .replace(/-+/g, '_');
+    },
     async handleSubmit() {
       this.isSubmitting = true;
       try {
-        const response = await roleService.createRole(this.formData);
+        // Generar slug automáticamente desde el nombre
+        const slug = this.generateSlug(this.formData.name);
+        const dataToSend = {
+          ...this.formData,
+          slug: slug
+        };
+
+        const response = await roleService.createRole(dataToSend);
         if (response.success) {
-          const modal = bootstrap.Modal.getInstance(document.getElementById('add-units'));
-          modal.hide();
+          // Cerrar modal primero
+          const modalElement = document.getElementById('add-units');
+          const modal = Modal.getInstance(modalElement);
+          if (modal) {
+            modal.hide();
+          }
+
+          // Limpiar después de un pequeño delay
+          setTimeout(() => {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+          }, 300);
+
           this.resetForm();
-          this.$emit('role-saved');
+          this.$emit('roleSaved');
         }
       } catch (error) {
-        alert(error.response?.data?.message || 'Error al crear rol');
+        const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Error al crear rol';
+        alert(errorMessage);
       } finally {
         this.isSubmitting = false;
       }
@@ -146,14 +186,36 @@ export default {
     async handleUpdate() {
       this.isSubmitting = true;
       try {
-        const response = await roleService.updateRole(this.editFormData.id, this.editFormData);
+        // Generar slug automáticamente si el nombre cambió
+        const slug = this.generateSlug(this.editFormData.name);
+        const dataToSend = {
+          ...this.editFormData,
+          slug: slug
+        };
+
+        const response = await roleService.updateRole(this.editFormData.id, dataToSend);
         if (response.success) {
-          const modal = bootstrap.Modal.getInstance(document.getElementById('edit_role'));
-          modal.hide();
-          this.$emit('role-saved');
+          // Cerrar modal primero
+          const modalElement = document.getElementById('edit_role');
+          const modal = Modal.getInstance(modalElement);
+          if (modal) {
+            modal.hide();
+          }
+
+          // Limpiar después de un pequeño delay
+          setTimeout(() => {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+          }, 300);
+
+          this.$emit('roleSaved');
         }
       } catch (error) {
-        alert(error.response?.data?.message || 'Error al actualizar rol');
+        const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Error al actualizar rol';
+        alert(errorMessage);
       } finally {
         this.isSubmitting = false;
       }
@@ -161,15 +223,29 @@ export default {
     async handleDelete() {
       this.isSubmitting = true;
       try {
-        const modal = bootstrap.Modal.getInstance(document.getElementById('delete_modal'));
-        modal.hide();
-        this.$emit('delete-confirmed');
+        // Cerrar modal primero
+        const modalElement = document.getElementById('delete_modal');
+        const modal = Modal.getInstance(modalElement);
+        if (modal) {
+          modal.hide();
+        }
+
+        // Limpiar después de un pequeño delay
+        setTimeout(() => {
+          const backdrops = document.querySelectorAll('.modal-backdrop');
+          backdrops.forEach(backdrop => backdrop.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+        }, 300);
+
+        this.$emit('deleteConfirmed');
       } finally {
         this.isSubmitting = false;
       }
     },
     resetForm() {
-      this.formData = { role_name: '', description: '', is_active: true };
+      this.formData = { name: '', description: '', is_active: true };
     },
   },
 };

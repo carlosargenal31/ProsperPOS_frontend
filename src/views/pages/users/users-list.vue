@@ -32,7 +32,7 @@
             </a>
           </li>
         </ul>
-        <div class="page-btn">
+        <div class="page-btn" v-if="canCreateUsers">
           <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-user" @click="prepareAddUser">
             <i class="ti ti-circle-plus me-1"></i>Agregar Usuario
           </a>
@@ -153,28 +153,31 @@
                 <template v-else-if="column.key === 'action'">
                   <div class="action-table-data">
                     <div class="edit-delete-action">
-                      <a 
-                        class="me-2 p-2 mb-0" 
-                        href="javascript:void(0);" 
+                      <a
+                        v-if="canViewUsers"
+                        class="me-2 p-2 mb-0"
+                        href="javascript:void(0);"
                         @click="viewUser(record)"
                         data-bs-toggle="tooltip"
                         title="Ver detalles"
                       >
                         <i data-feather="eye" class="action-eye"></i>
                       </a>
-                      <a 
-                        class="me-2 p-2 mb-0" 
-                        href="javascript:void(0);" 
-                        @click="editUser(record)" 
-                        data-bs-toggle="modal" 
+                      <a
+                        v-if="canEditUsers"
+                        class="me-2 p-2 mb-0"
+                        href="javascript:void(0);"
+                        @click="editUser(record)"
+                        data-bs-toggle="modal"
                         data-bs-target="#edit-user"
                         title="Editar"
                       >
                         <i data-feather="edit" class="feather-edit"></i>
                       </a>
-                      <a 
-                        class="p-2 mb-0 confirm-text" 
-                        href="javascript:void(0);" 
+                      <a
+                        v-if="canDeleteUsers"
+                        class="p-2 mb-0 confirm-text"
+                        href="javascript:void(0);"
                         @click="confirmDelete(record)"
                         title="Eliminar"
                       >
@@ -204,6 +207,71 @@
     @userSaved="handleUserSaved"
   />
 
+  <!-- Modal de Visualización de Usuario -->
+  <div class="modal fade" id="view-user-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="ti ti-user me-2"></i>Detalles del Usuario
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" v-if="selectedUser">
+          <div class="row">
+            <div class="col-12 mb-3 text-center">
+              <div class="avatar avatar-xxl rounded-circle bg-primary-light mx-auto mb-2">
+                <span class="fs-24 text-primary fw-semibold">
+                  {{ selectedUser.first_name?.charAt(0) }}{{ selectedUser.last_name?.charAt(0) }}
+                </span>
+              </div>
+              <h5>{{ selectedUser.full_name || selectedUser.first_name + ' ' + selectedUser.last_name }}</h5>
+              <span class="badge" :class="{
+                'bg-success': selectedUser.status === 'active',
+                'bg-danger': selectedUser.status === 'inactive',
+                'bg-warning': selectedUser.status === 'suspended'
+              }">
+                {{ selectedUser.status === 'active' ? 'Activo' : selectedUser.status === 'inactive' ? 'Inactivo' : 'Suspendido' }}
+              </span>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label text-muted fw-semibold">Email</label>
+              <p class="mb-0">{{ selectedUser.email }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label text-muted fw-semibold">Teléfono</label>
+              <p class="mb-0">{{ selectedUser.phone || 'N/A' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label text-muted fw-semibold">Rol</label>
+              <p class="mb-0">{{ selectedUser.role_name || 'N/A' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label text-muted fw-semibold">Tienda</label>
+              <p class="mb-0">{{ selectedUser.store_name || 'N/A' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label text-muted fw-semibold">Último login</label>
+              <p class="mb-0">{{ selectedUser.last_login || 'Nunca' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label text-muted fw-semibold">Fecha de creación</label>
+              <p class="mb-0">{{ selectedUser.created_at || 'N/A' }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="ti ti-x me-1"></i>Cerrar
+          </button>
+          <button type="button" class="btn btn-primary" @click="editUser(selectedUser)" data-bs-dismiss="modal">
+            <i class="ti ti-edit me-1"></i>Editar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal de Confirmación de Eliminación -->
   <div class="modal fade" id="delete-user-modal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -225,10 +293,10 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             <i class="ti ti-x me-1"></i>Cancelar
           </button>
-          <button 
-            type="button" 
-            class="btn btn-danger" 
-            @click="deleteUser" 
+          <button
+            type="button"
+            class="btn btn-danger"
+            @click="deleteUser"
             data-bs-dismiss="modal"
             :disabled="isDeleting"
           >
@@ -250,6 +318,8 @@
 import { userService, roleService } from '@/services/api.service';
 import feather from 'feather-icons';
 import UsersListModal from '@/components/modal/users-list-modal.vue';
+import { Modal } from 'bootstrap';
+import { hasPermission } from '@/utils/permissions';
 
 const columns = [
   { title: 'Usuario', dataIndex: 'full_name', key: 'full_name', sorter: true, width: 300 },
@@ -261,11 +331,26 @@ const columns = [
 
 export default {
   name: 'UsersList',
-  
+
   components: {
     UsersListModal
   },
-  
+
+  computed: {
+    canCreateUsers() {
+      return hasPermission('users.create');
+    },
+    canViewUsers() {
+      return hasPermission('users.read') || hasPermission('users.view');
+    },
+    canEditUsers() {
+      return hasPermission('users.update');
+    },
+    canDeleteUsers() {
+      return hasPermission('users.delete');
+    }
+  },
+
   data() {
     return {
       users: [],
@@ -401,19 +486,40 @@ export default {
     
     viewUser(user) {
       console.log('Ver detalles del usuario:', user);
-      // Aquí puedes abrir un modal de detalles o redirigir a una página de detalles
+      this.selectedUser = { ...user };
+
+      // Abrir modal de visualización
+      this.$nextTick(() => {
+        const modalElement = document.getElementById('view-user-modal');
+        if (modalElement) {
+          const modal = new Modal(modalElement);
+          modal.show();
+        }
+      });
     },
     
     editUser(user) {
       console.log('Editar usuario:', user);
       this.editMode = true;
       this.selectedUser = { ...user };
+
+      // Abrir modal de edición
+      this.$nextTick(() => {
+        const modalElement = document.getElementById('edit-user');
+        if (modalElement) {
+          const modal = new Modal(modalElement);
+          modal.show();
+        }
+      });
     },
     
     confirmDelete(user) {
       this.userToDelete = user;
-      const modal = new window.bootstrap.Modal(document.getElementById('delete-user-modal'));
-      modal.show();
+      const modalElement = document.getElementById('delete-user-modal');
+      if (modalElement) {
+        const modal = new Modal(modalElement);
+        modal.show();
+      }
     },
     
     async deleteUser() {

@@ -537,6 +537,14 @@
         "active_link": "/users/users-list",
         "hasSubRoute": false,
         "showSubRoute": false
+      },
+      {
+        "menuValue": "Manual Tecnico",
+        "icon": "ti ti-file-text",
+        "route": "/users/users-list",
+        "active_link": "/users/users-list",
+        "hasSubRoute": false,
+        "showSubRoute": false
       }
     ]
   }

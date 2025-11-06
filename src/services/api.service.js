@@ -281,6 +281,130 @@ export const permissionService = {
 };
 
 // ===================================================================
+// SERVICIO DE CATEGORÍAS
+// ===================================================================
+
+export const categoryService = {
+  async getCategories(params = {}) {
+    const response = await apiClient.get('/categories', { params });
+    return response.data;
+  },
+
+  async getActiveCategories() {
+    const response = await apiClient.get('/categories/active');
+    return response.data;
+  },
+
+  async getCategoryById(id, params = {}) {
+    const response = await apiClient.get(`/categories/${id}`, { params });
+    return response.data;
+  },
+
+  async createCategory(categoryData) {
+    const response = await apiClient.post('/categories', categoryData);
+    return response.data;
+  },
+
+  async updateCategory(id, categoryData) {
+    const response = await apiClient.put(`/categories/${id}`, categoryData);
+    return response.data;
+  },
+
+  async deleteCategory(id) {
+    const response = await apiClient.delete(`/categories/${id}`);
+    return response.data;
+  },
+
+  async getStats() {
+    const response = await apiClient.get('/categories/stats');
+    return response.data;
+  }
+};
+
+// ===================================================================
+// SERVICIO DE SUBCATEGORÍAS
+// ===================================================================
+
+export const subcategoryService = {
+  async getSubcategories(params = {}) {
+    const response = await apiClient.get('/subcategories', { params });
+    return response.data;
+  },
+
+  async getActiveSubcategories(categoryId = null) {
+    const params = categoryId ? { category_id: categoryId } : {};
+    const response = await apiClient.get('/subcategories/active', { params });
+    return response.data;
+  },
+
+  async getSubcategoryById(id, params = {}) {
+    const response = await apiClient.get(`/subcategories/${id}`, { params });
+    return response.data;
+  },
+
+  async createSubcategory(subcategoryData) {
+    const response = await apiClient.post('/subcategories', subcategoryData);
+    return response.data;
+  },
+
+  async updateSubcategory(id, subcategoryData) {
+    const response = await apiClient.put(`/subcategories/${id}`, subcategoryData);
+    return response.data;
+  },
+
+  async deleteSubcategory(id) {
+    const response = await apiClient.delete(`/subcategories/${id}`);
+    return response.data;
+  },
+
+  async getStats() {
+    const response = await apiClient.get('/subcategories/stats');
+    return response.data;
+  }
+};
+
+// ===================================================================
+// SERVICIO DE MARCAS
+// ===================================================================
+
+export const brandService = {
+  async getBrands(params = {}) {
+    const response = await apiClient.get('/brands', { params });
+    return response.data;
+  },
+
+  async getActiveBrands() {
+    const response = await apiClient.get('/brands/active');
+    return response.data;
+  },
+
+  async getBrandById(id, params = {}) {
+    const response = await apiClient.get(`/brands/${id}`, { params });
+    return response.data;
+  },
+
+  async createBrand(brandData) {
+    const response = await apiClient.post('/brands', brandData);
+    return response.data;
+  },
+
+  async updateBrand(id, brandData) {
+    const response = await apiClient.put(`/brands/${id}`, brandData);
+    return response.data;
+  },
+
+  async deleteBrand(id) {
+    const response = await apiClient.delete(`/brands/${id}`);
+    return response.data;
+  },
+
+  async getStats() {
+    const response = await apiClient.get('/brands/stats');
+    return response.data;
+  }
+};
+
+// ===================================================================
 // EXPORTAR API CLIENT
 // ===================================================================
 

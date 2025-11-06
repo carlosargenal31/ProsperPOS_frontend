@@ -16,7 +16,7 @@
           <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar" @click="loadRoles"><i class="ti ti-refresh"></i></a></li>
           <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Contraer" id="collapse-header" @click="toggleHeader"><i class="ti ti-chevron-up"></i></a></li>
         </ul>
-        <div class="page-btn">
+        <div class="page-btn" v-if="canCreateRoles">
           <a href="#" class="btn btn-primary btn-md d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#add-units" @click="prepareAddRole">
             <i class="ti ti-circle-plus me-1"></i>Agregar Rol
           </a>
@@ -47,7 +47,7 @@
           <div v-else class="custom-datatable-filter table-responsive">
             <a-table class="table datatable thead-light" :columns="columns" :data-source="roles" :row-selection="rowSelection" :pagination="paginationConfig" @change="handleTableChange">
               <template #bodyCell="{ column, record }">
-                <template v-if="column.key === 'role_name'"><div>{{ record.role_name }}</div></template>
+                <template v-if="column.key === 'name'"><div>{{ record.name }}</div></template>
                 <template v-else-if="column.key === 'created_at'"><div>{{ formatDate(record.created_at) }}</div></template>
                 <template v-else-if="column.key === 'is_active'">
                   <span :class="['badge d-inline-flex align-items-center badge-xs', record.is_active ? 'badge-success' : 'badge-danger']">
@@ -56,9 +56,9 @@
                 </template>
                 <template v-else-if="column.key === 'action'">
                   <div class="action-icon d-inline-flex">
-                    <router-link :to="`/users/permissions/${record.id}`" class="me-2 d-flex align-items-center p-2 border rounded"><i class="ti ti-shield"></i></router-link>
-                    <a href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#edit_role" @click="editRole(record)"><i class="ti ti-edit"></i></a>
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#delete_modal" class="d-flex align-items-center p-2 border rounded" @click="confirmDelete(record)"><i class="ti ti-trash"></i></a>
+                    <a v-if="canManagePermissions" href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#permissions_modal" @click="managePermissions(record)" title="Gestionar Permisos"><i class="ti ti-shield"></i></a>
+                    <a v-if="canEditRoles" href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#edit_role" @click="editRole(record)" title="Editar"><i class="ti ti-edit"></i></a>
+                    <a v-if="canDeleteRoles" href="#" data-bs-toggle="modal" data-bs-target="#delete_modal" class="d-flex align-items-center p-2 border rounded" @click="confirmDelete(record)" title="Eliminar"><i class="ti ti-trash"></i></a>
                   </div>
                 </template>
               </template>
@@ -73,19 +73,39 @@
     </div>
   </div>
   <roles-permissions-modal :edit-mode="editMode" :role-data="selectedRole" @role-saved="handleRoleSaved" @delete-confirmed="deleteRole"></roles-permissions-modal>
+  <permissions-modal :role-data="selectedRoleForPermissions" @permissions-saved="handlePermissionsSaved"></permissions-modal>
 </template>
 
 <script>
 import { roleService } from '@/services/api.service';
+import PermissionsModal from '@/components/modal/permissions-modal.vue';
+import { hasPermission } from '@/utils/permissions';
 
 const columns = [
-  { title: 'Rol', dataIndex: 'role_name', key: 'role_name', sorter: true },
+  { title: 'Rol', dataIndex: 'name', key: 'name', sorter: true },
   { title: 'Fecha de Creación', dataIndex: 'created_at', key: 'created_at', sorter: true },
   { title: 'Estado', dataIndex: 'is_active', key: 'is_active', sorter: true },
   { title: '', key: 'action', sorter: false },
 ];
 
 export default {
+  components: {
+    PermissionsModal
+  },
+  computed: {
+    canCreateRoles() {
+      return hasPermission('roles.create');
+    },
+    canEditRoles() {
+      return hasPermission('roles.update');
+    },
+    canDeleteRoles() {
+      return hasPermission('roles.delete');
+    },
+    canManagePermissions() {
+      return hasPermission('roles.assign_permissions') || hasPermission('roles.update');
+    }
+  },
   data() {
     return {
       roles: [],
@@ -98,6 +118,7 @@ export default {
       editMode: false,
       selectedRole: null,
       roleToDelete: null,
+      selectedRoleForPermissions: null,
       paginationConfig: { current: 1, pageSize: 10, total: 0, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'] },
       rowSelection: { onChange: () => {}, onSelect: () => {}, onSelectAll: () => {} },
     };
@@ -115,8 +136,9 @@ export default {
         if (this.selectedStatus !== null) params.is_active = this.selectedStatus;
         const response = await roleService.getRoles(params);
         if (response.success) {
-          this.roles = response.data.roles;
-          this.paginationConfig.total = response.data.pagination.total;
+          // La estructura de respuesta es: { success, message, data: { data, pagination } }
+          this.roles = response.data.data || response.data.roles || [];
+          this.paginationConfig.total = response.data.pagination?.totalItems || response.data.pagination?.total || 0;
         }
       } catch (error) {
         this.error = error.response?.data?.message || 'Error al cargar roles';
@@ -144,12 +166,19 @@ export default {
       this.loadRoles();
     },
     prepareAddRole() {
+      // Limpiar cualquier backdrop residual antes de abrir
+      this.cleanupModals();
       this.editMode = false;
       this.selectedRole = null;
     },
     editRole(role) {
+      // Limpiar cualquier backdrop residual antes de abrir
+      this.cleanupModals();
       this.editMode = true;
       this.selectedRole = { ...role };
+    },
+    managePermissions(role) {
+      this.selectedRoleForPermissions = { ...role };
     },
     confirmDelete(role) {
       this.roleToDelete = role;
@@ -168,6 +197,10 @@ export default {
       this.selectedRole = null;
       this.loadRoles();
     },
+    handlePermissionsSaved() {
+      this.selectedRoleForPermissions = null;
+      this.loadRoles();
+    },
     formatDate(dateString) {
       if (!dateString) return '';
       return new Date(dateString).toLocaleDateString('es-HN', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -176,6 +209,20 @@ export default {
       document.getElementById('collapse-header').classList.toggle('active');
       document.body.classList.toggle('header-collapse');
     },
+    cleanupModals() {
+      // Remover todos los backdrops residuales
+      const backdrops = document.querySelectorAll('.modal-backdrop');
+      backdrops.forEach(backdrop => backdrop.remove());
+
+      // Asegurar que el body no tenga clases de modal
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    },
+  },
+  beforeUnmount() {
+    // Limpiar al desmontar el componente
+    this.cleanupModals();
   },
 };
 </script>

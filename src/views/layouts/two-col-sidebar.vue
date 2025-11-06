@@ -9,9 +9,6 @@
                         <a href="#" class="nav-link active" title="Dashboard" data-bs-toggle="tab" data-bs-target="#dashboard">
                             <i class="ti ti-smart-home"></i>
                         </a>
-                        <a href="#" class="nav-link " title="Super Admin" data-bs-toggle="tab" data-bs-target="#super-admin">
-                            <i class="ti ti-user-star"></i>
-                        </a>
                         <a href="#" class="nav-link " title="Apps" data-bs-toggle="tab" data-bs-target="#application">
                             <i class="ti ti-layout-grid-add"></i>
                         </a>
@@ -41,9 +38,6 @@
                         </a>
                         <a href="#" class="nav-link" title="Settings" data-bs-toggle="tab" data-bs-target="#settings">
                             <i class="ti ti-lock-check"></i>
-                        </a>
-                        <a href="#" class="nav-link " title="UI Elements" data-bs-toggle="tab" data-bs-target="#ui-elements">
-                            <i class="ti ti-ux-circle"></i>
                         </a>
                         <a href="#" class="nav-link" title="Extras" data-bs-toggle="tab" data-bs-target="#extras">
                             <i class="ti ti-vector-triangle"></i>

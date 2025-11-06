@@ -7,7 +7,7 @@
           <div class="content">
             <div class="modal-header">
               <div class="page-title">
-                <h4>Create Account</h4>
+                <h4>Crear Cuenta</h4>
               </div>
               <button
                 type="button"
@@ -24,7 +24,7 @@
                   <div class="col-lg-12">
                     <div class="mb-3">
                       <label class="form-label"
-                        >Account Holder Name<span class="text-danger ms-1">*</span></label
+                        >Nombre del Titular<span class="text-danger ms-1">*</span></label
                       >
                       <input type="text" class="form-control" />
                     </div>
@@ -32,7 +32,7 @@
                   <div class="col-lg-12">
                     <div class="mb-3">
                       <label class="form-label"
-                        >Account Number<span class="text-danger ms-1">*</span></label
+                        >Numero de Cuenta<span class="text-danger ms-1">*</span></label
                       >
                       <input type="text" class="form-control" />
                     </div>
@@ -40,7 +40,7 @@
                   <div class="col-lg-12">
                     <div class="mb-3">
                       <label class="form-label"
-                        >Account Type<span class="text-danger ms-1">*</span></label
+                        >Tipo de Cuenta<span class="text-danger ms-1">*</span></label
                       >
                       <vue-select
                         :options="Accounttype"
@@ -52,22 +52,22 @@
                   <div class="col-lg-12">
                     <div class="mb-3">
                       <label class="form-label"
-                        >Opening Balance<span class="text-danger ms-1">*</span></label
+                        >Saldo Inicial<span class="text-danger ms-1">*</span></label
                       >
                       <input type="text" class="form-control" value="$200" />
                     </div>
                   </div>
                   <div class="col-lg-12">
                     <div class="mb-3">
-                      <label class="form-label">Description</label>
+                      <label class="form-label">Descripción</label>
                       <textarea class="form-control"></textarea>
-                      <p class="fs-14 mt-1">Maximum 60 Words</p>
+                      <p class="fs-14 mt-1">Maximo 60 palabras</p>
                     </div>
                   </div>
                   <div class="col-lg-12">
                     <div class="mb-3">
                       <label class="form-label"
-                        >Account Status<span class="text-danger ms-1">*</span></label
+                        >Estado de la Cuenta<span class="text-danger ms-1">*</span></label
                       >
                       <vue-select
                         :options="Accountstatus"
@@ -85,10 +85,10 @@
                 class="btn me-2 btn-secondary fs-13 fw-medium p-2 px-3 shadow-none"
                 data-bs-dismiss="modal"
               >
-                Cancel
+                Cancelar
               </button>
               <button type="submit" class="btn btn-primary fs-13 fw-medium p-2 px-3">
-                Add Account
+                Agregar Cuenta
               </button>
             </div>
           </div>
@@ -106,7 +106,7 @@
           <div class="content">
             <div class="modal-header">
               <div class="page-title">
-                <h4>Edit Account</h4>
+                <h4>Editar Cuenta</h4>
               </div>
               <button
                 type="button"
@@ -123,7 +123,7 @@
                   <div class="col-lg-12">
                     <div class="mb-3">
                       <label class="form-label"
-                        >Account Holder Name<span class="text-danger ms-1">*</span></label
+                        >Nombre del Titular<span class="text-danger ms-1">*</span></label
                       >
                       <input type="text" class="form-control" />
                     </div>
@@ -131,7 +131,7 @@
                   <div class="col-lg-12">
                     <div class="mb-3">
                       <label class="form-label"
-                        >Account Number<span class="text-danger ms-1">*</span></label
+                        >Número de Cuenta<span class="text-danger ms-1">*</span></label
                       >
                       <input type="text" class="form-control" />
                     </div>
@@ -139,7 +139,7 @@
                   <div class="col-lg-12">
                     <div class="mb-3">
                       <label class="form-label"
-                        >Account Type<span class="text-danger ms-1">*</span></label
+                        >Tipo de Cuenta<span class="text-danger ms-1">*</span></label
                       >
                       <vue-select
                         :options="Accounttype"
