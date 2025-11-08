@@ -6,43 +6,34 @@
       <div class="page-header">
         <div class="add-item d-flex">
           <div class="page-title">
-            <h4>Subcategorías</h4>
-            <h6>Administra tus subcategorías</h6>
+            <h4>Unidades</h4>
+            <h6>Administra tus unidades de medida</h6>
           </div>
         </div>
         <ul class="table-top-head">
           <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="PDF"><img src="@/assets/img/icons/pdf.svg" alt="img" /></a></li>
           <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="@/assets/img/icons/excel.svg" alt="img" /></a></li>
-          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar" @click="loadSubcategories"><i class="ti ti-refresh"></i></a></li>
+          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar" @click="loadUnits"><i class="ti ti-refresh"></i></a></li>
           <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Contraer" id="collapse-header" @click="toggleHeader"><i class="ti ti-chevron-up"></i></a></li>
         </ul>
         <div class="page-btn">
-          <a href="#" class="btn btn-primary btn-md d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#add-subcategory">
-            <i class="ti ti-circle-plus me-1"></i>Agregar Subcategoría
+          <a href="#" class="btn btn-primary btn-md d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#add-unit">
+            <i class="ti ti-circle-plus me-1"></i>Agregar Unidad
           </a>
         </div>
       </div>
 
-      <!-- Lista de subcategorías -->
+      <!-- Lista de unidades -->
       <div class="card table-list-card">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap row-gap-3">
           <div class="search-set">
             <div class="search-input">
               <a href="javascript:void(0);" class="btn-searchset"><i class="ti ti-search fs-14 feather-search"></i></a>
-              <input type="search" class="form-control form-control-sm" placeholder="Buscar" v-model="searchQuery" @input="handleSearch" />
+              <input type="search" class="form-control form-control-sm" placeholder="Buscar por nombre" v-model="searchQuery" @input="handleSearch" />
             </div>
           </div>
           <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
             <div class="dropdown me-2">
-              <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">{{ selectedCategoryLabel }}</a>
-              <ul class="dropdown-menu dropdown-menu-end p-3" style="max-height: 300px; overflow-y: auto;">
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByCategory(null)">Todas las categorías</a></li>
-                <li v-for="category in categories" :key="category.id">
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByCategory(category.id)">{{ category.name }}</a>
-                </li>
-              </ul>
-            </div>
-            <div class="dropdown">
               <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">{{ selectedStatusLabel }}</a>
               <ul class="dropdown-menu dropdown-menu-end p-3">
                 <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus(true)">Activo</a></li>
@@ -61,27 +52,29 @@
           </div>
           <div v-else-if="error" class="alert alert-danger m-3">{{ error }}</div>
           <div v-else class="custom-datatable-filter table-responsive">
-            <a-table class="table datatable thead-light" :columns="columns" :data-source="subcategories" :row-selection="rowSelection" :pagination="paginationConfig" @change="handleTableChange">
+            <a-table
+              class="table datatable thead-light"
+              :columns="columns"
+              :data-source="units"
+              :row-selection="rowSelection"
+              :pagination="{
+                current: paginationConfig.current,
+                pageSize: paginationConfig.pageSize,
+                total: paginationConfig.total,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total, range) => `Mostrando ${range[0]}-${range[1]} de ${total} resultados`,
+                pageSizeOptions: ['10', '20', '50', '100'],
+                position: ['bottomCenter']
+              }"
+              @change="handleTableChange">
               <template #bodyCell="{ column, record }">
                 <template v-if="column.key === 'id'">
                   <span class="badge bg-light text-dark">{{ record.id }}</span>
                 </template>
 
-                <template v-else-if="column.key === 'image_url'">
-                  <a v-if="record.image_url" class="avatar avatar-md me-2">
-                    <img :src="record.image_url" alt="subcategoria" @error="handleImageError">
-                  </a>
-                  <div v-else class="avatar avatar-md bg-light-900 me-2 d-flex align-items-center justify-content-center">
-                    <i class="ti ti-category-2 fs-20 text-muted"></i>
-                  </div>
-                </template>
-
                 <template v-else-if="column.key === 'name'">
-                  {{ record.name }}
-                </template>
-
-                <template v-else-if="column.key === 'category_name'">
-                  <span class="badge bg-primary-light">{{ record.category_name || 'Sin categoría' }}</span>
+                  <a href="javascript:void(0);">{{ record.name }}</a>
                 </template>
 
                 <template v-else-if="column.key === 'description'">
@@ -89,7 +82,9 @@
                 </template>
 
                 <template v-else-if="column.key === 'products_count'">
-                  <span class="badge bg-info">{{ record.products_count || 0 }}</span>
+                  <div class="text-center">
+                    <span class="badge bg-info">{{ record.products_count || 0 }}</span>
+                  </div>
                 </template>
 
                 <template v-else-if="column.key === 'created_at'">
@@ -104,10 +99,10 @@
 
                 <template v-else-if="column.key === 'action'">
                   <div class="action-icon d-inline-flex">
-                    <a href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#edit-subcategory" @click="editSubcategory(record)" title="Editar">
+                    <a href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#edit-unit" @click="editUnit(record)" title="Editar">
                       <i class="ti ti-edit"></i>
                     </a>
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#delete-subcategory-modal" class="d-flex align-items-center p-2 border rounded" @click="confirmDelete(record)" title="Eliminar">
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#delete-unit-modal" class="d-flex align-items-center p-2 border rounded" @click="confirmDelete(record)" title="Eliminar">
                       <i class="ti ti-trash"></i>
                     </a>
                   </div>
@@ -119,23 +114,20 @@
       </div>
     </div>
   </div>
-  <sub-categories-modal
-    :subcategory="selectedSubcategory"
-    :subcategoryToDelete="subcategoryToDelete"
-    @saved="onSubcategorySaved"
-    @deleted="onSubcategoryDeleted"
-  ></sub-categories-modal>
+  <units-modal
+    :unit="selectedUnit"
+    :unitToDelete="unitToDelete"
+    @saved="onUnitSaved"
+    @deleted="onUnitDeleted"
+  ></units-modal>
 </template>
 
 <script>
-import { subcategoryService, categoryService } from '@/services/api.service';
-import { hasPermission } from '@/utils/permissions';
+import { unitService } from '@/services/api.service';
 
 const columns = [
   { title: 'Código', dataIndex: 'id', key: 'id', sorter: true, width: 120 },
-  { title: 'Imagen', dataIndex: 'image_url', key: 'image_url', sorter: false, width: 80 },
-  { title: 'Subcategoría', dataIndex: 'name', key: 'name', sorter: true },
-  { title: 'Categoría Padre', dataIndex: 'category_name', key: 'category_name', sorter: true, width: 150 },
+  { title: 'Unidad', dataIndex: 'name', key: 'name', sorter: true },
   { title: 'Descripción', dataIndex: 'description', key: 'description', sorter: false },
   { title: 'Productos', dataIndex: 'products_count', key: 'products_count', sorter: true, width: 100 },
   { title: 'Fecha de Creación', dataIndex: 'created_at', key: 'created_at', sorter: true, width: 150 },
@@ -144,38 +136,26 @@ const columns = [
 ];
 
 export default {
-  computed: {
-    canCreate() {
-      return hasPermission('subcategory.create');
-    },
-    canEdit() {
-      return hasPermission('subcategory.update');
-    },
-    canDelete() {
-      return hasPermission('subcategory.delete');
-    }
-  },
   data() {
     return {
-      subcategories: [],
-      categories: [],
+      units: [],
       columns,
       loading: false,
       error: null,
       searchQuery: '',
-      selectedCategory: null,
-      selectedCategoryLabel: 'Categoría',
       selectedStatus: null,
       selectedStatusLabel: 'Estado',
-      editMode: false,
-      selectedSubcategory: null,
-      subcategoryToDelete: null,
+      selectedUnit: null,
+      unitToDelete: null,
       paginationConfig: {
         current: 1,
         pageSize: 10,
         total: 0,
         showSizeChanger: true,
-        pageSizeOptions: ['10', '20', '50', '100']
+        showQuickJumper: true,
+        showTotal: (total, range) => `Mostrando ${range[0]}-${range[1]} de ${total} resultados`,
+        pageSizeOptions: ['10', '20', '50', '100'],
+        position: ['bottomCenter']
       },
       rowSelection: {
         onChange: () => {},
@@ -185,21 +165,10 @@ export default {
     };
   },
   mounted() {
-    this.loadCategories();
-    this.loadSubcategories();
+    this.loadUnits();
   },
   methods: {
-    async loadCategories() {
-      try {
-        const response = await categoryService.getActiveCategories();
-        if (response.success) {
-          this.categories = Array.isArray(response.data) ? response.data : [];
-        }
-      } catch (error) {
-        console.error('Error al cargar categorías:', error);
-      }
-    },
-    async loadSubcategories() {
+    async loadUnits() {
       this.loading = true;
       this.error = null;
       try {
@@ -209,25 +178,15 @@ export default {
         };
         if (this.searchQuery) params.search = this.searchQuery;
         if (this.selectedStatus !== null) params.is_active = this.selectedStatus;
-        if (this.selectedCategory) params.category_id = this.selectedCategory;
 
-        const response = await subcategoryService.getSubcategories(params);
-        console.log('📊 Respuesta de subcategorías:', response);
+        const response = await unitService.getUnits(params);
         if (response.success) {
-          // Convertir los datos a objetos planos para evitar problemas con Proxies
-          this.subcategories = Array.isArray(response.data)
-            ? response.data.map(item => ({...item}))
-            : [];
-          console.log('📋 Subcategorías cargadas:', this.subcategories);
-          if (this.subcategories.length > 0) {
-            console.log('🔍 Primera subcategoría:', this.subcategories[0]);
-            console.log('🔍 category_name de primera:', this.subcategories[0].category_name);
-          }
-          this.paginationConfig.total = this.subcategories.length;
+          this.units = Array.isArray(response.data) ? response.data : [];
+          this.paginationConfig.total = this.units.length;
         }
       } catch (error) {
-        this.error = error.response?.data?.message || 'Error al cargar subcategorías';
-        console.error('Error al cargar subcategorías:', error);
+        this.error = error.response?.data?.message || 'Error al cargar unidades';
+        console.error('Error al cargar unidades:', error);
       } finally {
         this.loading = false;
       }
@@ -236,37 +195,25 @@ export default {
       clearTimeout(this.searchTimeout);
       this.searchTimeout = setTimeout(() => {
         this.paginationConfig.current = 1;
-        this.loadSubcategories();
+        this.loadUnits();
       }, 500);
-    },
-    filterByCategory(categoryId) {
-      this.selectedCategory = categoryId;
-      if (categoryId === null) {
-        this.selectedCategoryLabel = 'Categoría';
-      } else {
-        const category = this.categories.find(c => c.id === categoryId);
-        this.selectedCategoryLabel = category ? category.name : 'Categoría';
-      }
-      this.paginationConfig.current = 1;
-      this.loadSubcategories();
     },
     filterByStatus(status) {
       this.selectedStatus = status;
       this.selectedStatusLabel = status === null ? 'Estado' : (status ? 'Activo' : 'Inactivo');
       this.paginationConfig.current = 1;
-      this.loadSubcategories();
+      this.loadUnits();
     },
     handleTableChange(pagination, filters, sorter) {
       this.paginationConfig.current = pagination.current;
       this.paginationConfig.pageSize = pagination.pageSize;
-      this.loadSubcategories();
+      this.loadUnits();
     },
-    editSubcategory(subcategory) {
-      this.selectedSubcategory = subcategory;
-      this.editMode = true;
+    editUnit(unit) {
+      this.selectedUnit = unit;
     },
-    confirmDelete(subcategory) {
-      this.subcategoryToDelete = subcategory;
+    confirmDelete(unit) {
+      this.unitToDelete = unit;
     },
     formatDate(dateString) {
       if (!dateString) return '-';
@@ -277,20 +224,17 @@ export default {
         day: 'numeric'
       });
     },
-    handleImageError(event) {
-      event.target.style.display = 'none';
-    },
     toggleHeader() {
       document.getElementById('collapse-header')?.classList.toggle('active');
       document.body.classList.toggle('header-collapse');
     },
-    onSubcategorySaved() {
-      this.loadSubcategories();
-      this.selectedSubcategory = null;
+    onUnitSaved() {
+      this.loadUnits();
+      this.selectedUnit = null;
     },
-    onSubcategoryDeleted() {
-      this.loadSubcategories();
-      this.subcategoryToDelete = null;
+    onUnitDeleted() {
+      this.loadUnits();
+      this.unitToDelete = null;
     }
   }
 };

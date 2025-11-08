@@ -1,25 +1,15 @@
 <template>
   <div>
-    <!-- Modal Agregar Subcategoría -->
-    <div class="modal fade" id="add-subcategory" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <!-- Modal Agregar Categoría -->
+    <div class="modal fade" id="add-category" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="addModalLabel">Nueva Subcategoría</h5>
+            <h5 class="modal-title" id="addModalLabel">Nueva Categoría</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form @submit.prevent="saveSubcategory">
-              <div class="mb-3">
-                <label class="form-label">Categoría Padre <span class="text-danger">*</span></label>
-                <select class="form-select" v-model="form.category_id" required>
-                  <option value="">Seleccionar categoría...</option>
-                  <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                    {{ cat.name }}
-                  </option>
-                </select>
-              </div>
-
+            <form @submit.prevent="saveCategory">
               <div class="mb-3">
                 <label class="form-label">Nombre <span class="text-danger">*</span></label>
                 <input
@@ -27,18 +17,8 @@
                   class="form-control"
                   v-model="form.name"
                   required
-                  placeholder="Ej: Laptops"
+                  placeholder="Ej: PORCELANATO, PAREDES, FACHALETAS"
                 />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Descripción</label>
-                <textarea
-                  class="form-control"
-                  v-model="form.description"
-                  rows="3"
-                  placeholder="Descripción de la subcategoría"
-                ></textarea>
               </div>
 
               <div class="mb-3">
@@ -47,17 +27,17 @@
                   type="text"
                   class="form-control"
                   v-model="form.image_url"
-                  placeholder="Nombre del archivo (ej: laptops.jpg)"
+                  placeholder="Nombre del archivo (ej: porcelanato.jpg)"
                 />
                 <small class="text-muted">Solo el nombre del archivo, sin ruta completa</small>
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Estado</label>
-                <select class="form-select" v-model="form.is_active">
-                  <option :value="1">Activo</option>
-                  <option :value="0">Inactivo</option>
-                </select>
+                <div class="status-toggle modal-status d-flex justify-content-between align-items-center">
+                  <span class="status-label">Estado</span>
+                  <input type="checkbox" id="category-add-status" class="check" v-model="form.is_active" />
+                  <label for="category-add-status" class="checktoggle"></label>
+                </div>
               </div>
 
               <div v-if="error" class="alert alert-danger">{{ error }}</div>
@@ -66,7 +46,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-primary" @click="saveSubcategory" :disabled="saving">
+            <button type="button" class="btn btn-primary" @click="saveCategory" :disabled="saving">
               <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
               {{ saving ? 'Guardando...' : 'Crear' }}
             </button>
@@ -75,26 +55,16 @@
       </div>
     </div>
 
-    <!-- Modal Editar Subcategoría -->
-    <div class="modal fade" id="edit-subcategory" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <!-- Modal Editar Categoría -->
+    <div class="modal fade" id="edit-category" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="editModalLabel">Editar Subcategoría</h5>
+            <h5 class="modal-title" id="editModalLabel">Editar Categoría</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form @submit.prevent="updateSubcategory">
-              <div class="mb-3">
-                <label class="form-label">Categoría Padre <span class="text-danger">*</span></label>
-                <select class="form-select" v-model="formEdit.category_id" required>
-                  <option value="">Seleccionar categoría...</option>
-                  <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                    {{ cat.name }}
-                  </option>
-                </select>
-              </div>
-
+            <form @submit.prevent="saveCategory">
               <div class="mb-3">
                 <label class="form-label">Nombre <span class="text-danger">*</span></label>
                 <input
@@ -102,18 +72,7 @@
                   class="form-control"
                   v-model="formEdit.name"
                   required
-                  placeholder="Ej: Laptops"
                 />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Descripción</label>
-                <textarea
-                  class="form-control"
-                  v-model="formEdit.description"
-                  rows="3"
-                  placeholder="Descripción de la subcategoría"
-                ></textarea>
               </div>
 
               <div class="mb-3">
@@ -122,17 +81,17 @@
                   type="text"
                   class="form-control"
                   v-model="formEdit.image_url"
-                  placeholder="Nombre del archivo (ej: laptops.jpg)"
+                  placeholder="Nombre del archivo (ej: porcelanato.jpg)"
                 />
                 <small class="text-muted">Solo el nombre del archivo, sin ruta completa</small>
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Estado</label>
-                <select class="form-select" v-model="formEdit.is_active">
-                  <option :value="1">Activo</option>
-                  <option :value="0">Inactivo</option>
-                </select>
+                <div class="status-toggle modal-status d-flex justify-content-between align-items-center">
+                  <span class="status-label">Estado</span>
+                  <input type="checkbox" id="category-edit-status" class="check" v-model="formEdit.is_active" />
+                  <label for="category-edit-status" class="checktoggle"></label>
+                </div>
               </div>
 
               <div v-if="errorEdit" class="alert alert-danger">{{ errorEdit }}</div>
@@ -141,7 +100,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-primary" @click="updateSubcategory" :disabled="savingEdit">
+            <button type="button" class="btn btn-primary" @click="updateCategory" :disabled="savingEdit">
               <span v-if="savingEdit" class="spinner-border spinner-border-sm me-2"></span>
               {{ savingEdit ? 'Guardando...' : 'Actualizar' }}
             </button>
@@ -150,16 +109,16 @@
       </div>
     </div>
 
-    <!-- Modal Eliminar Subcategoría -->
-    <div class="modal fade" id="delete-subcategory-modal" tabindex="-1" aria-hidden="true">
+    <!-- Modal Eliminar Categoría -->
+    <div class="modal fade" id="delete-category-modal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title">Eliminar Subcategoría</h5>
+            <h5 class="modal-title">Eliminar Categoría</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
-            <p class="mb-0">¿Estás seguro de que deseas eliminar la subcategoría <strong>{{ subcategoryToDelete?.name }}</strong>?</p>
+            <p class="mb-0">¿Estás seguro de que deseas eliminar la categoría <strong>{{ categoryToDelete?.name }}</strong>?</p>
             <p class="text-muted mt-2 mb-0">
               <small>Esta acción no se puede deshacer.</small>
             </p>
@@ -167,7 +126,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-danger" @click="deleteSubcategory" :disabled="deleting">
+            <button type="button" class="btn btn-danger" @click="deleteCategory" :disabled="deleting">
               <span v-if="deleting" class="spinner-border spinner-border-sm me-2"></span>
               {{ deleting ? 'Eliminando...' : 'Eliminar' }}
             </button>
@@ -179,38 +138,33 @@
 </template>
 
 <script>
-import { subcategoryService, categoryService } from '@/services/api.service';
+import { categoryService } from '@/services/api.service';
 
 export default {
   emits: ['saved', 'deleted'],
   props: {
-    subcategory: {
+    category: {
       type: Object,
       default: null
     },
-    subcategoryToDelete: {
+    categoryToDelete: {
       type: Object,
       default: null
     }
   },
   data() {
     return {
-      categories: [],
       // Formulario para agregar
       form: {
         name: '',
-        description: '',
-        category_id: '',
         image_url: '',
-        is_active: 1
+        is_active: true
       },
       // Formulario para editar
       formEdit: {
         name: '',
-        description: '',
-        category_id: '',
         image_url: '',
-        is_active: 1
+        is_active: true
       },
       saving: false,
       savingEdit: false,
@@ -223,15 +177,13 @@ export default {
     };
   },
   watch: {
-    subcategory: {
+    category: {
       handler(newVal) {
         if (newVal) {
           this.formEdit = {
             name: newVal.name || '',
-            description: newVal.description || '',
-            category_id: newVal.category_id || '',
             image_url: newVal.image_url || '',
-            is_active: newVal.is_active ? 1 : 0
+            is_active: newVal.is_active !== undefined ? Boolean(newVal.is_active) : true
           };
         }
       },
@@ -239,21 +191,9 @@ export default {
       deep: true
     }
   },
-  async mounted() {
-    await this.loadCategories();
-  },
   methods: {
-    async loadCategories() {
-      try {
-        const response = await categoryService.getActiveCategories();
-        this.categories = response.data || response;
-      } catch (error) {
-        console.error('Error al cargar categorías:', error);
-      }
-    },
-
-    // Crear nueva subcategoría
-    async saveSubcategory() {
+    // Crear nueva categoría
+    async saveCategory() {
       this.saving = true;
       this.error = null;
       this.success = null;
@@ -261,28 +201,26 @@ export default {
       try {
         const payload = {
           name: this.form.name,
-          description: this.form.description || null,
-          category_id: this.form.category_id,
           image_url: this.form.image_url || null,
           is_active: this.form.is_active === 1 || this.form.is_active === true
         };
 
-        await subcategoryService.createSubcategory(payload);
+        await categoryService.createCategory(payload);
 
         // Cerrar modal inmediatamente
         this.$emit('saved');
         this.closeModalAdd();
 
       } catch (err) {
-        this.error = err.response?.data?.message || 'Error al crear la subcategoría';
+        this.error = err.response?.data?.message || 'Error al crear la categoría';
       } finally {
         this.saving = false;
       }
     },
 
-    // Actualizar subcategoría existente
-    async updateSubcategory() {
-      if (!this.subcategory) return;
+    // Actualizar categoría existente
+    async updateCategory() {
+      if (!this.category) return;
 
       this.savingEdit = true;
       this.errorEdit = null;
@@ -291,57 +229,55 @@ export default {
       try {
         const payload = {
           name: this.formEdit.name,
-          description: this.formEdit.description || null,
-          category_id: this.formEdit.category_id,
           image_url: this.formEdit.image_url || null,
           is_active: this.formEdit.is_active === 1 || this.formEdit.is_active === true
         };
 
-        await subcategoryService.updateSubcategory(this.subcategory.id, payload);
+        await categoryService.updateCategory(this.category.id, payload);
 
         // Cerrar modal inmediatamente
         this.$emit('saved');
         this.closeModalEdit();
 
       } catch (err) {
-        this.errorEdit = err.response?.data?.message || 'Error al actualizar la subcategoría';
+        this.errorEdit = err.response?.data?.message || 'Error al actualizar la categoría';
       } finally {
         this.savingEdit = false;
       }
     },
 
-    async deleteSubcategory() {
-      if (!this.subcategoryToDelete) return;
+    async deleteCategory() {
+      if (!this.categoryToDelete) return;
 
       this.deleting = true;
       this.deleteError = null;
 
       try {
-        await subcategoryService.deleteSubcategory(this.subcategoryToDelete.id);
+        await categoryService.deleteCategory(this.categoryToDelete.id);
 
         // Cerrar modal inmediatamente
         this.$emit('deleted');
         this.closeModalDelete();
 
       } catch (err) {
-        this.deleteError = err.response?.data?.message || 'Error al eliminar la subcategoría';
+        this.deleteError = err.response?.data?.message || 'Error al eliminar la categoría';
       } finally {
         this.deleting = false;
       }
     },
 
     closeModalAdd() {
-      this.cleanupModal('add-subcategory');
+      this.cleanupModal('add-category');
       this.resetFormAdd();
     },
 
     closeModalEdit() {
-      this.cleanupModal('edit-subcategory');
+      this.cleanupModal('edit-category');
       this.resetFormEdit();
     },
 
     closeModalDelete() {
-      this.cleanupModal('delete-subcategory-modal');
+      this.cleanupModal('delete-category-modal');
       this.deleteError = null;
     },
 
@@ -358,6 +294,16 @@ export default {
             }
             modal.hide();
           }
+        } else {
+          // Cerrar todos los modales abiertos
+          const modalElements = document.querySelectorAll('.modal.show');
+          modalElements.forEach(modalElement => {
+            let modal = window.bootstrap.Modal.getInstance(modalElement);
+            if (!modal) {
+              modal = new window.bootstrap.Modal(modalElement);
+            }
+            modal.hide();
+          });
         }
       }
 
@@ -377,10 +323,8 @@ export default {
     resetFormAdd() {
       this.form = {
         name: '',
-        description: '',
-        category_id: '',
         image_url: '',
-        is_active: 1
+        is_active: true
       };
       this.error = null;
       this.success = null;
@@ -389,10 +333,8 @@ export default {
     resetFormEdit() {
       this.formEdit = {
         name: '',
-        description: '',
-        category_id: '',
         image_url: '',
-        is_active: 1
+        is_active: true
       };
       this.errorEdit = null;
       this.successEdit = null;

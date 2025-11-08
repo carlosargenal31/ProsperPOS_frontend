@@ -405,6 +405,42 @@ export const brandService = {
 };
 
 // ===================================================================
+// SERVICIO DE UNIDADES
+// ===================================================================
+
+export const unitService = {
+  async getUnits(params = {}) {
+    const response = await apiClient.get('/units', { params });
+    return response.data;
+  },
+
+  async getActiveUnits() {
+    const response = await apiClient.get('/units/active');
+    return response.data;
+  },
+
+  async getUnitById(id, params = {}) {
+    const response = await apiClient.get(`/units/${id}`, { params });
+    return response.data;
+  },
+
+  async createUnit(unitData) {
+    const response = await apiClient.post('/units', unitData);
+    return response.data;
+  },
+
+  async updateUnit(id, unitData) {
+    const response = await apiClient.put(`/units/${id}`, unitData);
+    return response.data;
+  },
+
+  async deleteUnit(id) {
+    const response = await apiClient.delete(`/units/${id}`);
+    return response.data;
+  }
+};
+
+// ===================================================================
 // EXPORTAR API CLIENT
 // ===================================================================
 

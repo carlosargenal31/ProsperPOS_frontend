@@ -28,17 +28,7 @@
           <div class="search-set">
             <div class="search-input">
               <a href="javascript:void(0);" class="btn-searchset"><i class="ti ti-search fs-14 feather-search"></i></a>
-              <input type="search" class="form-control form-control-sm" placeholder="Buscar" v-model="searchQuery" @input="handleSearch" />
-            </div>
-          </div>
-          <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
-            <div class="dropdown me-2">
-              <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">{{ selectedStatusLabel }}</a>
-              <ul class="dropdown-menu dropdown-menu-end p-3">
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus(true)">Activo</a></li>
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus(false)">Inactivo</a></li>
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus(null)">Todos</a></li>
-              </ul>
+              <input type="search" class="form-control form-control-sm" placeholder="Buscar por nombre" v-model="searchQuery" @input="handleSearch" />
             </div>
           </div>
         </div>
@@ -46,12 +36,33 @@
           <div v-if="loading" class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>
           <div v-else-if="error" class="alert alert-danger m-3">{{ error }}</div>
           <div v-else class="custom-datatable-filter table-responsive">
-            <a-table class="table datatable thead-light" :columns="columns" :data-source="categories" :row-selection="rowSelection" :pagination="paginationConfig" @change="handleTableChange">
+            <a-table
+              class="table datatable thead-light"
+              :columns="columns"
+              :data-source="categories"
+              :pagination="{
+                current: paginationConfig.current,
+                pageSize: paginationConfig.pageSize,
+                total: paginationConfig.total,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total, range) => `Mostrando ${range[0]}-${range[1]} de ${total} resultados`,
+                pageSizeOptions: ['10', '20', '50', '100'],
+                position: ['bottomCenter']
+              }"
+              @change="handleTableChange">
               <template #bodyCell="{ column, record }">
-                <template v-if="column.key === 'id'"><div><span class="badge bg-light text-dark">CAT-{{ String(record.id).padStart(4, '0') }}</span></div></template>
-                <template v-else-if="column.key === 'name'"><div>{{ record.name }}</div></template>
-                <template v-else-if="column.key === 'description'"><div>{{ record.description || '-' }}</div></template>
-                <template v-else-if="column.key === 'created_at'"><div>{{ formatDate(record.created_at) }}</div></template>
+                <template v-if="column.key === 'id'">
+                  <span class="badge bg-light text-dark">{{ record.id }}</span>
+                </template>
+                <template v-else-if="column.key === 'name'">
+                  <a href="javascript:void(0);">{{ record.name }}</a>
+                </template>
+                <template v-else-if="column.key === 'subcategories_count'">
+                  <div class="text-center">
+                    <span class="badge bg-info">{{ record.subcategories_count || 0 }}</span>
+                  </div>
+                </template>
                 <template v-else-if="column.key === 'is_active'">
                   <span :class="['badge d-inline-flex align-items-center badge-xs', record.is_active ? 'badge-success' : 'badge-danger']">
                     <i class="ti ti-point-filled me-1"></i>{{ record.is_active ? 'Activo' : 'Inactivo' }}
@@ -60,7 +71,7 @@
                 <template v-else-if="column.key === 'action'">
                   <div class="action-icon d-inline-flex">
                     <a v-if="canEdit" href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#edit-category" @click="editCategory(record)" title="Editar"><i class="ti ti-edit"></i></a>
-                    <a v-if="canDelete" href="#" data-bs-toggle="modal" data-bs-target="#delete_modal" class="d-flex align-items-center p-2 border rounded" @click="confirmDelete(record)" title="Eliminar"><i class="ti ti-trash"></i></a>
+                    <a v-if="canDelete" href="#" data-bs-toggle="modal" data-bs-target="#delete-category-modal" class="d-flex align-items-center p-2 border rounded" @click="confirmDelete(record)" title="Eliminar"><i class="ti ti-trash"></i></a>
                   </div>
                 </template>
               </template>
@@ -71,21 +82,33 @@
       <!-- /product list -->
     </div>
   </div>
+
+  <!-- Modales -->
+  <CategoryModals
+    :edit-mode="editMode"
+    :category="selectedCategory"
+    :category-to-delete="categoryToDelete"
+    @saved="handleCategorySaved"
+    @deleted="handleCategoryDeleted"
+  />
 </template>
 <script>
 import { categoryService } from '@/services/api.service';
 import { hasPermission } from '@/utils/permissions';
+import CategoryModals from '@/components/modals/CategoryModals.vue';
 
 const columns = [
-  { title: 'Código', dataIndex: 'id', key: 'id', sorter: true, width: 100 },
+  { title: 'Código', dataIndex: 'id', key: 'id', sorter: true, width: 120 },
   { title: 'Categoría', dataIndex: 'name', key: 'name', sorter: true },
-  { title: 'Descripción', dataIndex: 'description', key: 'description', sorter: false },
-  { title: 'Fecha de Creación', dataIndex: 'created_at', key: 'created_at', sorter: true },
-  { title: 'Estado', dataIndex: 'is_active', key: 'is_active', sorter: true },
-  { title: '', key: 'action', sorter: false },
+  { title: 'Subcategorías', dataIndex: 'subcategories_count', key: 'subcategories_count', sorter: true, width: 120 },
+  { title: 'Estado', dataIndex: 'is_active', key: 'is_active', sorter: true, width: 100 },
+  { title: '', key: 'action', sorter: false, width: 100 },
 ];
 
 export default {
+  components: {
+    CategoryModals
+  },
   computed: {
     canCreate() {
       return hasPermission('categories.create');
@@ -104,13 +127,19 @@ export default {
       loading: false,
       error: null,
       searchQuery: '',
-      selectedStatus: null,
-      selectedStatusLabel: 'Estado',
       editMode: false,
       selectedCategory: null,
       categoryToDelete: null,
-      paginationConfig: { current: 1, pageSize: 10, total: 0, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'] },
-      rowSelection: { onChange: () => {}, onSelect: () => {}, onSelectAll: () => {} },
+      paginationConfig: {
+        current: 1,
+        pageSize: 10,
+        total: 0,
+        showSizeChanger: true,
+        showQuickJumper: true,
+        showTotal: (total, range) => `Mostrando ${range[0]}-${range[1]} de ${total} resultados`,
+        pageSizeOptions: ['10', '20', '50', '100'],
+        position: ['bottomCenter']
+      },
     };
   },
   mounted() {
@@ -121,14 +150,14 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        const params = { page: this.paginationConfig.current, limit: this.paginationConfig.pageSize };
+        const params = {};
         if (this.searchQuery) params.search = this.searchQuery;
-        if (this.selectedStatus !== null) params.is_active = this.selectedStatus;
+
         const response = await categoryService.getCategories(params);
         if (response.success) {
-          // El backend devuelve directamente el array en response.data
           this.categories = Array.isArray(response.data) ? response.data : [];
           this.paginationConfig.total = this.categories.length;
+          this.paginationConfig.current = 1;
         }
       } catch (error) {
         this.error = error.response?.data?.message || 'Error al cargar categorías';
@@ -144,16 +173,32 @@ export default {
         this.loadCategories();
       }, 500);
     },
-    filterByStatus(status) {
-      this.selectedStatus = status;
-      this.selectedStatusLabel = status === null ? 'Estado' : (status ? 'Activo' : 'Inactivo');
-      this.paginationConfig.current = 1;
-      this.loadCategories();
-    },
-    handleTableChange(pagination) {
+    handleTableChange(pagination, filters, sorter) {
       this.paginationConfig.current = pagination.current;
       this.paginationConfig.pageSize = pagination.pageSize;
-      this.loadCategories();
+
+      if (sorter && sorter.field && sorter.order) {
+        const field = sorter.field;
+        const order = sorter.order === 'ascend' ? 1 : -1;
+
+        this.categories = [...this.categories].sort((a, b) => {
+          let aVal = a[field];
+          let bVal = b[field];
+
+          if (aVal === null || aVal === undefined) aVal = '';
+          if (bVal === null || bVal === undefined) bVal = '';
+
+          // Ordenamiento numérico para id y subcategories_count
+          if (field === 'id' || field === 'subcategories_count') {
+            return (Number(aVal) - Number(bVal)) * order;
+          }
+
+          // Ordenamiento alfabético para strings
+          return String(aVal).localeCompare(String(bVal), 'es') * order;
+        });
+      } else if (sorter && sorter.field === undefined && sorter.order === undefined) {
+        this.loadCategories();
+      }
     },
     prepareAdd() {
       this.cleanupModals();
@@ -168,18 +213,13 @@ export default {
     confirmDelete(category) {
       this.categoryToDelete = category;
     },
-    async deleteCategory() {
-      if (!this.categoryToDelete) return;
-      try {
-        const response = await categoryService.deleteCategory(this.categoryToDelete.id);
-        if (response.success) this.loadCategories();
-      } catch (error) {
-        console.error('Error al eliminar categoría:', error);
-      }
-    },
     handleCategorySaved() {
       this.editMode = false;
       this.selectedCategory = null;
+      this.loadCategories();
+    },
+    handleCategoryDeleted() {
+      this.categoryToDelete = null;
       this.loadCategories();
     },
     formatDate(dateString) {
