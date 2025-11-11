@@ -1,13 +1,13 @@
 <template>
-  <!-- Add Warehouse -->
-  <div class="modal fade" id="add-warehouse">
+  <!-- Add Vehicle -->
+  <div class="modal fade" id="add-vehicle">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
           <div class="content">
             <div class="modal-header">
               <div class="page-title">
-                <h4>Agregar Bodega</h4>
+                <h4>Agregar Vehículo</h4>
               </div>
               <button
                 type="button"
@@ -21,62 +21,76 @@
             <form @submit.prevent="submitAddForm">
               <div class="modal-body">
                 <div class="row">
-                  <div class="col-lg-12">
+                  <div class="col-lg-6">
                     <div class="mb-3">
-                      <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                      <label class="form-label">Placa <span class="text-danger">*</span></label>
                       <input
                         type="text"
                         class="form-control"
-                        v-model="formData.nombre"
-                        placeholder="Ej: BODEGA 101 TIENDA"
+                        v-model="formData.placa"
+                        placeholder="Ej: HDZ-3014"
                         required
                       />
                     </div>
                   </div>
                   <div class="col-lg-6">
                     <div class="mb-3">
-                      <label class="form-label">Encargado</label>
+                      <label class="form-label">Marca <span class="text-danger">*</span></label>
                       <input
                         type="text"
                         class="form-control"
-                        v-model="formData.encargado"
-                        placeholder="Nombre del encargado (opcional)"
+                        v-model="formData.marca"
+                        placeholder="Ej: Toyota"
+                        required
                       />
                     </div>
                   </div>
                   <div class="col-lg-6">
                     <div class="mb-3">
-                      <label class="form-label">Ubicación</label>
+                      <label class="form-label">Modelo <span class="text-danger">*</span></label>
                       <input
                         type="text"
                         class="form-control"
-                        v-model="formData.ubicacion"
-                        placeholder="Ej: Tienda"
+                        v-model="formData.modelo"
+                        placeholder="Ej: Hilux 2020"
+                        required
                       />
                     </div>
                   </div>
-                  <div class="col-lg-12">
+                  <div class="col-lg-6">
+                    <div class="mb-3">
+                      <label class="form-label">Color <span class="text-danger">*</span></label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        v-model="formData.color"
+                        placeholder="Ej: Blanco"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
                     <div
                       class="status-toggle modal-status d-flex justify-content-between align-items-center mb-3"
                     >
-                      <span class="status-label">Activa</span>
-                      <input type="checkbox" id="add-is-active" class="check" v-model="formData.is_active" />
-                      <label for="add-is-active" class="checktoggle"></label>
+                      <span class="status-label">Estado</span>
+                      <input
+                        type="checkbox"
+                        id="add-vehicle-status"
+                        class="check"
+                        v-model="formData.is_active"
+                      />
+                      <label for="add-vehicle-status" class="checktoggle mb-0"></label>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary me-2"
-                  data-bs-dismiss="modal"
-                >
+                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
                   Cancelar
                 </button>
-                <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-                  <span v-if="isSubmitting">Guardando...</span>
-                  <span v-else>Guardar</span>
+                <button type="submit" class="btn btn-submit" :disabled="isSubmitting">
+                  {{ isSubmitting ? 'Guardando...' : 'Guardar' }}
                 </button>
               </div>
             </form>
@@ -85,17 +99,16 @@
       </div>
     </div>
   </div>
-  <!-- /Add Warehouse -->
 
-  <!-- Edit Warehouse -->
-  <div class="modal fade" id="edit-warehouse">
+  <!-- Edit Vehicle -->
+  <div class="modal fade" id="edit-vehicle">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
           <div class="content">
             <div class="modal-header">
               <div class="page-title">
-                <h4>Editar Bodega</h4>
+                <h4>Editar Vehículo</h4>
               </div>
               <button
                 type="button"
@@ -109,59 +122,76 @@
             <form @submit.prevent="submitEditForm">
               <div class="modal-body">
                 <div class="row">
-                  <div class="col-lg-12">
+                  <div class="col-lg-6">
                     <div class="mb-3">
-                      <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                      <label class="form-label">Placa <span class="text-danger">*</span></label>
                       <input
                         type="text"
                         class="form-control"
-                        v-model="editFormData.nombre"
+                        v-model="editFormData.placa"
+                        placeholder="Ej: HDZ-3014"
                         required
                       />
                     </div>
                   </div>
                   <div class="col-lg-6">
                     <div class="mb-3">
-                      <label class="form-label">Encargado</label>
+                      <label class="form-label">Marca <span class="text-danger">*</span></label>
                       <input
                         type="text"
                         class="form-control"
-                        v-model="editFormData.encargado"
+                        v-model="editFormData.marca"
+                        placeholder="Ej: Toyota"
+                        required
                       />
                     </div>
                   </div>
                   <div class="col-lg-6">
                     <div class="mb-3">
-                      <label class="form-label">Ubicación</label>
+                      <label class="form-label">Modelo <span class="text-danger">*</span></label>
                       <input
                         type="text"
                         class="form-control"
-                        v-model="editFormData.ubicacion"
+                        v-model="editFormData.modelo"
+                        placeholder="Ej: Hilux 2020"
+                        required
                       />
                     </div>
                   </div>
-                  <div class="col-lg-12">
+                  <div class="col-lg-6">
+                    <div class="mb-3">
+                      <label class="form-label">Color <span class="text-danger">*</span></label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        v-model="editFormData.color"
+                        placeholder="Ej: Blanco"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
                     <div
                       class="status-toggle modal-status d-flex justify-content-between align-items-center mb-3"
                     >
-                      <span class="status-label">Activa</span>
-                      <input type="checkbox" id="edit-is-active" class="check" v-model="editFormData.is_active" />
-                      <label for="edit-is-active" class="checktoggle"></label>
+                      <span class="status-label">Estado</span>
+                      <input
+                        type="checkbox"
+                        id="edit-vehicle-status"
+                        class="check"
+                        v-model="editFormData.is_active"
+                      />
+                      <label for="edit-vehicle-status" class="checktoggle mb-0"></label>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary me-2"
-                  data-bs-dismiss="modal"
-                >
+                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
                   Cancelar
                 </button>
-                <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-                  <span v-if="isSubmitting">Guardando...</span>
-                  <span v-else>Guardar Cambios</span>
+                <button type="submit" class="btn btn-submit" :disabled="isSubmitting">
+                  {{ isSubmitting ? 'Actualizando...' : 'Actualizar' }}
                 </button>
               </div>
             </form>
@@ -170,45 +200,43 @@
       </div>
     </div>
   </div>
-  <!-- /Edit Warehouse -->
 
-  <!-- delete modal -->
+  <!-- Delete Confirmation Modal -->
   <div class="modal fade" id="delete-modal">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
-          <div class="content p-5 px-3 text-center">
-            <span class="rounded-circle d-inline-flex p-2 bg-danger-transparent mb-2"
-              ><i class="ti ti-trash fs-24 text-danger"></i
-            ></span>
-            <h4 class="fs-20 text-gray-9 fw-bold mb-2 mt-1">Eliminar Bodega</h4>
-            <p class="text-gray-6 mb-0 fs-16">
-              ¿Estás seguro de que deseas eliminar esta bodega?
-            </p>
-            <div class="modal-footer-btn mt-3 d-flex justify-content-center">
-              <button
-                type="button"
-                class="btn me-2 btn-secondary fs-13 fw-medium p-2 px-3 shadow-none"
-                data-bs-dismiss="modal"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-danger fs-13 fw-medium p-2 px-3"
-                @click="confirmDelete"
-                :disabled="isSubmitting"
-              >
-                <span v-if="isSubmitting">Eliminando...</span>
-                <span v-else>Sí, Eliminar</span>
-              </button>
+          <div class="content">
+            <div class="modal-body">
+              <div class="delete-action">
+                <div class="delete-heads">
+                  <h4>¿Estás seguro?</h4>
+                  <p>¿Deseas eliminar este vehículo?</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                  <button
+                    type="button"
+                    class="btn btn-cancel me-2"
+                    data-bs-dismiss="modal"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-danger"
+                    @click="confirmDelete"
+                    :disabled="isSubmitting"
+                  >
+                    {{ isSubmitting ? 'Eliminando...' : 'Sí, Eliminar' }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <!-- /delete modal -->
 </template>
 
 <script>
@@ -217,47 +245,48 @@ import Swal from 'sweetalert2';
 
 export default {
   props: {
-    warehouse: {
+    vehicle: {
       type: Object,
       default: null
-    },
-    isEdit: {
-      type: Boolean,
-      default: false
     }
   },
+  emits: ['vehicle-saved', 'vehicle-deleted'],
   data() {
     return {
       formData: {
-        nombre: '',
-        encargado: '',
-        ubicacion: '',
+        placa: '',
+        marca: '',
+        modelo: '',
+        color: '',
         is_active: true
       },
       editFormData: {
         id: null,
-        nombre: '',
-        encargado: '',
-        ubicacion: '',
+        placa: '',
+        marca: '',
+        modelo: '',
+        color: '',
         is_active: true
       },
       isSubmitting: false
     };
   },
   watch: {
-    warehouse: {
+    vehicle: {
       handler(newVal) {
         if (newVal) {
           this.editFormData = {
             id: newVal.id,
-            nombre: newVal.nombre,
-            encargado: newVal.encargado || '',
-            ubicacion: newVal.ubicacion || '',
-            is_active: Boolean(newVal.is_active)
+            placa: newVal.placa || '',
+            marca: newVal.marca || '',
+            modelo: newVal.modelo || '',
+            color: newVal.color || '',
+            is_active: newVal.is_active === 1 || newVal.is_active === true
           };
         }
       },
-      immediate: true
+      immediate: true,
+      deep: true
     }
   },
   methods: {
@@ -265,47 +294,49 @@ export default {
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.post('http://localhost:3000/api/v1/warehouses', this.formData, {
+
+        await axios.post('http://localhost:3000/api/v1/vehicles', this.formData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
-        // Limpiar formulario
-        this.formData = {
-          nombre: '',
-          encargado: '',
-          ubicacion: '',
-          is_active: true
-        };
-
         // Emitir evento para recargar datos
-        this.$emit('warehouse-saved');
+        this.$emit('vehicle-saved');
 
         // Cerrar modal
-        const modalElement = document.getElementById('add-warehouse');
+        const modalElement = document.getElementById('add-vehicle');
         if (modalElement) {
           const closeButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
           if (closeButton) closeButton.click();
         }
+
+        // Limpiar formulario
+        this.formData = {
+          placa: '',
+          marca: '',
+          modelo: '',
+          color: '',
+          is_active: true
+        };
 
         // Mostrar mensaje de éxito
         this.$nextTick(() => {
           Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
-            text: 'Bodega creada exitosamente',
+            text: 'Vehículo creado exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
           });
         });
       } catch (error) {
-        console.error('Error creating warehouse:', error);
+        console.error('Error creating vehicle:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al crear la bodega',
+          text: error.response?.data?.message || 'Error al crear el vehículo',
           confirmButtonColor: '#dc3545'
         });
       } finally {
@@ -319,17 +350,17 @@ export default {
         const token = localStorage.getItem('token');
         const { id, ...updateData } = this.editFormData;
 
-        await axios.put(`http://localhost:3000/api/v1/warehouses/${id}`, updateData, {
+        await axios.put(`http://localhost:3000/api/v1/vehicles/${id}`, updateData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
         // Emitir evento para recargar datos
-        this.$emit('warehouse-saved');
+        this.$emit('vehicle-saved');
 
         // Cerrar modal
-        const modalElement = document.getElementById('edit-warehouse');
+        const modalElement = document.getElementById('edit-vehicle');
         if (modalElement) {
           const closeButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
           if (closeButton) closeButton.click();
@@ -340,18 +371,18 @@ export default {
           Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
-            text: 'Bodega actualizada exitosamente',
+            text: 'Vehículo actualizado exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
           });
         });
       } catch (error) {
-        console.error('Error updating warehouse:', error);
+        console.error('Error updating vehicle:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al actualizar la bodega',
+          text: error.response?.data?.message || 'Error al actualizar el vehículo',
           confirmButtonColor: '#dc3545'
         });
       } finally {
@@ -360,19 +391,19 @@ export default {
     },
 
     async confirmDelete() {
-      if (!this.warehouse || !this.warehouse.id) return;
+      if (!this.vehicle || !this.vehicle.id) return;
 
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3000/api/v1/warehouses/${this.warehouse.id}`, {
+        await axios.delete(`http://localhost:3000/api/v1/vehicles/${this.vehicle.id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
         // Emitir evento para recargar datos
-        this.$emit('warehouse-deleted');
+        this.$emit('vehicle-deleted');
 
         // Cerrar modal
         const modalElement = document.getElementById('delete-modal');
@@ -385,25 +416,25 @@ export default {
         this.$nextTick(() => {
           Swal.fire({
             icon: 'success',
-            title: '¡Eliminada!',
-            text: 'Bodega eliminada exitosamente',
+            title: '¡Éxito!',
+            text: 'Vehículo eliminado exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
           });
         });
       } catch (error) {
-        console.error('Error deleting warehouse:', error);
+        console.error('Error deleting vehicle:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al eliminar la bodega',
+          text: error.response?.data?.message || 'Error al eliminar el vehículo',
           confirmButtonColor: '#dc3545'
         });
       } finally {
         this.isSubmitting = false;
       }
     }
-  },
+  }
 };
 </script>

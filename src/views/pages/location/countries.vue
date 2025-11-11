@@ -6,13 +6,13 @@
       <div class="page-header">
         <div class="add-item d-flex">
           <div class="page-title">
-            <h4>Lista de Proveedores</h4>
-            <h6>Administra tus proveedores</h6>
+            <h4>Países</h4>
+            <h6>Administra los países del sistema</h6>
           </div>
         </div>
         <ul class="table-top-head">
           <li>
-            <a @click="loadSuppliers" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
+            <a @click="loadCountries" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
               ><i class="ti ti-refresh"></i
             ></a>
           </li>
@@ -25,9 +25,9 @@
             href="#"
             class="btn btn-primary"
             data-bs-toggle="modal"
-            data-bs-target="#add-supplier"
+            data-bs-target="#add-country"
             @click="openAddModal"
-            ><i class="ti ti-circle-plus me-1"></i>Agregar Proveedor</a
+            ><i class="ti ti-circle-plus me-1"></i>Agregar Nuevo País</a
           >
         </div>
       </div>
@@ -44,7 +44,7 @@
         {{ error }}
       </div>
 
-      <!-- Suppliers Table -->
+      <!-- Countries Table -->
       <div v-else class="card table-list-card">
         <div class="card-body">
           <div class="table-responsive">
@@ -57,14 +57,11 @@
                   <th @click="sortBy('nombre')" style="cursor: pointer;">
                     Nombre <i :class="getSortIcon('nombre')"></i>
                   </th>
-                  <th @click="sortBy('tipo_proveedor')" style="cursor: pointer;">
-                    Tipo Proveedor <i :class="getSortIcon('tipo_proveedor')"></i>
+                  <th @click="sortBy('codigo_iso')" style="cursor: pointer;">
+                    Código ISO <i :class="getSortIcon('codigo_iso')"></i>
                   </th>
-                  <th @click="sortBy('doc_identificacion')" style="cursor: pointer;">
-                    Doc. Identificación <i :class="getSortIcon('doc_identificacion')"></i>
-                  </th>
-                  <th @click="sortBy('tipo_beneficiario')" style="cursor: pointer;">
-                    Tipo Beneficiario <i :class="getSortIcon('tipo_beneficiario')"></i>
+                  <th @click="sortBy('states_count')" style="cursor: pointer;">
+                    Departamentos <i :class="getSortIcon('states_count')"></i>
                   </th>
                   <th @click="sortBy('is_active')" style="cursor: pointer;">
                     Estado <i :class="getSortIcon('is_active')"></i>
@@ -73,23 +70,17 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-if="sortedSuppliers.length === 0">
-                  <td colspan="7" class="text-center">No hay proveedores registrados</td>
+                <tr v-if="sortedCountries.length === 0">
+                  <td colspan="6" class="text-center">No hay países registrados</td>
                 </tr>
-                <tr v-for="supplier in sortedSuppliers" :key="supplier.id">
-                  <td>{{ supplier.id }}</td>
-                  <td>{{ supplier.nombre }}</td>
-                  <td>{{ supplier.tipo_proveedor || '-' }}</td>
-                  <td>{{ supplier.doc_identificacion || '-' }}</td>
+                <tr v-for="country in sortedCountries" :key="country.id">
+                  <td>{{ country.id }}</td>
+                  <td>{{ country.nombre }}</td>
+                  <td>{{ country.codigo_iso || '-' }}</td>
+                  <td>{{ country.states_count || 0 }}</td>
                   <td>
-                    <span v-if="supplier.beneficiary_type_name" class="badge bg-info">
-                      {{ supplier.beneficiary_type_name }}
-                    </span>
-                    <span v-else>-</span>
-                  </td>
-                  <td>
-                    <span :class="supplier.is_active ? 'badge bg-success' : 'badge bg-danger'">
-                      {{ supplier.is_active ? 'Activo' : 'Inactivo' }}
+                    <span :class="country.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                      {{ country.is_active ? 'Activo' : 'Inactivo' }}
                     </span>
                   </td>
                   <td class="action-table-data justify-content-end">
@@ -97,16 +88,16 @@
                       <a
                         class="me-2 p-2"
                         href="#"
-                        @click.prevent="openEditModal(supplier)"
+                        @click.prevent="openEditModal(country)"
                         data-bs-toggle="modal"
-                        data-bs-target="#edit-supplier"
+                        data-bs-target="#edit-country"
                       >
                         <i data-feather="edit" class="feather-edit"></i>
                       </a>
                       <a
                         class="confirm-text p-2"
                         href="#"
-                        @click.prevent="openDeleteModal(supplier)"
+                        @click.prevent="openDeleteModal(country)"
                         data-bs-toggle="modal"
                         data-bs-target="#delete-modal"
                       >
@@ -122,12 +113,12 @@
       </div>
     </div>
   </div>
-  <supplier-modal
-    :supplier="selectedSupplier"
+  <country-modal
+    :country="selectedCountry"
     :is-edit="isEditMode"
-    @supplier-saved="onSupplierSaved"
-    @supplier-deleted="onSupplierDeleted"
-  ></supplier-modal>
+    @country-saved="onCountrySaved"
+    @country-deleted="onCountryDeleted"
+  ></country-modal>
 </template>
 
 <script>
@@ -137,8 +128,8 @@ import Swal from 'sweetalert2';
 export default {
   data() {
     return {
-      suppliers: [],
-      selectedSupplier: null,
+      countries: [],
+      selectedCountry: null,
       isEditMode: false,
       loading: false,
       error: null,
@@ -147,16 +138,18 @@ export default {
     };
   },
   computed: {
-    sortedSuppliers() {
-      if (!this.suppliers || !Array.isArray(this.suppliers) || this.suppliers.length === 0) return [];
+    sortedCountries() {
+      if (!this.countries || this.countries.length === 0) return [];
 
-      const sorted = [...this.suppliers].sort((a, b) => {
+      const sorted = [...this.countries].sort((a, b) => {
         let aVal = a[this.sortColumn];
         let bVal = b[this.sortColumn];
 
+        // Handle null values
         if (aVal === null || aVal === undefined) aVal = '';
         if (bVal === null || bVal === undefined) bVal = '';
 
+        // Convert to string for comparison if needed
         if (typeof aVal === 'string') aVal = aVal.toLowerCase();
         if (typeof bVal === 'string') bVal = bVal.toLowerCase();
 
@@ -169,7 +162,7 @@ export default {
     }
   },
   mounted() {
-    this.loadSuppliers();
+    this.loadCountries();
   },
   methods: {
     sortBy(column) {
@@ -184,62 +177,45 @@ export default {
       if (this.sortColumn !== column) return 'ti ti-selector';
       return this.sortDirection === 'asc' ? 'ti ti-sort-ascending' : 'ti ti-sort-descending';
     },
-    async loadSuppliers() {
+    async loadCountries() {
       this.loading = true;
       this.error = null;
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/v1/suppliers', {
+        const response = await axios.get('http://localhost:3000/api/v1/countries', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-        console.log('Response from API:', response.data);
-
-        // Asegurarse que suppliers sea un array
-        if (response.data && response.data.data) {
-          // Si data es un objeto, convertirlo en array con un elemento
-          if (Array.isArray(response.data.data)) {
-            this.suppliers = response.data.data;
-          } else if (typeof response.data.data === 'object') {
-            this.suppliers = [response.data.data];
-          } else {
-            this.suppliers = [];
-          }
-        } else {
-          this.suppliers = [];
-        }
-
-        console.log('Suppliers loaded:', this.suppliers);
+        this.countries = response.data.data || [];
       } catch (error) {
-        console.error('Error loading suppliers:', error);
-        this.error = 'Error al cargar los proveedores';
-        this.suppliers = [];
+        console.error('Error loading countries:', error);
+        this.error = 'Error al cargar los países';
       } finally {
         this.loading = false;
       }
     },
 
     openAddModal() {
-      this.selectedSupplier = null;
+      this.selectedCountry = null;
       this.isEditMode = false;
     },
 
-    openEditModal(supplier) {
-      this.selectedSupplier = { ...supplier };
+    openEditModal(country) {
+      this.selectedCountry = { ...country };
       this.isEditMode = true;
     },
 
-    openDeleteModal(supplier) {
-      this.selectedSupplier = supplier;
+    openDeleteModal(country) {
+      this.selectedCountry = country;
     },
 
-    onSupplierSaved() {
-      this.loadSuppliers();
+    onCountrySaved() {
+      this.loadCountries();
     },
 
-    onSupplierDeleted() {
-      this.loadSuppliers();
+    onCountryDeleted() {
+      this.loadCountries();
     },
 
     toggleHeader() {

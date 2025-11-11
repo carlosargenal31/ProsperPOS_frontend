@@ -1,101 +1,70 @@
 <template>
-  <!-- Add Warehouse -->
-  <div class="modal fade" id="add-warehouse">
+  <!-- Add Beneficiary Type -->
+  <div class="modal fade" id="add-beneficiary-type">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
-        <div class="page-wrapper-new p-0">
-          <div class="content">
-            <div class="modal-header">
-              <div class="page-title">
-                <h4>Agregar Bodega</h4>
-              </div>
-              <button
-                type="button"
-                class="close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <form @submit.prevent="submitAddForm">
-              <div class="modal-body">
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label">Nombre <span class="text-danger">*</span></label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.nombre"
-                        placeholder="Ej: BODEGA 101 TIENDA"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label">Encargado</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.encargado"
-                        placeholder="Nombre del encargado (opcional)"
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label">Ubicación</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.ubicacion"
-                        placeholder="Ej: Tienda"
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div
-                      class="status-toggle modal-status d-flex justify-content-between align-items-center mb-3"
-                    >
-                      <span class="status-label">Activa</span>
-                      <input type="checkbox" id="add-is-active" class="check" v-model="formData.is_active" />
-                      <label for="add-is-active" class="checktoggle"></label>
-                    </div>
-                  </div>
+        <div class="modal-header">
+          <div class="page-title">
+            <h4>Agregar Tipo de Beneficiario</h4>
+          </div>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form @submit.prevent="submitAddForm">
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="mb-3">
+                  <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="formData.nombre"
+                    placeholder="JURIDICA DOMICILIADA"
+                    required
+                  />
                 </div>
               </div>
-              <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary me-2"
-                  data-bs-dismiss="modal"
-                >
-                  Cancelar
-                </button>
-                <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-                  <span v-if="isSubmitting">Guardando...</span>
-                  <span v-else>Guardar</span>
-                </button>
+              <div class="col-lg-12">
+                <div class="mb-0 form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="add-is-active"
+                    v-model="formData.is_active"
+                  />
+                  <label class="form-check-label" for="add-is-active">
+                    Activo
+                  </label>
+                </div>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+              <span v-if="isSubmitting">Guardando...</span>
+              <span v-else>Guardar</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
-  <!-- /Add Warehouse -->
+  <!-- /Add Beneficiary Type -->
 
-  <!-- Edit Warehouse -->
-  <div class="modal fade" id="edit-warehouse">
+  <!-- Edit Beneficiary Type -->
+  <div class="modal fade" id="edit-beneficiary-type">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
           <div class="content">
             <div class="modal-header">
               <div class="page-title">
-                <h4>Editar Bodega</h4>
+                <h4>Editar Tipo de Beneficiario</h4>
               </div>
               <button
                 type="button"
@@ -120,33 +89,17 @@
                       />
                     </div>
                   </div>
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label">Encargado</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="editFormData.encargado"
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label">Ubicación</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="editFormData.ubicacion"
-                      />
-                    </div>
-                  </div>
                   <div class="col-lg-12">
-                    <div
-                      class="status-toggle modal-status d-flex justify-content-between align-items-center mb-3"
-                    >
-                      <span class="status-label">Activa</span>
-                      <input type="checkbox" id="edit-is-active" class="check" v-model="editFormData.is_active" />
-                      <label for="edit-is-active" class="checktoggle"></label>
+                    <div class="mb-0 form-check">
+                      <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="edit-is-active"
+                        v-model="editFormData.is_active"
+                      />
+                      <label class="form-check-label" for="edit-is-active">
+                        Activo
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -170,7 +123,7 @@
       </div>
     </div>
   </div>
-  <!-- /Edit Warehouse -->
+  <!-- /Edit Beneficiary Type -->
 
   <!-- delete modal -->
   <div class="modal fade" id="delete-modal">
@@ -181,9 +134,9 @@
             <span class="rounded-circle d-inline-flex p-2 bg-danger-transparent mb-2"
               ><i class="ti ti-trash fs-24 text-danger"></i
             ></span>
-            <h4 class="fs-20 text-gray-9 fw-bold mb-2 mt-1">Eliminar Bodega</h4>
+            <h4 class="fs-20 text-gray-9 fw-bold mb-2 mt-1">Eliminar Tipo de Beneficiario</h4>
             <p class="text-gray-6 mb-0 fs-16">
-              ¿Estás seguro de que deseas eliminar esta bodega?
+              ¿Estás seguro de que deseas eliminar este tipo de beneficiario?
             </p>
             <div class="modal-footer-btn mt-3 d-flex justify-content-center">
               <button
@@ -217,7 +170,7 @@ import Swal from 'sweetalert2';
 
 export default {
   props: {
-    warehouse: {
+    beneficiaryType: {
       type: Object,
       default: null
     },
@@ -230,29 +183,23 @@ export default {
     return {
       formData: {
         nombre: '',
-        encargado: '',
-        ubicacion: '',
         is_active: true
       },
       editFormData: {
         id: null,
         nombre: '',
-        encargado: '',
-        ubicacion: '',
         is_active: true
       },
       isSubmitting: false
     };
   },
   watch: {
-    warehouse: {
+    beneficiaryType: {
       handler(newVal) {
         if (newVal) {
           this.editFormData = {
             id: newVal.id,
-            nombre: newVal.nombre,
-            encargado: newVal.encargado || '',
-            ubicacion: newVal.ubicacion || '',
+            nombre: newVal.nombre || '',
             is_active: Boolean(newVal.is_active)
           };
         }
@@ -265,7 +212,7 @@ export default {
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.post('http://localhost:3000/api/v1/warehouses', this.formData, {
+        await axios.post('http://localhost:3000/api/v1/beneficiary-types', this.formData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -274,38 +221,36 @@ export default {
         // Limpiar formulario
         this.formData = {
           nombre: '',
-          encargado: '',
-          ubicacion: '',
           is_active: true
         };
 
-        // Emitir evento para recargar datos
-        this.$emit('warehouse-saved');
+        // Emitir evento para recargar datos PRIMERO
+        this.$emit('beneficiary-type-saved');
 
-        // Cerrar modal
-        const modalElement = document.getElementById('add-warehouse');
+        // Cerrar modal manualmente
+        const modalElement = document.getElementById('add-beneficiary-type');
         if (modalElement) {
           const closeButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
           if (closeButton) closeButton.click();
         }
 
-        // Mostrar mensaje de éxito
+        // Mostrar mensaje de éxito con SweetAlert2
         this.$nextTick(() => {
           Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
-            text: 'Bodega creada exitosamente',
+            text: 'Tipo de beneficiario creado exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
           });
         });
       } catch (error) {
-        console.error('Error creating warehouse:', error);
+        console.error('Error creating beneficiary type:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al crear la bodega',
+          text: error.response?.data?.message || 'Error al crear el tipo de beneficiario',
           confirmButtonColor: '#dc3545'
         });
       } finally {
@@ -319,39 +264,39 @@ export default {
         const token = localStorage.getItem('token');
         const { id, ...updateData } = this.editFormData;
 
-        await axios.put(`http://localhost:3000/api/v1/warehouses/${id}`, updateData, {
+        await axios.put(`http://localhost:3000/api/v1/beneficiary-types/${id}`, updateData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
-        // Emitir evento para recargar datos
-        this.$emit('warehouse-saved');
+        // Emitir evento para recargar datos PRIMERO
+        this.$emit('beneficiary-type-saved');
 
-        // Cerrar modal
-        const modalElement = document.getElementById('edit-warehouse');
+        // Cerrar modal manualmente
+        const modalElement = document.getElementById('edit-beneficiary-type');
         if (modalElement) {
           const closeButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
           if (closeButton) closeButton.click();
         }
 
-        // Mostrar mensaje de éxito
+        // Mostrar mensaje de éxito con SweetAlert2
         this.$nextTick(() => {
           Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
-            text: 'Bodega actualizada exitosamente',
+            text: 'Tipo de beneficiario actualizado exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
           });
         });
       } catch (error) {
-        console.error('Error updating warehouse:', error);
+        console.error('Error updating beneficiary type:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al actualizar la bodega',
+          text: error.response?.data?.message || 'Error al actualizar el tipo de beneficiario',
           confirmButtonColor: '#dc3545'
         });
       } finally {
@@ -360,44 +305,44 @@ export default {
     },
 
     async confirmDelete() {
-      if (!this.warehouse || !this.warehouse.id) return;
+      if (!this.beneficiaryType || !this.beneficiaryType.id) return;
 
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3000/api/v1/warehouses/${this.warehouse.id}`, {
+        await axios.delete(`http://localhost:3000/api/v1/beneficiary-types/${this.beneficiaryType.id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
-        // Emitir evento para recargar datos
-        this.$emit('warehouse-deleted');
+        // Emitir evento para recargar datos PRIMERO
+        this.$emit('beneficiary-type-deleted');
 
-        // Cerrar modal
+        // Cerrar modal manualmente
         const modalElement = document.getElementById('delete-modal');
         if (modalElement) {
           const closeButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
           if (closeButton) closeButton.click();
         }
 
-        // Mostrar mensaje de éxito
+        // Mostrar mensaje de éxito con SweetAlert2
         this.$nextTick(() => {
           Swal.fire({
             icon: 'success',
-            title: '¡Eliminada!',
-            text: 'Bodega eliminada exitosamente',
+            title: '¡Eliminado!',
+            text: 'Tipo de beneficiario eliminado exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
           });
         });
       } catch (error) {
-        console.error('Error deleting warehouse:', error);
+        console.error('Error deleting beneficiary type:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al eliminar la bodega',
+          text: error.response?.data?.message || 'Error al eliminar el tipo de beneficiario',
           confirmButtonColor: '#dc3545'
         });
       } finally {

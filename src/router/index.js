@@ -54,7 +54,7 @@ const routes = [
   {
     path: '/coupons',
     name: 'coupons',
-    component: () => import('@/views/pages/promo/pos-coupons.vue'),
+    component: () => import('@/views/pages/sales/coupons.vue'),
   },
   {
     path: '/gift-cards',
@@ -143,6 +143,8 @@ const routes = [
       { path: "bank-settings-list", component: () => import('@/views/pages/settings/financal-settings/bank-settings-list.vue') },
       { path: "tax-rates", component: () => import('@/views/pages/settings/financal-settings/tax-rates.vue') },
       { path: "currency-settings", component: () => import('@/views/pages/settings/financal-settings/currency-settings.vue') },
+      { path: "beneficiary-type-settings", component: () => import('@/views/pages/settings/financal-settings/beneficiary-type-settings.vue') },
+      { path: "resolution-settings", component: () => import('@/views/pages/settings/financal-settings/resolution-settings.vue') },
     ]
   },
   {
@@ -265,6 +267,7 @@ const routes = [
     component: () => import('@/views/pages/people/pos-people.vue'),
     children: [
       { path: '', redirect: '/people/suppliers' },
+      { path: "pos-customers", component: () => import('@/views/pages/people/pos-customers.vue') },
       { path: "suppliers", component: () => import('@/views/pages/people/pos-suppliers.vue') },
       { path: "store-list", component: () => import('@/views/pages/people/store-list.vue') },
       { path: "warehouse", component: () => import('@/views/pages/people/pos-warehouse.vue') },
@@ -285,10 +288,18 @@ const routes = [
     component: () => import('@/views/pages/content/locations/pos-locations.vue'),
     children: [
       { path: '', redirect: '/location/countries' },
-      { path: "countries", component: () => import('@/views/pages/content/locations/pos-countries.vue') },
-      { path: "states", component: () => import('@/views/pages/content/locations/pos-states.vue') },
-      { path: "cities", component: () => import('@/views/pages/content/locations/pos-cities.vue') },
+      { path: "countries", component: () => import('@/views/pages/location/countries.vue') },
+      { path: "states", component: () => import('@/views/pages/location/states.vue') },
+      { path: "cities", component: () => import('@/views/pages/location/cities.vue') },
     ]
+  },
+  {
+    path: '/branches',
+    component: () => import('@/views/pages/branch/branches.vue')
+  },
+  {
+    path: '/vehicles',
+    component: () => import('@/views/pages/vehicle/vehicles.vue')
   },
   {
     path: '/page',
@@ -545,6 +556,9 @@ const routes = [
       { path: "attendance-employee", component: () => import('@/views/pages/hrm/attendance-employee.vue') },
       { path: "attendance-admin", component: () => import('@/views/pages/hrm/attendance-admin.vue') },
       { path: "holidays", component: () => import('@/views/pages/hrm/pos-holidays.vue') },
+      { path: "departments", component: () => import('@/views/pages/hrm/pos-departments.vue') },
+      { path: "positions", component: () => import('@/views/pages/hrm/pos-positions.vue') },
+      { path: "employees", component: () => import('@/views/pages/hrm/pos-employees.vue') },
     ]
   },
 

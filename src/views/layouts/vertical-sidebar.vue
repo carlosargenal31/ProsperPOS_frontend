@@ -128,27 +128,54 @@ export default {
        */
       getModuleForRoute(route) {
           const moduleMapping = {
+              // Usuarios y Roles
               '/users/users-list': 'users',
               '/users/roles-permissions': 'roles',
               '/users/delete-account': 'users',
+
+              // Inventario
               '/inventory/product-list': 'products',
               '/inventory/category-list': 'categories',
               '/inventory/sub-categories': 'categories',
               '/inventory/brand-list': 'brands',
               '/inventory/units': 'products',
               '/inventory/barcode': 'products',
+              '/stock/manage-stocks': 'inventory',
+              '/stock/stock-adjustment': 'inventory',
+
+              // Personas
               '/ecommerce/customers': 'customers',
               '/people/suppliers': 'suppliers',
               '/people/store-list': 'stores',
               '/people/warehouse': 'warehouses',
+
+              // Ubicaciones
+              '/location/countries': 'locations',
+              '/location/states': 'locations',
+              '/location/cities': 'locations',
+
+              // Ventas
               '/sales': 'sales',
               '/sales/sales-returns': 'sales',
               '/sales/pos-orders': 'sales',
               '/sales/online-orders': 'sales',
               '/sales/quotation-list': 'quotations',
+              '/coupons': 'coupons',
+              '/discount/discount-list': 'discounts',
+              '/pos/pos-5': 'sales',
+
+              // Compras
               '/purchases/purchase-list': 'purchases',
               '/purchases/purchase-returns': 'purchases',
-              '/reports/purchase-report': 'purchases',
+
+              // Recursos Humanos
+              '/hrm/employees-grid': 'employees',
+              '/hrm/department-grid': 'departments',
+              '/hrm/designation': 'designations',
+              '/hrm/vehicles': 'vehicles',
+
+              // Reportes
+              '/reports/purchase-report': 'reports',
               '/reports/invoice-report': 'reports',
               '/sales-report/sales-report': 'reports',
               '/sales-report/best-sellers': 'reports',
@@ -156,17 +183,9 @@ export default {
               '/customer-report/customer-report': 'reports',
               '/reports/profit-and-loss': 'reports',
               '/reports/annual-report': 'reports',
-              '/stock/manage-stocks': 'inventory',
-              '/stock/stock-adjustment': 'inventory',
-              '/inventory-report/inventory-report': 'inventory',
-              '/inventory-report/stock-history': 'inventory',
-              '/inventory-report/sold-stock': 'inventory',
-              '/hrm/employees-grid': 'employees',
-              '/hrm/department-grid': 'employees',
-              '/hrm/designation': 'employees',
-              '/coupons': 'sales',
-              '/discount/discount-list': 'sales',
-              '/pos/pos-5': 'sales',
+              '/inventory-report/inventory-report': 'reports',
+              '/inventory-report/stock-history': 'reports',
+              '/inventory-report/sold-stock': 'reports',
           };
 
           return moduleMapping[route] || null;

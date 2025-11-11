@@ -1,13 +1,13 @@
 <template>
-  <!-- Add Bank Account -->
-  <div class="modal fade" id="add-account">
+  <!-- Add City -->
+  <div class="modal fade" id="add-city">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
           <div class="content">
             <div class="modal-header">
               <div class="page-title">
-                <h4>Agregar Cuenta Bancaria</h4>
+                <h4>Agregar Ciudad</h4>
               </div>
               <button
                 type="button"
@@ -21,73 +21,27 @@
             <form @submit.prevent="submitAddForm">
               <div class="modal-body">
                 <div class="row">
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="mb-3">
-                      <label class="form-label">Banco <span class="text-danger">*</span></label>
+                      <label class="form-label">Nombre <span class="text-danger">*</span></label>
                       <input
                         type="text"
                         class="form-control"
-                        v-model="formData.banco"
-                        placeholder="Ej: Banco Atlántida"
+                        v-model="formData.nombre"
+                        placeholder="Ej: Tegucigalpa"
                         required
                       />
                     </div>
                   </div>
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="mb-3">
-                      <label class="form-label">Tipo de Cuenta <span class="text-danger">*</span></label>
-                      <select class="form-select" v-model="formData.tipo_cuenta" required>
-                        <option value="">Seleccione...</option>
-                        <option value="Cuenta de Ahorro">Cuenta de Ahorro</option>
-                        <option value="Cuenta de Cheques">Cuenta de Cheques</option>
+                      <label class="form-label">Departamento <span class="text-danger">*</span></label>
+                      <select class="form-select" v-model="formData.state_id" required>
+                        <option value="">Seleccionar departamento</option>
+                        <option v-for="state in states" :key="state.id" :value="state.id">
+                          {{ state.nombre }}
+                        </option>
                       </select>
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label">Moneda <span class="text-danger">*</span></label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.moneda"
-                        placeholder="Ej: Lempiras"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label">Número de Cuenta <span class="text-danger">*</span></label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.numero_cuenta"
-                        placeholder="Ej: 3200898785"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label">Titular <span class="text-danger">*</span></label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.titular"
-                        placeholder="Nombre completo del titular"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label">Imagen del Banco (URL)</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.imagen_banco"
-                        placeholder="URL de la imagen (opcional)"
-                      />
                     </div>
                   </div>
                   <div class="col-lg-12">
@@ -120,17 +74,17 @@
       </div>
     </div>
   </div>
-  <!-- /Add Bank Account -->
+  <!-- /Add City -->
 
-  <!-- Edit Bank Account -->
-  <div class="modal fade" id="edit-account">
+  <!-- Edit City -->
+  <div class="modal fade" id="edit-city">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
           <div class="content">
             <div class="modal-header">
               <div class="page-title">
-                <h4>Editar Cuenta Bancaria</h4>
+                <h4>Editar Ciudad</h4>
               </div>
               <button
                 type="button"
@@ -144,68 +98,26 @@
             <form @submit.prevent="submitEditForm">
               <div class="modal-body">
                 <div class="row">
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="mb-3">
-                      <label class="form-label">Banco <span class="text-danger">*</span></label>
+                      <label class="form-label">Nombre <span class="text-danger">*</span></label>
                       <input
                         type="text"
                         class="form-control"
-                        v-model="editFormData.banco"
+                        v-model="editFormData.nombre"
                         required
                       />
                     </div>
                   </div>
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="mb-3">
-                      <label class="form-label">Tipo de Cuenta <span class="text-danger">*</span></label>
-                      <select class="form-select" v-model="editFormData.tipo_cuenta" required>
-                        <option value="">Seleccione...</option>
-                        <option value="Cuenta de Ahorro">Cuenta de Ahorro</option>
-                        <option value="Cuenta de Cheques">Cuenta de Cheques</option>
+                      <label class="form-label">Departamento <span class="text-danger">*</span></label>
+                      <select class="form-select" v-model="editFormData.state_id" required>
+                        <option value="">Seleccionar departamento</option>
+                        <option v-for="state in states" :key="state.id" :value="state.id">
+                          {{ state.nombre }}
+                        </option>
                       </select>
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label">Moneda <span class="text-danger">*</span></label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="editFormData.moneda"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label">Número de Cuenta <span class="text-danger">*</span></label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="editFormData.numero_cuenta"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label">Titular <span class="text-danger">*</span></label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="editFormData.titular"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="mb-3">
-                      <label class="form-label">Imagen del Banco (URL)</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="editFormData.imagen_banco"
-                      />
                     </div>
                   </div>
                   <div class="col-lg-12">
@@ -229,7 +141,7 @@
                 </button>
                 <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
                   <span v-if="isSubmitting">Guardando...</span>
-                  <span v-else">Guardar Cambios</span>
+                  <span v-else>Guardar Cambios</span>
                 </button>
               </div>
             </form>
@@ -238,7 +150,7 @@
       </div>
     </div>
   </div>
-  <!-- /Edit Bank Account -->
+  <!-- /Edit City -->
 
   <!-- delete modal -->
   <div class="modal fade" id="delete-modal">
@@ -249,9 +161,9 @@
             <span class="rounded-circle d-inline-flex p-2 bg-danger-transparent mb-2"
               ><i class="ti ti-trash fs-24 text-danger"></i
             ></span>
-            <h4 class="fs-20 text-gray-9 fw-bold mb-2 mt-1">Eliminar Cuenta Bancaria</h4>
+            <h4 class="fs-20 text-gray-9 fw-bold mb-2 mt-1">Eliminar Ciudad</h4>
             <p class="text-gray-6 mb-0 fs-16">
-              ¿Estás seguro de que deseas eliminar esta cuenta bancaria?
+              ¿Estás seguro de que deseas eliminar esta ciudad?
             </p>
             <div class="modal-footer-btn mt-3 d-flex justify-content-center">
               <button
@@ -285,7 +197,7 @@ import Swal from 'sweetalert2';
 
 export default {
   props: {
-    account: {
+    city: {
       type: Object,
       default: null
     },
@@ -297,39 +209,31 @@ export default {
   data() {
     return {
       formData: {
-        banco: '',
-        tipo_cuenta: '',
-        moneda: '',
-        numero_cuenta: '',
-        titular: '',
-        imagen_banco: '',
+        nombre: '',
+        state_id: '',
         is_active: true
       },
       editFormData: {
         id: null,
-        banco: '',
-        tipo_cuenta: '',
-        moneda: '',
-        numero_cuenta: '',
-        titular: '',
-        imagen_banco: '',
+        nombre: '',
+        state_id: '',
         is_active: true
       },
+      states: [],
       isSubmitting: false
     };
   },
+  mounted() {
+    this.loadStates();
+  },
   watch: {
-    account: {
+    city: {
       handler(newVal) {
         if (newVal) {
           this.editFormData = {
             id: newVal.id,
-            banco: newVal.banco,
-            tipo_cuenta: newVal.tipo_cuenta,
-            moneda: newVal.moneda,
-            numero_cuenta: newVal.numero_cuenta,
-            titular: newVal.titular,
-            imagen_banco: newVal.imagen_banco || '',
+            nombre: newVal.nombre,
+            state_id: newVal.state_id,
             is_active: Boolean(newVal.is_active)
           };
         }
@@ -338,11 +242,25 @@ export default {
     }
   },
   methods: {
+    async loadStates() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:3000/api/v1/states/active', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        this.states = response.data.data || [];
+      } catch (error) {
+        console.error('Error loading states:', error);
+      }
+    },
+
     async submitAddForm() {
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.post('http://localhost:3000/api/v1/bank-accounts', this.formData, {
+        await axios.post('http://localhost:3000/api/v1/cities', this.formData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -350,20 +268,16 @@ export default {
 
         // Limpiar formulario
         this.formData = {
-          banco: '',
-          tipo_cuenta: '',
-          moneda: '',
-          numero_cuenta: '',
-          titular: '',
-          imagen_banco: '',
+          nombre: '',
+          state_id: '',
           is_active: true
         };
 
         // Emitir evento para recargar datos
-        this.$emit('account-saved');
+        this.$emit('city-saved');
 
         // Cerrar modal
-        const modalElement = document.getElementById('add-account');
+        const modalElement = document.getElementById('add-city');
         if (modalElement) {
           const closeButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
           if (closeButton) closeButton.click();
@@ -374,18 +288,18 @@ export default {
           Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
-            text: 'Cuenta bancaria creada exitosamente',
+            text: 'Ciudad creada exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
           });
         });
       } catch (error) {
-        console.error('Error creating bank account:', error);
+        console.error('Error creating city:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al crear la cuenta bancaria',
+          text: error.response?.data?.message || 'Error al crear la ciudad',
           confirmButtonColor: '#dc3545'
         });
       } finally {
@@ -399,17 +313,17 @@ export default {
         const token = localStorage.getItem('token');
         const { id, ...updateData } = this.editFormData;
 
-        await axios.put(`http://localhost:3000/api/v1/bank-accounts/${id}`, updateData, {
+        await axios.put(`http://localhost:3000/api/v1/cities/${id}`, updateData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
         // Emitir evento para recargar datos
-        this.$emit('account-saved');
+        this.$emit('city-saved');
 
         // Cerrar modal
-        const modalElement = document.getElementById('edit-account');
+        const modalElement = document.getElementById('edit-city');
         if (modalElement) {
           const closeButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
           if (closeButton) closeButton.click();
@@ -420,18 +334,18 @@ export default {
           Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
-            text: 'Cuenta bancaria actualizada exitosamente',
+            text: 'Ciudad actualizada exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
           });
         });
       } catch (error) {
-        console.error('Error updating bank account:', error);
+        console.error('Error updating city:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al actualizar la cuenta bancaria',
+          text: error.response?.data?.message || 'Error al actualizar la ciudad',
           confirmButtonColor: '#dc3545'
         });
       } finally {
@@ -440,19 +354,19 @@ export default {
     },
 
     async confirmDelete() {
-      if (!this.account || !this.account.id) return;
+      if (!this.city || !this.city.id) return;
 
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3000/api/v1/bank-accounts/${this.account.id}`, {
+        await axios.delete(`http://localhost:3000/api/v1/cities/${this.city.id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
         // Emitir evento para recargar datos
-        this.$emit('account-deleted');
+        this.$emit('city-deleted');
 
         // Cerrar modal
         const modalElement = document.getElementById('delete-modal');
@@ -466,18 +380,18 @@ export default {
           Swal.fire({
             icon: 'success',
             title: '¡Eliminada!',
-            text: 'Cuenta bancaria eliminada exitosamente',
+            text: 'Ciudad eliminada exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
           });
         });
       } catch (error) {
-        console.error('Error deleting bank account:', error);
+        console.error('Error deleting city:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al eliminar la cuenta bancaria',
+          text: error.response?.data?.message || 'Error al eliminar la ciudad',
           confirmButtonColor: '#dc3545'
         });
       } finally {

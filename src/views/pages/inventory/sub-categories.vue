@@ -33,23 +33,6 @@
             </div>
           </div>
           <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
-            <div class="dropdown me-2">
-              <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">{{ selectedCategoryLabel }}</a>
-              <ul class="dropdown-menu dropdown-menu-end p-3" style="max-height: 300px; overflow-y: auto;">
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByCategory(null)">Todas las categorías</a></li>
-                <li v-for="category in categories" :key="category.id">
-                  <a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByCategory(category.id)">{{ category.name }}</a>
-                </li>
-              </ul>
-            </div>
-            <div class="dropdown">
-              <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">{{ selectedStatusLabel }}</a>
-              <ul class="dropdown-menu dropdown-menu-end p-3">
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus(true)">Activo</a></li>
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus(false)">Inactivo</a></li>
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus(null)">Todos</a></li>
-              </ul>
-            </div>
           </div>
         </div>
 
@@ -84,16 +67,8 @@
                   <span class="badge bg-primary-light">{{ record.category_name || 'Sin categoría' }}</span>
                 </template>
 
-                <template v-else-if="column.key === 'description'">
-                  {{ record.description || '-' }}
-                </template>
-
                 <template v-else-if="column.key === 'products_count'">
                   <span class="badge bg-info">{{ record.products_count || 0 }}</span>
-                </template>
-
-                <template v-else-if="column.key === 'created_at'">
-                  {{ formatDate(record.created_at) }}
                 </template>
 
                 <template v-else-if="column.key === 'is_active'">
@@ -132,14 +107,12 @@ import { subcategoryService, categoryService } from '@/services/api.service';
 import { hasPermission } from '@/utils/permissions';
 
 const columns = [
-  { title: 'Código', dataIndex: 'id', key: 'id', sorter: true, width: 120 },
-  { title: 'Imagen', dataIndex: 'image_url', key: 'image_url', sorter: false, width: 80 },
+  { title: 'Código', dataIndex: 'id', key: 'id', sorter: true, width: 100 },
+  { title: 'Imagen', dataIndex: 'image_url', key: 'image_url', sorter: true, width: 80 },
   { title: 'Subcategoría', dataIndex: 'name', key: 'name', sorter: true },
-  { title: 'Categoría Padre', dataIndex: 'category_name', key: 'category_name', sorter: true, width: 150 },
-  { title: 'Descripción', dataIndex: 'description', key: 'description', sorter: false },
-  { title: 'Productos', dataIndex: 'products_count', key: 'products_count', sorter: true, width: 100 },
-  { title: 'Fecha de Creación', dataIndex: 'created_at', key: 'created_at', sorter: true, width: 150 },
-  { title: 'Estado', dataIndex: 'is_active', key: 'is_active', sorter: true, width: 100 },
+  { title: 'Categoría Padre', dataIndex: 'category_name', key: 'category_name', sorter: true, width: 200 },
+  { title: 'Productos', dataIndex: 'products_count', key: 'products_count', sorter: true, width: 120 },
+  { title: 'Estado', dataIndex: 'is_active', key: 'is_active', sorter: true, width: 120 },
   { title: '', key: 'action', sorter: false, width: 100 },
 ];
 

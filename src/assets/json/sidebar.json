@@ -50,7 +50,7 @@
             "route": "/pos/pos-5"
           },
           {
-            "menuValue": "Devoluciones",
+            "menuValue": "Devoluciones Ventas",
             "route": "/sales/sales-returns"
           },
           {
@@ -86,14 +86,26 @@
             "showSubRoute": false
           },
           {
-            "menuValue": "Libro de Ventas",
-            "route": "/sales-report/sales-report",
+            "menuValue": "Ventas por Vendedor",
+            "route": "/sales-report/best-sellers",
             "hasSubRoute": false,
             "showSubRoute": false
           },
           {
-            "menuValue": "Ventas por Vendedor",
+            "menuValue": "Estado Cuenta Ventas",
             "route": "/sales-report/best-sellers",
+            "hasSubRoute": false,
+            "showSubRoute": false
+          },
+          {
+            "menuValue": "Lista de Precios",
+            "route": "/sales-report/best-sellers",
+            "hasSubRoute": false,
+            "showSubRoute": false
+          },
+          {
+            "menuValue": "Libro de Ventas",
+            "route": "/sales-report/sales-report",
             "hasSubRoute": false,
             "showSubRoute": false
           }
@@ -216,12 +228,31 @@
         "showSubRoute": false
       },
       {
-        "menuValue": "Libro de Compras",
+        "menuValue": "Reportes",
         "icon": "ti ti-chart-pie-2",
-        "route": "/reports/purchase-report",
-        "active_link" : "/reports/purchase-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
+        "active_link": "inventory-report",
+        "hasSubRoute": true,
+        "showSubRoute": false,
+        "subMenus": [
+          {
+            "menuValue": "Reimpresiones",
+            "route": "/reports/purchase-report",
+            "hasSubRoute": false,
+            "showSubRoute": false
+          },
+          {
+            "menuValue": "Estado Cuenta Compras",
+            "route": "/reports/purchase-report",
+            "hasSubRoute": false,
+            "showSubRoute": false
+          },
+          {
+            "menuValue": "Libro de Compras",
+            "route": "/reports/purchase-report",
+            "hasSubRoute": false,
+            "showSubRoute": false
+          }
+        ]
       }
     ]
   },
@@ -233,8 +264,8 @@
       {
         "menuValue": "Clientes",
         "icon": "ti ti-users-group",
-        "route": "/ecommerce/customers",
-        "active_link" : "/ecommerce/customers",
+        "route": "/people/pos-customers",
+        "active_link" : "/people/pos-customers",
         "hasSubRoute": false,
         "showSubRoute": false
       },
@@ -248,9 +279,9 @@
       },
       {
         "menuValue": "Sucursales",
-        "icon": "ti ti ti-home-bolt",
-        "route": "/people/store-list",
-        "active_link" : "/people/store-list",
+        "icon": "ti ti-home-bolt",
+        "route": "/branches",
+        "active_link" : "/branches",
         "hasSubRoute": false,
         "showSubRoute": false
       },
@@ -263,27 +294,38 @@
         "showSubRoute": false
       },
       {
+        "menuValue": "Vehículos",
+        "icon": "ti ti-truck",
+        "route": "/vehicles",
+        "active_link" : "/vehicles",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
         "menuValue": "Ubicaciones",
         "icon": "ti ti-map-pin",
-        "active_link": "reports",
+        "active_link": "locations",
         "hasSubRoute": true,
         "showSubRoute": false,
         "subMenus": [
           {
             "menuValue": "Países",
             "route": "/location/countries",
+            "active_link": "/location/countries",
             "hasSubRoute": false,
             "showSubRoute": false
           },
           {
             "menuValue": "Departamentos",
             "route": "/location/states",
+            "active_link": "/location/states",
             "hasSubRoute": false,
             "showSubRoute": false
           },
           {
             "menuValue": "Ciudades",
             "route": "/location/cities",
+            "active_link": "/location/cities",
             "hasSubRoute": false,
             "showSubRoute": false
           }
@@ -297,26 +339,26 @@
     "separateRoute": false,
     "menu": [
       {
-        "menuValue": "Empleados",
-        "icon": "ti ti-user",
-        "route": "/hrm/employees-grid",
-        "active_link" : "/hrm/employees-grid",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
         "menuValue": "Departamentos",
         "icon": "ti ti-compass",
-        "route": "/hrm/department-grid",
-        "active_link": "/hrm/department-grid",
+        "route": "/hrm/departments",
+        "active_link": "/hrm/departments",
         "hasSubRoute": false,
         "showSubRoute": false
       },
       {
         "menuValue": "Cargos/Puestos",
         "icon": "ti ti-git-merge",
-        "route": "/hrm/designation",
-        "active_link": "/hrm/designation",
+        "route": "/hrm/positions",
+        "active_link": "/hrm/positions",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Empleados",
+        "icon": "ti ti-user",
+        "route": "/hrm/employees",
+        "active_link" : "/hrm/employees",
         "hasSubRoute": false,
         "showSubRoute": false
       }
@@ -379,14 +421,6 @@
         "icon": "ti ti-jump-rope",
         "route": "/users/roles-permissions",
         "active_link": "/users/roles-permissions",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Eliminación de Cuenta",
-        "icon": "ti ti-trash-x",
-        "route": "/users/delete-account",
-        "active_link": "/users/delete-account",
         "hasSubRoute": false,
         "showSubRoute": false
       }
@@ -511,6 +545,13 @@
             "menuValue": "Monedas",
             "route": "/financial-settings/currency-settings",
             "active_link": "/financial-settings/currency-settings",
+            "hasSubRoute": false,
+            "showSubRoute": false
+          },
+          {
+            "menuValue": "Tipos de Beneficiarios",
+            "route": "/financial-settings/beneficiary-type-settings",
+            "active_link": "/financial-settings/beneficiary-type-settings",
             "hasSubRoute": false,
             "showSubRoute": false
           }

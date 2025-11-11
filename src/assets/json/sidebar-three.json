@@ -987,6 +987,13 @@
             "active_link": "/financial-settings/currency-settings",
             "hasSubRoute": false,
             "showSubRoute": false
+          },
+          {
+            "menuValue": "Beneficiary Types",
+            "route": "/financial-settings/beneficiary-type-settings",
+            "active_link": "/financial-settings/beneficiary-type-settings",
+            "hasSubRoute": false,
+            "showSubRoute": false
           }
         ]
       },

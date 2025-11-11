@@ -1,0 +1,240 @@
+<template>
+  <layout-header></layout-header>
+  <layout-sidebar></layout-sidebar>
+  <div class="page-wrapper">
+    <div class="content">
+      <div class="page-header">
+        <div class="add-item d-flex">
+          <div class="page-title">
+            <h4>Empleados</h4>
+            <h6>Administra los empleados del sistema</h6>
+          </div>
+        </div>
+        <ul class="table-top-head">
+          <li>
+            <a @click="loadEmployees" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
+              ><i class="ti ti-refresh"></i
+            ></a>
+          </li>
+          <li>
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Colapsar" id="collapse-header" @click="toggleHeader"><i class="ti ti-chevron-up"></i></a>
+          </li>
+        </ul>
+        <div class="page-btn">
+          <a
+            href="#"
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#add-employee"
+            @click="openAddModal"
+            ><i class="ti ti-circle-plus me-1"></i>Agregar Nuevo Empleado</a
+          >
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div v-if="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div v-else-if="error" class="alert alert-danger" role="alert">
+        {{ error }}
+      </div>
+
+      <!-- Employees Table -->
+      <div v-else class="card table-list-card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table datanew">
+              <thead>
+                <tr>
+                  <th @click="sortBy('id')" style="cursor: pointer">
+                    ID <i :class="getSortIcon('id')"></i>
+                  </th>
+                  <th @click="sortBy('codigo')" style="cursor: pointer">
+                    Código <i :class="getSortIcon('codigo')"></i>
+                  </th>
+                  <th @click="sortBy('nombre')" style="cursor: pointer">
+                    Nombre <i :class="getSortIcon('nombre')"></i>
+                  </th>
+                  <th @click="sortBy('dni')" style="cursor: pointer">
+                    DNI <i :class="getSortIcon('dni')"></i>
+                  </th>
+                  <th @click="sortBy('email')" style="cursor: pointer">
+                    Email <i :class="getSortIcon('email')"></i>
+                  </th>
+                  <th @click="sortBy('telefono')" style="cursor: pointer">
+                    Teléfono <i :class="getSortIcon('telefono')"></i>
+                  </th>
+                  <th @click="sortBy('department_name')" style="cursor: pointer">
+                    Departamento <i :class="getSortIcon('department_name')"></i>
+                  </th>
+                  <th @click="sortBy('position_name')" style="cursor: pointer">
+                    Cargo <i :class="getSortIcon('position_name')"></i>
+                  </th>
+                  <th @click="sortBy('is_active')" style="cursor: pointer">
+                    Estado <i :class="getSortIcon('is_active')"></i>
+                  </th>
+                  <th class="no-sort">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="employees.length === 0">
+                  <td colspan="10" class="text-center">No hay empleados registrados</td>
+                </tr>
+                <tr v-for="employee in employees" :key="employee.id">
+                  <td>{{ employee.id }}</td>
+                  <td>{{ employee.codigo || '-' }}</td>
+                  <td>{{ employee.nombre }} {{ employee.apellido }}</td>
+                  <td>{{ employee.dni || '-' }}</td>
+                  <td>{{ employee.email || '-' }}</td>
+                  <td>{{ employee.telefono || '-' }}</td>
+                  <td>{{ employee.department_name || '-' }}</td>
+                  <td>{{ employee.position_name || '-' }}</td>
+                  <td>
+                    <span :class="employee.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                      {{ employee.is_active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                  <td class="action-table-data justify-content-end">
+                    <div class="edit-delete-action">
+                      <a
+                        class="me-2 p-2"
+                        href="#"
+                        @click.prevent="openEditModal(employee)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#edit-employee"
+                      >
+                        <i data-feather="edit" class="feather-edit"></i>
+                      </a>
+                      <a
+                        class="confirm-text p-2"
+                        href="#"
+                        @click.prevent="openDeleteModal(employee)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#delete-employee-modal"
+                      >
+                        <i data-feather="trash-2" class="feather-trash-2"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <employee-modal
+    :employee="selectedEmployee"
+    :is-edit="isEditMode"
+    @employee-saved="onEmployeeSaved"
+    @employee-deleted="onEmployeeDeleted"
+  ></employee-modal>
+</template>
+
+<script>
+import axios from 'axios';
+import Swal from 'sweetalert2';
+
+export default {
+  data() {
+    return {
+      employees: [],
+      selectedEmployee: null,
+      isEditMode: false,
+      loading: false,
+      error: null,
+      sortColumn: null,
+      sortDirection: 'asc'
+    };
+  },
+  mounted() {
+    this.loadEmployees();
+  },
+  methods: {
+    async loadEmployees() {
+      this.loading = true;
+      this.error = null;
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:3000/api/v1/employees', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        this.employees = response.data.data || [];
+      } catch (error) {
+        console.error('Error loading employees:', error);
+        this.error = 'Error al cargar los empleados';
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    openAddModal() {
+      this.selectedEmployee = null;
+      this.isEditMode = false;
+    },
+
+    openEditModal(employee) {
+      this.selectedEmployee = { ...employee };
+      this.isEditMode = true;
+    },
+
+    openDeleteModal(employee) {
+      this.selectedEmployee = employee;
+    },
+
+    onEmployeeSaved() {
+      this.loadEmployees();
+    },
+
+    onEmployeeDeleted() {
+      this.loadEmployees();
+    },
+
+    toggleHeader() {
+      document.getElementById("collapse-header").classList.toggle("active");
+      document.body.classList.toggle("header-collapse");
+    },
+
+    sortBy(column) {
+      if (this.sortColumn === column) {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortColumn = column;
+        this.sortDirection = 'asc';
+      }
+
+      this.employees.sort((a, b) => {
+        let valueA = a[column];
+        let valueB = b[column];
+
+        // Handle null/undefined values
+        if (valueA === null || valueA === undefined) valueA = '';
+        if (valueB === null || valueB === undefined) valueB = '';
+
+        // Convert to lowercase for string comparison
+        if (typeof valueA === 'string') valueA = valueA.toLowerCase();
+        if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+
+        if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
+        if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    },
+
+    getSortIcon(column) {
+      if (this.sortColumn !== column) {
+        return 'ti ti-selector';
+      }
+      return this.sortDirection === 'asc' ? 'ti ti-arrow-up' : 'ti ti-arrow-down';
+    },
+  },
+};
+</script>

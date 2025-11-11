@@ -1,79 +1,53 @@
 <template>
-  <!-- Add Warehouse -->
-  <div class="modal fade" id="add-warehouse">
+  <!-- Add Position -->
+  <div class="modal fade" id="add-position">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
           <div class="content">
             <div class="modal-header">
               <div class="page-title">
-                <h4>Agregar Bodega</h4>
+                <h4>Agregar Cargo/Puesto</h4>
               </div>
-              <button
-                type="button"
-                class="close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              >
+              <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <form @submit.prevent="submitAddForm">
               <div class="modal-body">
                 <div class="row">
-                  <div class="col-lg-12">
+                  <div class="col-lg-8">
                     <div class="mb-3">
                       <label class="form-label">Nombre <span class="text-danger">*</span></label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.nombre"
-                        placeholder="Ej: BODEGA 101 TIENDA"
-                        required
-                      />
+                      <input type="text" class="form-control" v-model="formData.nombre" placeholder="Ej: Gerente General" required />
                     </div>
                   </div>
-                  <div class="col-lg-6">
+                  <div class="col-lg-4">
                     <div class="mb-3">
-                      <label class="form-label">Encargado</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.encargado"
-                        placeholder="Nombre del encargado (opcional)"
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label">Ubicación</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.ubicacion"
-                        placeholder="Ej: Tienda"
-                      />
+                      <label class="form-label">Departamento</label>
+                      <select class="form-control" v-model="formData.department_id">
+                        <option value="">Seleccionar...</option>
+                        <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.nombre }}</option>
+                      </select>
                     </div>
                   </div>
                   <div class="col-lg-12">
-                    <div
-                      class="status-toggle modal-status d-flex justify-content-between align-items-center mb-3"
-                    >
-                      <span class="status-label">Activa</span>
-                      <input type="checkbox" id="add-is-active" class="check" v-model="formData.is_active" />
-                      <label for="add-is-active" class="checktoggle"></label>
+                    <div class="mb-3">
+                      <label class="form-label">Descripción</label>
+                      <textarea class="form-control" v-model="formData.descripcion" placeholder="Descripción del cargo" rows="3"></textarea>
+                    </div>
+                  </div>
+                  <div class="col-lg-12">
+                    <div class="status-toggle modal-status d-flex justify-content-between align-items-center mb-3">
+                      <span class="status-label">Activo</span>
+                      <input type="checkbox" id="add-is-active-position" class="check" v-model="formData.is_active" />
+                      <label for="add-is-active-position" class="checktoggle"></label>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary me-2"
-                  data-bs-dismiss="modal"
-                >
-                  Cancelar
-                </button>
+                <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
                 <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
                   <span v-if="isSubmitting">Guardando...</span>
                   <span v-else>Guardar</span>
@@ -85,80 +59,56 @@
       </div>
     </div>
   </div>
-  <!-- /Add Warehouse -->
 
-  <!-- Edit Warehouse -->
-  <div class="modal fade" id="edit-warehouse">
+  <!-- Edit Position -->
+  <div class="modal fade" id="edit-position">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
           <div class="content">
             <div class="modal-header">
               <div class="page-title">
-                <h4>Editar Bodega</h4>
+                <h4>Editar Cargo/Puesto</h4>
               </div>
-              <button
-                type="button"
-                class="close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              >
+              <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <form @submit.prevent="submitEditForm">
               <div class="modal-body">
                 <div class="row">
-                  <div class="col-lg-12">
+                  <div class="col-lg-8">
                     <div class="mb-3">
                       <label class="form-label">Nombre <span class="text-danger">*</span></label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="editFormData.nombre"
-                        required
-                      />
+                      <input type="text" class="form-control" v-model="editFormData.nombre" required />
                     </div>
                   </div>
-                  <div class="col-lg-6">
+                  <div class="col-lg-4">
                     <div class="mb-3">
-                      <label class="form-label">Encargado</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="editFormData.encargado"
-                      />
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="mb-3">
-                      <label class="form-label">Ubicación</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="editFormData.ubicacion"
-                      />
+                      <label class="form-label">Departamento</label>
+                      <select class="form-control" v-model="editFormData.department_id">
+                        <option value="">Seleccionar...</option>
+                        <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.nombre }}</option>
+                      </select>
                     </div>
                   </div>
                   <div class="col-lg-12">
-                    <div
-                      class="status-toggle modal-status d-flex justify-content-between align-items-center mb-3"
-                    >
-                      <span class="status-label">Activa</span>
-                      <input type="checkbox" id="edit-is-active" class="check" v-model="editFormData.is_active" />
-                      <label for="edit-is-active" class="checktoggle"></label>
+                    <div class="mb-3">
+                      <label class="form-label">Descripción</label>
+                      <textarea class="form-control" v-model="editFormData.descripcion" rows="3"></textarea>
+                    </div>
+                  </div>
+                  <div class="col-lg-12">
+                    <div class="status-toggle modal-status d-flex justify-content-between align-items-center mb-3">
+                      <span class="status-label">Activo</span>
+                      <input type="checkbox" id="edit-is-active-position" class="check" v-model="editFormData.is_active" />
+                      <label for="edit-is-active-position" class="checktoggle"></label>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary me-2"
-                  data-bs-dismiss="modal"
-                >
-                  Cancelar
-                </button>
+                <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
                 <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
                   <span v-if="isSubmitting">Guardando...</span>
                   <span v-else>Guardar Cambios</span>
@@ -170,10 +120,9 @@
       </div>
     </div>
   </div>
-  <!-- /Edit Warehouse -->
 
   <!-- delete modal -->
-  <div class="modal fade" id="delete-modal">
+  <div class="modal fade" id="delete-position-modal">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -181,9 +130,9 @@
             <span class="rounded-circle d-inline-flex p-2 bg-danger-transparent mb-2"
               ><i class="ti ti-trash fs-24 text-danger"></i
             ></span>
-            <h4 class="fs-20 text-gray-9 fw-bold mb-2 mt-1">Eliminar Bodega</h4>
+            <h4 class="fs-20 text-gray-9 fw-bold mb-2 mt-1">Eliminar Cargo</h4>
             <p class="text-gray-6 mb-0 fs-16">
-              ¿Estás seguro de que deseas eliminar esta bodega?
+              ¿Estás seguro de que deseas eliminar este cargo?
             </p>
             <div class="modal-footer-btn mt-3 d-flex justify-content-center">
               <button
@@ -217,42 +166,29 @@ import Swal from 'sweetalert2';
 
 export default {
   props: {
-    warehouse: {
-      type: Object,
-      default: null
-    },
-    isEdit: {
-      type: Boolean,
-      default: false
-    }
+    position: { type: Object, default: null },
+    isEdit: { type: Boolean, default: false }
   },
   data() {
     return {
-      formData: {
-        nombre: '',
-        encargado: '',
-        ubicacion: '',
-        is_active: true
-      },
-      editFormData: {
-        id: null,
-        nombre: '',
-        encargado: '',
-        ubicacion: '',
-        is_active: true
-      },
+      formData: { nombre: '', descripcion: '', department_id: '', is_active: true },
+      editFormData: { id: null, nombre: '', descripcion: '', department_id: '', is_active: true },
+      departments: [],
       isSubmitting: false
     };
   },
+  mounted() {
+    this.fetchDepartments();
+  },
   watch: {
-    warehouse: {
+    position: {
       handler(newVal) {
         if (newVal) {
           this.editFormData = {
             id: newVal.id,
             nombre: newVal.nombre,
-            encargado: newVal.encargado || '',
-            ubicacion: newVal.ubicacion || '',
+            descripcion: newVal.descripcion || '',
+            department_id: newVal.department_id || '',
             is_active: Boolean(newVal.is_active)
           };
         }
@@ -261,149 +197,136 @@ export default {
     }
   },
   methods: {
+    async fetchDepartments() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:3000/api/v1/departments/active', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        this.departments = response.data.data || [];
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+      }
+    },
     async submitAddForm() {
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.post('http://localhost:3000/api/v1/warehouses', this.formData, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        await axios.post('http://localhost:3000/api/v1/positions', this.formData, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        // Limpiar formulario
-        this.formData = {
-          nombre: '',
-          encargado: '',
-          ubicacion: '',
-          is_active: true
-        };
+        this.formData = { nombre: '', descripcion: '', department_id: '', is_active: true };
+        this.$emit('position-saved');
 
-        // Emitir evento para recargar datos
-        this.$emit('warehouse-saved');
-
-        // Cerrar modal
-        const modalElement = document.getElementById('add-warehouse');
+        const modalElement = document.getElementById('add-position');
         if (modalElement) {
           const closeButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
           if (closeButton) closeButton.click();
         }
 
-        // Mostrar mensaje de éxito
         this.$nextTick(() => {
           Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
-            text: 'Bodega creada exitosamente',
+            text: 'Cargo creado exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
           });
         });
       } catch (error) {
-        console.error('Error creating warehouse:', error);
+        console.error('Error creating position:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al crear la bodega',
+          text: error.response?.data?.message || 'Error al crear el cargo',
           confirmButtonColor: '#dc3545'
         });
       } finally {
         this.isSubmitting = false;
       }
     },
-
     async submitEditForm() {
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
         const { id, ...updateData } = this.editFormData;
 
-        await axios.put(`http://localhost:3000/api/v1/warehouses/${id}`, updateData, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        await axios.put(`http://localhost:3000/api/v1/positions/${id}`, updateData, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        // Emitir evento para recargar datos
-        this.$emit('warehouse-saved');
+        this.$emit('position-saved');
 
-        // Cerrar modal
-        const modalElement = document.getElementById('edit-warehouse');
+        const modalElement = document.getElementById('edit-position');
         if (modalElement) {
           const closeButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
           if (closeButton) closeButton.click();
         }
 
-        // Mostrar mensaje de éxito
         this.$nextTick(() => {
           Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
-            text: 'Bodega actualizada exitosamente',
+            text: 'Cargo actualizado exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
           });
         });
       } catch (error) {
-        console.error('Error updating warehouse:', error);
+        console.error('Error updating position:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al actualizar la bodega',
+          text: error.response?.data?.message || 'Error al actualizar el cargo',
           confirmButtonColor: '#dc3545'
         });
       } finally {
         this.isSubmitting = false;
       }
     },
-
     async confirmDelete() {
-      if (!this.warehouse || !this.warehouse.id) return;
+      if (!this.position || !this.position.id) return;
 
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3000/api/v1/warehouses/${this.warehouse.id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        await axios.delete(`http://localhost:3000/api/v1/positions/${this.position.id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        // Emitir evento para recargar datos
-        this.$emit('warehouse-deleted');
+        this.$emit('position-deleted');
 
-        // Cerrar modal
-        const modalElement = document.getElementById('delete-modal');
+        const modalElement = document.getElementById('delete-position-modal');
         if (modalElement) {
           const closeButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
           if (closeButton) closeButton.click();
         }
 
-        // Mostrar mensaje de éxito
         this.$nextTick(() => {
           Swal.fire({
             icon: 'success',
-            title: '¡Eliminada!',
-            text: 'Bodega eliminada exitosamente',
+            title: '¡Eliminado!',
+            text: 'Cargo eliminado exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
           });
         });
       } catch (error) {
-        console.error('Error deleting warehouse:', error);
+        console.error('Error deleting position:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al eliminar la bodega',
+          text: error.response?.data?.message || 'Error al eliminar el cargo',
           confirmButtonColor: '#dc3545'
         });
       } finally {
         this.isSubmitting = false;
       }
     }
-  },
+  }
 };
 </script>

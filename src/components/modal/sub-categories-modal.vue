@@ -32,16 +32,6 @@
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Descripción</label>
-                <textarea
-                  class="form-control"
-                  v-model="form.description"
-                  rows="3"
-                  placeholder="Descripción de la subcategoría"
-                ></textarea>
-              </div>
-
-              <div class="mb-3">
                 <label class="form-label">Imagen</label>
                 <input
                   type="text"
@@ -104,16 +94,6 @@
                   required
                   placeholder="Ej: Laptops"
                 />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Descripción</label>
-                <textarea
-                  class="form-control"
-                  v-model="formEdit.description"
-                  rows="3"
-                  placeholder="Descripción de la subcategoría"
-                ></textarea>
               </div>
 
               <div class="mb-3">
@@ -199,7 +179,6 @@ export default {
       // Formulario para agregar
       form: {
         name: '',
-        description: '',
         category_id: '',
         image_url: '',
         is_active: 1
@@ -207,7 +186,6 @@ export default {
       // Formulario para editar
       formEdit: {
         name: '',
-        description: '',
         category_id: '',
         image_url: '',
         is_active: 1
@@ -228,7 +206,6 @@ export default {
         if (newVal) {
           this.formEdit = {
             name: newVal.name || '',
-            description: newVal.description || '',
             category_id: newVal.category_id || '',
             image_url: newVal.image_url || '',
             is_active: newVal.is_active ? 1 : 0
@@ -261,7 +238,6 @@ export default {
       try {
         const payload = {
           name: this.form.name,
-          description: this.form.description || null,
           category_id: this.form.category_id,
           image_url: this.form.image_url || null,
           is_active: this.form.is_active === 1 || this.form.is_active === true
@@ -291,7 +267,6 @@ export default {
       try {
         const payload = {
           name: this.formEdit.name,
-          description: this.formEdit.description || null,
           category_id: this.formEdit.category_id,
           image_url: this.formEdit.image_url || null,
           is_active: this.formEdit.is_active === 1 || this.formEdit.is_active === true

@@ -94,107 +94,6 @@
             </div>
           </div>
           <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
-            <!-- Filtro por Categoría -->
-            <div class="dropdown me-2">
-              <a 
-                href="javascript:void(0);" 
-                class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" 
-                data-bs-toggle="dropdown"
-              >
-                {{ filters.category_id ? getCategoryName(filters.category_id) : 'Categoría' }}
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end p-3">
-                <li>
-                  <a 
-                    href="javascript:void(0);" 
-                    class="dropdown-item rounded-1"
-                    @click="filters.category_id = null; loadProducts()"
-                  >
-                    Todas las categorías
-                  </a>
-                </li>
-                <li v-for="category in categories" :key="category.id">
-                  <a 
-                    href="javascript:void(0);" 
-                    class="dropdown-item rounded-1"
-                    @click="filters.category_id = category.id; loadProducts()"
-                  >
-                    {{ category.name }}
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Filtro por Marca -->
-            <div class="dropdown me-2" v-if="brands.length > 0">
-              <a 
-                href="javascript:void(0);" 
-                class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" 
-                data-bs-toggle="dropdown"
-              >
-                {{ filters.brand_id ? getBrandName(filters.brand_id) : 'Marca' }}
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end p-3">
-                <li>
-                  <a 
-                    href="javascript:void(0);" 
-                    class="dropdown-item rounded-1"
-                    @click="filters.brand_id = null; loadProducts()"
-                  >
-                    Todas las marcas
-                  </a>
-                </li>
-                <li v-for="brand in brands" :key="brand.id">
-                  <a 
-                    href="javascript:void(0);" 
-                    class="dropdown-item rounded-1"
-                    @click="filters.brand_id = brand.id; loadProducts()"
-                  >
-                    {{ brand.name }}
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Filtro por Estado -->
-            <div class="dropdown me-2">
-              <a 
-                href="javascript:void(0);" 
-                class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" 
-                data-bs-toggle="dropdown"
-              >
-                {{ getStatusLabel(filters.status) }}
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end p-3">
-                <li>
-                  <a 
-                    href="javascript:void(0);" 
-                    class="dropdown-item rounded-1"
-                    @click="filters.status = 'active'; loadProducts()"
-                  >
-                    Activos
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="javascript:void(0);" 
-                    class="dropdown-item rounded-1"
-                    @click="filters.status = 'inactive'; loadProducts()"
-                  >
-                    Inactivos
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="javascript:void(0);" 
-                    class="dropdown-item rounded-1"
-                    @click="filters.status = null; loadProducts()"
-                  >
-                    Todos
-                  </a>
-                </li>
-              </ul>
-            </div>
           </div>
         </div>
 
@@ -225,72 +124,57 @@
               :loading="loading"
             >
               <template #bodyCell="{ column, record }">
-                <!-- Columna de producto con imagen -->
-                <template v-if="column.key === 'product'">
-                  <div class="productimgname">
-                    <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                      <img 
-                        :src="record.image || getDefaultImage()"
-                        alt="producto"
-                        @error="handleImageError"
-                      />
-                    </a>
-                    <a href="javascript:void(0);">{{ record.name }}</a>
-                  </div>
+                <!-- Columna de imagen -->
+                <template v-if="column.key === 'image_url'">
+                  <a href="javascript:void(0);" class="avatar avatar-md">
+                    <img
+                      :src="record.image_url || getDefaultImage()"
+                      alt="producto"
+                      @error="handleImageError"
+                    />
+                  </a>
                 </template>
 
                 <!-- Columna de código -->
                 <template v-else-if="column.key === 'code'">
-                  <span class="badge bg-light text-dark">{{ record.code }}</span>
+                  <span class="badge bg-light text-dark">{{ record.code || '-' }}</span>
                 </template>
 
-                <!-- Columna de código de barras -->
-                <template v-else-if="column.key === 'barcode'">
-                  <span v-if="record.barcode">{{ record.barcode }}</span>
-                  <span v-else class="text-muted">-</span>
+                <!-- Columna de nombre (Ítem) -->
+                <template v-else-if="column.key === 'name'">
+                  <a href="javascript:void(0);" @click="viewProduct(record.id)">{{ record.name }}</a>
                 </template>
 
-                <!-- Columna de categoría -->
-                <template v-else-if="column.key === 'category'">
+                <!-- Columna de Grupo/Subgrupo -->
+                <template v-else-if="column.key === 'category_subcategory'">
                   <span class="badge bg-info-transparent">
-                    {{ record.category_name || 'Sin categoría' }}
+                    {{ record.category_name || '-' }}{{ record.subcategory_name ? ' / ' + record.subcategory_name : '' }}
                   </span>
                 </template>
 
-                <!-- Columna de marca -->
-                <template v-else-if="column.key === 'brand'">
-                  <span v-if="record.brand_name">{{ record.brand_name }}</span>
-                  <span v-else class="text-muted">-</span>
-                </template>
-
-                <!-- Columna de precio -->
-                <template v-else-if="column.key === 'price'">
-                  <span class="fw-bold text-success">
-                    L. {{ formatPrice(record.sale_price) }}
-                  </span>
-                </template>
-
-                <!-- Columna de unidad -->
-                <template v-else-if="column.key === 'unit'">
-                  {{ record.unit || 'Pc' }}
-                </template>
-
-                <!-- Columna de stock -->
+                <!-- Columna de Existencias (stock) -->
                 <template v-else-if="column.key === 'stock'">
-                  <span 
-                    :class="getStockClass(record.current_stock, record.min_stock)"
+                  <span
+                    :class="getStockClass(record.stock)"
                     class="badge"
                   >
-                    {{ record.current_stock || 0 }}
+                    {{ record.stock || 0 }}
                   </span>
                 </template>
 
-                <!-- Columna de estado -->
-                <template v-else-if="column.key === 'status'">
-                  <span 
-                    :class="record.status === 'active' ? 'badge bg-success' : 'badge bg-danger'"
+                <!-- Columna de Precio Total (price_1) -->
+                <template v-else-if="column.key === 'price_1'">
+                  <span class="fw-bold text-success">
+                    L. {{ formatPrice(record.price_1) }}
+                  </span>
+                </template>
+
+                <!-- Columna de Estatus (is_active) -->
+                <template v-else-if="column.key === 'is_active'">
+                  <span
+                    :class="record.is_active ? 'badge bg-success' : 'badge bg-danger'"
                   >
-                    {{ record.status === 'active' ? 'Activo' : 'Inactivo' }}
+                    {{ record.is_active ? 'Activo' : 'Inactivo' }}
                   </span>
                 </template>
 
@@ -298,31 +182,31 @@
                 <template v-else-if="column.key === 'action'">
                   <div class="action-table-data">
                     <div class="edit-delete-action">
-                      <a 
-                        class="me-2 edit-icon p-2" 
+                      <a
+                        class="me-2 edit-icon p-2"
                         href="javascript:void(0);"
                         @click="viewProduct(record.id)"
                         title="Ver detalles"
                       >
                         <vue-feather type="eye" class="action-eye"></vue-feather>
                       </a>
-                      <a 
-                        class="me-2 p-2" 
+                      <a
+                        class="me-2 p-2"
                         href="javascript:void(0);"
                         @click="editProduct(record.id)"
                         title="Editar"
                       >
                         <vue-feather type="edit"></vue-feather>
                       </a>
-                      <a 
-                        class="p-2" 
+                      <a
+                        class="p-2"
                         href="javascript:void(0);"
                         @click="confirmDelete(record)"
                         title="Eliminar"
                       >
                         <vue-feather type="trash-2"></vue-feather>
                       </a>
-                    </div>	
+                    </div>
                   </div>
                 </template>
               </template>
@@ -503,10 +387,7 @@ export default {
     const filters = reactive({
       page: 1,
       limit: 50,
-      search: '',
-      category_id: null,
-      brand_id: null,
-      status: 'active'
+      search: ''
     });
 
     const pagination = reactive({
@@ -519,63 +400,58 @@ export default {
     // Definición de columnas
     const columns = [
       {
+        title: 'IMG',
+        dataIndex: 'image_url',
+        key: 'image_url',
+        sorter: true,
+        width: 80
+      },
+      {
         title: 'Código',
         dataIndex: 'code',
         key: 'code',
-        width: 100
+        sorter: true,
+        width: 120
       },
       {
-        title: 'Producto',
+        title: 'Ítem',
         dataIndex: 'name',
-        key: 'product',
-        width: 250
+        key: 'name',
+        sorter: true
       },
       {
-        title: 'Código de Barras',
-        dataIndex: 'barcode',
-        key: 'barcode',
-        width: 150
+        title: 'Grupo/Subgrupo',
+        dataIndex: 'category_subcategory',
+        key: 'category_subcategory',
+        sorter: true,
+        width: 200
       },
       {
-        title: 'Categoría',
-        dataIndex: 'category_name',
-        key: 'category',
-        width: 120
-      },
-      {
-        title: 'Marca',
-        dataIndex: 'brand_name',
-        key: 'brand',
-        width: 120
-      },
-      {
-        title: 'Precio',
-        dataIndex: 'sale_price',
-        key: 'price',
-        width: 100
-      },
-      {
-        title: 'Unidad',
-        dataIndex: 'unit',
-        key: 'unit',
-        width: 80
-      },
-      {
-        title: 'Stock',
-        dataIndex: 'current_stock',
+        title: 'Existencias',
+        dataIndex: 'stock',
         key: 'stock',
-        width: 80
-      },
-      {
-        title: 'Estado',
-        dataIndex: 'status',
-        key: 'status',
-        width: 100
-      },
-      {
-        title: 'Acciones',
-        key: 'action',
+        sorter: true,
         width: 120
+      },
+      {
+        title: 'Precio Total',
+        dataIndex: 'price_1',
+        key: 'price_1',
+        sorter: true,
+        width: 120
+      },
+      {
+        title: 'Estatus',
+        dataIndex: 'is_active',
+        key: 'is_active',
+        sorter: true,
+        width: 120
+      },
+      {
+        title: '',
+        key: 'action',
+        sorter: false,
+        width: 100
       }
     ];
 
@@ -615,10 +491,7 @@ export default {
         const params = {
           page: filters.page,
           limit: filters.limit,
-          search: filters.search || undefined,
-          category_id: filters.category_id || undefined,
-          brand_id: filters.brand_id || undefined,
-          status: filters.status || undefined
+          search: filters.search || undefined
         };
 
         const response = await api.get('/products', { params });
@@ -758,12 +631,11 @@ export default {
       return parseFloat(price).toFixed(2);
     };
 
-    const getStockClass = (currentStock, minStock) => {
-      const stock = currentStock || 0;
-      const min = minStock || 0;
+    const getStockClass = (stock) => {
+      const currentStock = stock || 0;
 
-      if (stock === 0) return 'bg-danger';
-      if (stock <= min) return 'bg-warning';
+      if (currentStock === 0) return 'bg-danger';
+      if (currentStock <= 10) return 'bg-warning';
       return 'bg-success';
     };
 
@@ -784,11 +656,16 @@ export default {
     };
 
     const getDefaultImage = () => {
-      return '/src/assets/img/products/default-product.png';
+      // Usar un data URL simple como placeholder
+      return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNMjAgMTBDMTUgMTAgMTEgMTQgMTEgMTlDMTEgMjQgMTUgMjggMjAgMjhDMjUgMjggMjkgMjQgMjkgMTlDMjkgMTQgMjUgMTAgMjAgMTBaTTIwIDI2QzE2IDI2IDEzIDIzIDEzIDE5QzEzIDE1IDE2IDEyIDIwIDEyQzI0IDEyIDI3IDE1IDI3IDE5QzI3IDIzIDI0IDI2IDIwIDI2WiIgZmlsbD0iIzlDQTNCMCIvPjxwYXRoIGQ9Ik0yNyAzMEgxM0MxMiAzMCAxMSAzMSAxMSAzMlYzM0MxMSAzNCAxMiAzNSAxMyAzNUgyN0MyOCAzNSAyOSAzNCAyOSAzM1YzMkMyOSAzMSAyOCAzMCAyNyAzMFoiIGZpbGw9IiM5Q0EzQjAiLz48L3N2Zz4=';
     };
 
     const handleImageError = (event) => {
-      event.target.src = getDefaultImage();
+      // Prevenir loop infinito: solo intentar una vez
+      if (!event.target.dataset.errorHandled) {
+        event.target.dataset.errorHandled = 'true';
+        event.target.src = getDefaultImage();
+      }
     };
 
     // Lifecycle hook

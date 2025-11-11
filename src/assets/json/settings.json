@@ -21,7 +21,8 @@
         { "title": "Plantilla de Factura", "routes": "/app-settings/invoice-templates"},
         { "title": "Impresora", "routes": "/app-settings/printer-settings" },
         { "title": "POS", "routes": "/app-settings/pos-settings" },
-        { "title": "Campos Personalizados", "routes": "/app-settings/custom-fields" }
+        { "title": "Campos Personalizados", "routes": "/app-settings/custom-fields" },
+        { "title": "Resoluciones", "routes": "/financial-settings/resolution-settings" }
       ]
     },
     {
@@ -31,7 +32,8 @@
       "subMenu": [
         { "title": "Cuentas Bancarias", "routes": "/financial-settings/bank-settings-grid" },
         { "title": "Tasas de Impuesto", "routes": "/financial-settings/tax-rates" },
-        { "title": "Monedas", "routes": "/financial-settings/currency-settings" }
+        { "title": "Monedas", "routes": "/financial-settings/currency-settings" },
+        { "title": "Tipos de Beneficiarios", "routes": "/financial-settings/beneficiary-type-settings" }
       ]
     }
 ]

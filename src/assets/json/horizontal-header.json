@@ -51,7 +51,8 @@
         "subRoutes": [
           { "tittle": "Cuentas Bancarias", "route": "/financial-settings/bank-settings-grid" },
           { "tittle": "Tasas de Impuesto", "route": "/financial-settings/tax-rates" },
-          { "tittle": "Monedas", "route": "/financial-settings/currency-settings" }
+          { "tittle": "Monedas", "route": "/financial-settings/currency-settings" },
+          { "tittle": "Tipos de Beneficiarios", "route": "/financial-settings/beneficiary-type-settings" }
         ]
       },
       {
