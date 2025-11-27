@@ -17,7 +17,14 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3001 // Development server port
+    port: 3001, // Development server port
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false
+      }
+    }
   },
   base: '/vue/template/',
 })

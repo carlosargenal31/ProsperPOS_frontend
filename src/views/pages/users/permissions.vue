@@ -11,8 +11,8 @@
           </div>
         </div>
         <ul class="table-top-head">
-          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="PDF"><img src="@/assets/img/icons/pdf.svg" alt="img" /></a></li>
-          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="@/assets/img/icons/excel.svg" alt="img" /></a></li>
+          <li><a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF"><img src="@/assets/img/icons/pdf.svg" alt="img" /></a></li>
+          <li><a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="@/assets/img/icons/excel.svg" alt="img" /></a></li>
           <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar" @click="loadData"><i class="ti ti-refresh"></i></a></li>
           <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Contraer" id="collapse-header" @click="toggleHeader"><i class="ti ti-chevron-up"></i></a></li>
           <li>
@@ -93,6 +93,8 @@
 <script>
 import { roleService } from '@/services/api.service';
 import feather from 'feather-icons';
+import Swal from 'sweetalert2';
+import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
 
 export default {
   data() {
@@ -187,6 +189,119 @@ export default {
     toggleHeader() {
       document.getElementById('collapse-header').classList.toggle('active');
       document.body.classList.toggle('header-collapse');
+    },
+    exportToPDF() {
+      try {
+        if (!this.modules || this.modules.length === 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Sin Datos',
+            text: 'No hay permisos para exportar'
+          });
+          return;
+        }
+
+        // Crear una lista plana de permisos a partir de los módulos
+        const permissions = [];
+        this.modules.forEach(module => {
+          this.actions.forEach(action => {
+            const permissionKey = `${module.name}.${action}`;
+            permissions.push({
+              id: permissions.length + 1,
+              module_name: module.display_name,
+              permission_name: `${module.display_name} - ${this.translateAction(action)}`,
+              action: this.translateAction(action),
+              is_assigned: this.hasPermission(module.name, action) ? 'Sí' : 'No'
+            });
+          });
+        });
+
+        const columns = [
+          { header: 'ID', dataKey: 'id' },
+          { header: 'Módulo', dataKey: 'module_name' },
+          { header: 'Acción', dataKey: 'action' },
+          { header: 'Asignado', dataKey: 'is_assigned' }
+        ];
+
+        exportPDF(permissions, columns, 'permisos', `Lista de Permisos - ${this.currentRole?.role_name || 'Rol'}`);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'PDF Generado',
+          text: 'El archivo PDF se ha descargado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error al exportar PDF:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el archivo PDF'
+        });
+      }
+    },
+    exportToExcel() {
+      try {
+        if (!this.modules || this.modules.length === 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Sin Datos',
+            text: 'No hay permisos para exportar'
+          });
+          return;
+        }
+
+        // Crear una lista plana de permisos a partir de los módulos
+        const permissions = [];
+        this.modules.forEach(module => {
+          this.actions.forEach(action => {
+            const permissionKey = `${module.name}.${action}`;
+            permissions.push({
+              id: permissions.length + 1,
+              module_name: module.display_name,
+              permission_name: `${module.display_name} - ${this.translateAction(action)}`,
+              action: this.translateAction(action),
+              is_assigned: this.hasPermission(module.name, action) ? 'Sí' : 'No'
+            });
+          });
+        });
+
+        const columns = [
+          { header: 'ID', dataKey: 'id' },
+          { header: 'Módulo', dataKey: 'module_name' },
+          { header: 'Acción', dataKey: 'action' },
+          { header: 'Asignado', dataKey: 'is_assigned' }
+        ];
+
+        exportExcel(permissions, columns, 'permisos', 'Permisos');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Excel Generado',
+          text: 'El archivo Excel se ha descargado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error al exportar Excel:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el archivo Excel'
+        });
+      }
+    },
+    translateAction(action) {
+      const translations = {
+        'read': 'Leer',
+        'write': 'Escribir',
+        'create': 'Crear',
+        'delete': 'Eliminar',
+        'import': 'Importar',
+        'export': 'Exportar'
+      };
+      return translations[action] || action;
     },
   },
 };

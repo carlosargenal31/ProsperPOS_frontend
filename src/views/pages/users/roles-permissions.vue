@@ -11,8 +11,8 @@
           </div>
         </div>
         <ul class="table-top-head">
-          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="PDF"><img src="@/assets/img/icons/pdf.svg" alt="img" /></a></li>
-          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="@/assets/img/icons/excel.svg" alt="img" /></a></li>
+          <li><a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF"><img src="@/assets/img/icons/pdf.svg" alt="img" /></a></li>
+          <li><a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="@/assets/img/icons/excel.svg" alt="img" /></a></li>
           <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar" @click="loadRoles"><i class="ti ti-refresh"></i></a></li>
           <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Contraer" id="collapse-header" @click="toggleHeader"><i class="ti ti-chevron-up"></i></a></li>
         </ul>
@@ -56,6 +56,7 @@
                 </template>
                 <template v-else-if="column.key === 'action'">
                   <div class="action-icon d-inline-flex">
+                    <a href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#view-role" @click="viewRole(record)" title="Ver detalles"><i data-feather="eye" class="feather-eye"></i></a>
                     <a v-if="canManagePermissions" href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#permissions_modal" @click="managePermissions(record)" title="Gestionar Permisos"><i class="ti ti-shield"></i></a>
                     <a v-if="canEditRoles" href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#edit_role" @click="editRole(record)" title="Editar"><i class="ti ti-edit"></i></a>
                     <a v-if="canDeleteRoles" href="#" data-bs-toggle="modal" data-bs-target="#delete_modal" class="d-flex align-items-center p-2 border rounded" @click="confirmDelete(record)" title="Eliminar"><i class="ti ti-trash"></i></a>
@@ -80,6 +81,8 @@
 import { roleService } from '@/services/api.service';
 import PermissionsModal from '@/components/modal/permissions-modal.vue';
 import { hasPermission } from '@/utils/permissions';
+import Swal from 'sweetalert2';
+import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
 
 const columns = [
   { title: 'Rol', dataIndex: 'name', key: 'name', sorter: true },
@@ -201,6 +204,9 @@ export default {
       this.selectedRoleForPermissions = null;
       this.loadRoles();
     },
+    viewRole(role) {
+      this.selectedRole = { ...role };
+    },
     formatDate(dateString) {
       if (!dateString) return '';
       return new Date(dateString).toLocaleDateString('es-HN', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -218,6 +224,88 @@ export default {
       document.body.classList.remove('modal-open');
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
+    },
+    exportToPDF() {
+      try {
+        if (!this.roles || this.roles.length === 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Sin Datos',
+            text: 'No hay roles para exportar'
+          });
+          return;
+        }
+
+        const columns = [
+          { header: 'ID', dataKey: 'id' },
+          { header: 'Rol', dataKey: 'name' },
+          { header: 'Fecha de Creación', dataKey: 'created_at' },
+          { header: 'Estado', dataKey: 'is_active' }
+        ];
+
+        const data = this.roles.map(role => ({
+          ...role,
+          is_active: role.is_active ? 'Activo' : 'Inactivo'
+        }));
+
+        exportPDF(data, columns, 'roles', 'Lista de Roles');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'PDF Generado',
+          text: 'El archivo PDF se ha descargado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error al exportar PDF:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el archivo PDF'
+        });
+      }
+    },
+    exportToExcel() {
+      try {
+        if (!this.roles || this.roles.length === 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Sin Datos',
+            text: 'No hay roles para exportar'
+          });
+          return;
+        }
+
+        const columns = [
+          { header: 'ID', dataKey: 'id' },
+          { header: 'Rol', dataKey: 'name' },
+          { header: 'Fecha de Creación', dataKey: 'created_at' },
+          { header: 'Estado', dataKey: 'is_active' }
+        ];
+
+        const data = this.roles.map(role => ({
+          ...role,
+          is_active: role.is_active ? 'Activo' : 'Inactivo'
+        }));
+
+        exportExcel(data, columns, 'roles', 'Roles');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Excel Generado',
+          text: 'El archivo Excel se ha descargado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error al exportar Excel:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el archivo Excel'
+        });
+      }
     },
   },
   beforeUnmount() {

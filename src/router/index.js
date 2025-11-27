@@ -105,6 +105,8 @@ const routes = [
       { path: "social-authentication", component: () => import('@/views/pages/settings/website-settings/social-authentication.vue') },
       { path: "language-settings", component: () => import('@/views/pages/settings/website-settings/language-settings.vue') },
       { path: "language-settings-web", component: () => import('@/views/pages/settings/website-settings/language-settings-web.vue') },
+      { path: "invoice-settings", component: () => import('@/views/pages/settings/website-settings/invoice-settings.vue') },
+      { path: "invoice-template", component: () => import('@/views/pages/settings/website-settings/invoice-template.vue') },
     ]
   },
   {
@@ -302,6 +304,10 @@ const routes = [
     component: () => import('@/views/pages/vehicle/vehicles.vue')
   },
   {
+    path: '/offers',
+    component: () => import('@/views/pages/offers/offers-list.vue')
+  },
+  {
     path: '/page',
     component: () => import('@/views/pages/content/pages/page-index.vue'),
     children: [
@@ -369,6 +375,7 @@ const routes = [
       { path: '', redirect: '/sales-report/sales-report' },
       { path: "sales-report", component: () => import('@/views/pages/reports/sales-report/sales-report.vue') },
       { path: "best-sellers", component: () => import('@/views/pages/reports/sales-report/best-sellers.vue') },
+      { path: "sales-by-seller", component: () => import('@/views/pages/reports/sales-report/sales-by-seller.vue') },
     ]
   },
   {
@@ -497,6 +504,39 @@ const routes = [
     children: [
       { path: '', redirect: '/pos/pos-5' },
       { path: "pos-5", component: () => import('@/views/pages/pos/pos-5/pos-5.vue') }
+    ]
+  },
+  {
+    path: '/pos-5',
+    name: 'pos-5',
+    component: () => import('@/views/pages/pos-5/index.vue')
+  },
+  {
+    path: '/pos-invoice',
+    name: 'pos-invoice',
+    component: () => import('@/views/pages/pos/pos-invoice.vue')
+  },
+  {
+    path: '/pos-purchases',
+    name: 'pos-purchases',
+    component: () => import('@/views/pages/purchases/pos-purchases.vue')
+  },
+  {
+    path: '/billing',
+    component: () => import('@/views/pages/billing/billing-index.vue'),
+    children: [
+      { path: '', redirect: '/billing/invoices' },
+      { path: "invoices", component: () => import('@/views/pages/billing/invoice-list.vue') },
+      { path: "dashboard", component: () => import('@/views/pages/billing/billing-dashboard.vue') },
+      { path: "settings", component: () => import('@/views/pages/billing/billing-settings.vue') }
+    ]
+  },
+  {
+    path: '/invoices',
+    children: [
+      { path: 'create', component: () => import('@/views/pages/invoices/create-invoice.vue') },
+      { path: 'list', component: () => import('@/views/pages/billing/invoice-list.vue') },
+      { path: 'view/:id', component: () => import('@/views/pages/invoices/view-invoice.vue') }
     ]
   },
   
@@ -638,6 +678,26 @@ const routes = [
       { path: "discount-plan", component: () => import('@/views/pages/promo/discount/discount-plan.vue') },
       { path: "discount-list", component: () => import('@/views/pages/promo/discount/discount-list.vue') },
     ]
+  },
+  {
+    path: '/shipments',
+    name: 'shipments',
+    component: () => import('@/views/pages/shipments/shipments-list.vue')
+  },
+  {
+    path: '/shipments/create',
+    name: 'create-shipment',
+    component: () => import('@/views/pages/shipments/create-shipment.vue')
+  },
+  {
+    path: '/shipments/edit/:id',
+    name: 'edit-shipment',
+    component: () => import('@/views/pages/shipments/create-shipment.vue')
+  },
+  {
+    path: '/shipments/print/:id',
+    name: 'print-shipment',
+    component: () => import('@/views/pages/shipments/print-shipment.vue')
   },
 ];
 

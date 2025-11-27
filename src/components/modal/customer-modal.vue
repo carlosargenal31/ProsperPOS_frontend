@@ -1,6 +1,6 @@
 <template>
   <!-- View Customer -->
-  <div class="modal fade" id="view-customer">
+  <div class="modal fade" id="view-customer" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -95,7 +95,7 @@
   <!-- /View Customer -->
 
   <!-- Add Customer -->
-  <div class="modal fade" id="add-customer">
+  <div class="modal fade" id="add-customer" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -274,7 +274,7 @@
   <!-- /Add Customer -->
 
   <!-- Edit Customer -->
-  <div class="modal fade" id="edit-customer">
+  <div class="modal fade" id="edit-customer" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -443,7 +443,7 @@
   <!-- /Edit Customer -->
 
   <!-- delete modal -->
-  <div class="modal fade" id="delete-customer-modal">
+  <div class="modal fade" id="delete-customer-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">

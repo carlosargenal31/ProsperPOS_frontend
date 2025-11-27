@@ -7,9 +7,7 @@
       <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-2">
         <div class="mb-3">
           <h1 class="mb-1">Bienvenido, Admin</h1>
-          <p class="fw-medium">
-            Tienes <span class="text-primary fw-bold">200+</span> Pedidos, Hoy
-          </p>
+          
         </div>
         <div class="input-icon-start position-relative mb-3">
           <span class="input-icon-addon fs-16 text-gray-9">

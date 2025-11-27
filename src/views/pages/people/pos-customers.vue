@@ -12,6 +12,16 @@
         </div>
         <ul class="table-top-head">
           <li>
+            <a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF">
+              <img src="@/assets/img/icons/pdf.svg" alt="img" />
+            </a>
+          </li>
+          <li>
+            <a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel">
+              <img src="@/assets/img/icons/excel.svg" alt="img" />
+            </a>
+          </li>
+          <li>
             <a @click="loadCustomers" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
               ><i class="ti ti-refresh"></i
             ></a>
@@ -128,6 +138,7 @@
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
 
 export default {
   data() {
@@ -227,6 +238,70 @@ export default {
         return 'ti ti-selector';
       }
       return this.sortDirection === 'asc' ? 'ti ti-arrow-up' : 'ti ti-arrow-down';
+    },
+
+    exportToPDF() {
+      try {
+        const columns = [
+          { header: 'Código', dataKey: 'codigo' },
+          { header: 'Nombre', dataKey: 'nombre' },
+          { header: 'Estado', dataKey: 'is_active' }
+        ];
+
+        const data = this.customers.map(customer => ({
+          ...customer,
+          is_active: customer.is_active ? 'Activo' : 'Inactivo'
+        }));
+
+        exportPDF(data, columns, 'clientes', 'Lista de Clientes');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'PDF Generado',
+          text: 'El archivo PDF se ha descargado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error al exportar PDF:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el archivo PDF'
+        });
+      }
+    },
+
+    exportToExcel() {
+      try {
+        const columns = [
+          { header: 'Código', dataKey: 'codigo' },
+          { header: 'Nombre', dataKey: 'nombre' },
+          { header: 'Estado', dataKey: 'is_active' }
+        ];
+
+        const data = this.customers.map(customer => ({
+          ...customer,
+          is_active: customer.is_active ? 'Activo' : 'Inactivo'
+        }));
+
+        exportExcel(data, columns, 'clientes', 'Clientes');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Excel Generado',
+          text: 'El archivo Excel se ha descargado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error al exportar Excel:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el archivo Excel'
+        });
+      }
     },
   },
 };

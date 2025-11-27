@@ -66,7 +66,7 @@ import { canAccessModule } from '@/utils/permissions';
 export default {
   data() {
       return {
-          side_bar_data: this.filterSidebarByPermissions(side_bar_data),
+          side_bar_data: side_bar_data, // Temporalmente sin filtrar para mostrar todos los menús
           openMenuItem: null,
           openSubmenuOneItem: null,
       }
@@ -163,6 +163,7 @@ export default {
               '/coupons': 'coupons',
               '/discount/discount-list': 'discounts',
               '/pos/pos-5': 'sales',
+              '/shipments': 'shipments',
 
               // Compras
               '/purchases/purchase-list': 'purchases',

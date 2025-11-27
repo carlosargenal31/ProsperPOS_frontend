@@ -12,6 +12,16 @@
         </div>
         <ul class="table-top-head">
           <li>
+            <a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF">
+              <img src="@/assets/img/icons/pdf.svg" alt="img" />
+            </a>
+          </li>
+          <li>
+            <a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel">
+              <img src="@/assets/img/icons/excel.svg" alt="img" />
+            </a>
+          </li>
+          <li>
             <a @click="loadWarehouses" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
               ><i class="ti ti-refresh"></i
             ></a>
@@ -78,6 +88,16 @@
                       <a
                         class="me-2 p-2"
                         href="#"
+                        @click.prevent="openViewModal(warehouse)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#view-warehouse"
+                        title="Ver detalles"
+                      >
+                        <i data-feather="eye" class="feather-eye"></i>
+                      </a>
+                      <a
+                        class="me-2 p-2"
+                        href="#"
                         @click.prevent="openEditModal(warehouse)"
                         data-bs-toggle="modal"
                         data-bs-target="#edit-warehouse"
@@ -114,6 +134,7 @@
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
 
 export default {
   data() {
@@ -158,6 +179,10 @@ export default {
       this.isEditMode = true;
     },
 
+    openViewModal(warehouse) {
+      this.selectedWarehouse = { ...warehouse };
+    },
+
     openDeleteModal(warehouse) {
       this.selectedWarehouse = warehouse;
     },
@@ -173,6 +198,74 @@ export default {
     toggleHeader() {
       document.getElementById("collapse-header").classList.toggle("active");
       document.body.classList.toggle("header-collapse");
+    },
+
+    exportToPDF() {
+      try {
+        const columns = [
+          { header: 'ID', dataKey: 'id' },
+          { header: 'Nombre', dataKey: 'nombre' },
+          { header: 'Encargado', dataKey: 'encargado' },
+          { header: 'Ubicación', dataKey: 'ubicacion' },
+          { header: 'Estado', dataKey: 'is_active' }
+        ];
+
+        const data = this.warehouses.map(warehouse => ({
+          ...warehouse,
+          is_active: warehouse.is_active ? 'Activo' : 'Inactivo'
+        }));
+
+        exportPDF(data, columns, 'bodegas', 'Lista de Bodegas');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'PDF Generado',
+          text: 'El archivo PDF se ha descargado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error al exportar PDF:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el archivo PDF'
+        });
+      }
+    },
+
+    exportToExcel() {
+      try {
+        const columns = [
+          { header: 'ID', dataKey: 'id' },
+          { header: 'Nombre', dataKey: 'nombre' },
+          { header: 'Encargado', dataKey: 'encargado' },
+          { header: 'Ubicación', dataKey: 'ubicacion' },
+          { header: 'Estado', dataKey: 'is_active' }
+        ];
+
+        const data = this.warehouses.map(warehouse => ({
+          ...warehouse,
+          is_active: warehouse.is_active ? 'Activo' : 'Inactivo'
+        }));
+
+        exportExcel(data, columns, 'bodegas', 'Bodegas');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Excel Generado',
+          text: 'El archivo Excel se ha descargado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error al exportar Excel:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el archivo Excel'
+        });
+      }
     },
   },
 };

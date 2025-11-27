@@ -12,12 +12,12 @@
         </div>
         <ul class="table-top-head">
           <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="PDF">
+            <a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF">
               <img src="@/assets/img/icons/pdf.svg" alt="img" />
             </a>
           </li>
           <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel">
+            <a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel">
               <img src="@/assets/img/icons/excel.svg" alt="img" />
             </a>
           </li>
@@ -320,6 +320,8 @@ import feather from 'feather-icons';
 import UsersListModal from '@/components/modal/users-list-modal.vue';
 import { Modal } from 'bootstrap';
 import { hasPermission } from '@/utils/permissions';
+import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
+import Swal from 'sweetalert2';
 
 const columns = [
   { title: 'Usuario', dataIndex: 'full_name', key: 'full_name', sorter: true, width: 300 },
@@ -587,7 +589,55 @@ export default {
       // Implementar sistema de notificaciones toast
       console.log(`[${type.toUpperCase()}]: ${message}`);
       // Aquí puedes integrar una librería de notificaciones como vue-toastification
-    }
+    },
+
+    exportToPDF() {
+      if (!this.users || this.users.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin datos',
+          text: 'No hay datos para exportar',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const exportData = this.users.map(user => ({
+        'Nombre Completo': user.full_name || `${user.first_name} ${user.last_name}`,
+        'Email': user.email || '',
+        'Teléfono': user.phone || 'N/A',
+        'Rol': user.role_name || 'Sin rol',
+        'Estado': user.status === 'active' ? 'Activo' :
+                  user.status === 'suspended' ? 'Suspendido' : 'Inactivo',
+        'Tienda': user.store_name || 'N/A'
+      }));
+
+      exportPDF(exportData, 'usuarios', 'Lista de Usuarios');
+    },
+
+    exportToExcel() {
+      if (!this.users || this.users.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin datos',
+          text: 'No hay datos para exportar',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const exportData = this.users.map(user => ({
+        'Nombre Completo': user.full_name || `${user.first_name} ${user.last_name}`,
+        'Email': user.email || '',
+        'Teléfono': user.phone || 'N/A',
+        'Rol': user.role_name || 'Sin rol',
+        'Estado': user.status === 'active' ? 'Activo' :
+                  user.status === 'suspended' ? 'Suspendido' : 'Inactivo',
+        'Tienda': user.store_name || 'N/A'
+      }));
+
+      exportExcel(exportData, 'usuarios');
+    },
   },
 };
 </script>

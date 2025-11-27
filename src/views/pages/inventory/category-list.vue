@@ -70,6 +70,7 @@
                 </template>
                 <template v-else-if="column.key === 'action'">
                   <div class="action-icon d-inline-flex">
+                    <a href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#view-category" @click="viewCategory(record)" title="Ver detalles"><i class="ti ti-eye"></i></a>
                     <a v-if="canEdit" href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#edit-category" @click="editCategory(record)" title="Editar"><i class="ti ti-edit"></i></a>
                     <a v-if="canDelete" href="#" data-bs-toggle="modal" data-bs-target="#delete-category-modal" class="d-flex align-items-center p-2 border rounded" @click="confirmDelete(record)" title="Eliminar"><i class="ti ti-trash"></i></a>
                   </div>
@@ -204,6 +205,9 @@ export default {
       this.cleanupModals();
       this.editMode = false;
       this.selectedCategory = null;
+    },
+    viewCategory(category) {
+      this.selectedCategory = { ...category };
     },
     editCategory(category) {
       this.cleanupModals();

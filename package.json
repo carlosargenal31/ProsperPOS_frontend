@@ -25,7 +25,10 @@
     "boxicons": "^2.1.4",
     "daterangepicker": "^3.1.0",
     "dragula": "^3.7.3",
+    "html2canvas": "^1.4.1",
     "ionicons-npm": "^2.0.1",
+    "jspdf": "^3.0.3",
+    "jspdf-autotable": "^5.0.2",
     "leaflet": "^1.9.4",
     "material-icons": "^1.13.14",
     "mdb-vue-ui-kit": "^6.0.0",
@@ -57,6 +60,7 @@
     "vue3-tags-input": "^1.0.12",
     "vuedraggable": "^4.1.0",
     "weathericons": "^2.1.0",
+    "xlsx": "^0.18.5",
     "yup": "^1.7.1"
   },
   "devDependencies": {

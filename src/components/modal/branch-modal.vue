@@ -1,6 +1,85 @@
 <template>
+  <!-- View Branch -->
+  <div class="modal fade" id="view-branch" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="page-wrapper-new p-0">
+          <div class="content">
+            <div class="modal-header">
+              <div class="page-title">
+                <h4>Detalles de la Sucursal</h4>
+              </div>
+              <button
+                type="button"
+                class="close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row" v-if="branch">
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">ID:</label>
+                  <p class="form-control-plaintext">{{ branch.id || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Nombre:</label>
+                  <p class="form-control-plaintext">{{ branch.nombre || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Ciudad:</label>
+                  <p class="form-control-plaintext">{{ branch.city_name || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Departamento:</label>
+                  <p class="form-control-plaintext">{{ branch.state_name || '-' }}</p>
+                </div>
+                <div class="col-lg-12 mb-3">
+                  <label class="form-label fw-bold">Dirección:</label>
+                  <p class="form-control-plaintext">{{ branch.direccion || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Gerente:</label>
+                  <p class="form-control-plaintext">{{ branch.gerente || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Teléfono:</label>
+                  <p class="form-control-plaintext">{{ branch.telefono || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Email:</label>
+                  <p class="form-control-plaintext">{{ branch.email || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Estado:</label>
+                  <p class="form-control-plaintext">
+                    <span :class="branch.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                      {{ branch.is_active ? 'Activa' : 'Inactiva' }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /View Branch -->
+
   <!-- Add Branch -->
-  <div class="modal fade" id="add-branch">
+  <div class="modal fade" id="add-branch" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -120,7 +199,7 @@
   </div>
 
   <!-- Edit Branch -->
-  <div class="modal fade" id="edit-branch">
+  <div class="modal fade" id="edit-branch" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -240,7 +319,7 @@
   </div>
 
   <!-- Delete Confirmation Modal -->
-  <div class="modal fade" id="delete-modal">
+  <div class="modal fade" id="delete-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">

@@ -836,13 +836,6 @@
             "showSubRoute": false
           },
           {
-            "menuValue": "Localization",
-            "route": "/website-settings/localization-settings",
-            "active_link": "/website-settings/localization-settings",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
             "menuValue": "Prefixes",
             "route": "/website-settings/prefixes",
             "active_link": "/website-settings/prefixes",

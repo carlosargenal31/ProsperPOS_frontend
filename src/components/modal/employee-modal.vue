@@ -1,6 +1,89 @@
 <template>
+  <!-- View Employee -->
+  <div class="modal fade" id="view-employee" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="page-wrapper-new p-0">
+          <div class="content">
+            <div class="modal-header">
+              <div class="page-title">
+                <h4>Detalles del Empleado</h4>
+              </div>
+              <button
+                type="button"
+                class="close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row" v-if="employee">
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">ID:</label>
+                  <p class="form-control-plaintext">{{ employee.id || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Código:</label>
+                  <p class="form-control-plaintext">{{ employee.codigo || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">DNI:</label>
+                  <p class="form-control-plaintext">{{ employee.dni || '-' }}</p>
+                </div>
+                <div class="col-lg-12 mb-3">
+                  <label class="form-label fw-bold">Nombre Completo:</label>
+                  <p class="form-control-plaintext">{{ employee.nombre || '-' }} {{ employee.apellido || '' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Cargo:</label>
+                  <p class="form-control-plaintext">{{ employee.position_name || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Departamento:</label>
+                  <p class="form-control-plaintext">{{ employee.department_name || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Teléfono:</label>
+                  <p class="form-control-plaintext">{{ employee.telefono || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Email:</label>
+                  <p class="form-control-plaintext">{{ employee.email || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Fecha de Contratación:</label>
+                  <p class="form-control-plaintext">{{ employee.fecha_ingreso ? new Date(employee.fecha_ingreso).toLocaleDateString() : '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Estado:</label>
+                  <p class="form-control-plaintext">
+                    <span :class="employee.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                      {{ employee.is_active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /View Employee -->
+
   <!-- Add Employee -->
-  <div class="modal fade" id="add-employee">
+  <div class="modal fade" id="add-employee" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-xl">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -106,7 +189,7 @@
   </div>
 
   <!-- Edit Employee -->
-  <div class="modal fade" id="edit-employee">
+  <div class="modal fade" id="edit-employee" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-xl">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -212,7 +295,7 @@
   </div>
 
   <!-- delete modal -->
-  <div class="modal fade" id="delete-employee-modal">
+  <div class="modal fade" id="delete-employee-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">

@@ -12,6 +12,16 @@
         </div>
         <ul class="table-top-head">
           <li>
+            <a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF">
+              <img src="@/assets/img/icons/pdf.svg" alt="img" />
+            </a>
+          </li>
+          <li>
+            <a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel">
+              <img src="@/assets/img/icons/excel.svg" alt="img" />
+            </a>
+          </li>
+          <li>
             <a @click="loadVehicles" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
               ><i class="ti ti-refresh"></i
             ></a>
@@ -92,6 +102,16 @@
                       <a
                         class="me-2 p-2"
                         href="#"
+                        @click.prevent="openViewModal(vehicle)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#view-vehicle"
+                        title="Ver detalles"
+                      >
+                        <i data-feather="eye" class="feather-eye"></i>
+                      </a>
+                      <a
+                        class="me-2 p-2"
+                        href="#"
                         @click.prevent="openEditModal(vehicle)"
                         data-bs-toggle="modal"
                         data-bs-target="#edit-vehicle"
@@ -128,6 +148,7 @@
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
 
 export default {
   data() {
@@ -225,6 +246,10 @@ export default {
       this.isEditMode = true;
     },
 
+    openViewModal(vehicle) {
+      this.selectedVehicle = { ...vehicle };
+    },
+
     openDeleteModal(vehicle) {
       this.selectedVehicle = vehicle;
     },
@@ -240,6 +265,76 @@ export default {
     toggleHeader() {
       document.getElementById("collapse-header").classList.toggle("active");
       document.body.classList.toggle("header-collapse");
+    },
+
+    exportToPDF() {
+      try {
+        const columns = [
+          { header: 'ID', dataKey: 'id' },
+          { header: 'Placa', dataKey: 'placa' },
+          { header: 'Marca', dataKey: 'marca' },
+          { header: 'Modelo', dataKey: 'modelo' },
+          { header: 'Color', dataKey: 'color' },
+          { header: 'Estado', dataKey: 'is_active' }
+        ];
+
+        const data = this.sortedVehicles.map(vehicle => ({
+          ...vehicle,
+          is_active: vehicle.is_active ? 'Activo' : 'Inactivo'
+        }));
+
+        exportPDF(data, columns, 'vehiculos', 'Lista de Vehículos');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'PDF Generado',
+          text: 'El archivo PDF se ha descargado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error al exportar PDF:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el archivo PDF'
+        });
+      }
+    },
+
+    exportToExcel() {
+      try {
+        const columns = [
+          { header: 'ID', dataKey: 'id' },
+          { header: 'Placa', dataKey: 'placa' },
+          { header: 'Marca', dataKey: 'marca' },
+          { header: 'Modelo', dataKey: 'modelo' },
+          { header: 'Color', dataKey: 'color' },
+          { header: 'Estado', dataKey: 'is_active' }
+        ];
+
+        const data = this.sortedVehicles.map(vehicle => ({
+          ...vehicle,
+          is_active: vehicle.is_active ? 'Activo' : 'Inactivo'
+        }));
+
+        exportExcel(data, columns, 'vehiculos', 'Vehículos');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Excel Generado',
+          text: 'El archivo Excel se ha descargado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error al exportar Excel:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el archivo Excel'
+        });
+      }
     },
   },
 };

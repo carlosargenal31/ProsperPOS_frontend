@@ -4,52 +4,65 @@
     <div class="modal fade" id="add-category" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="addModalLabel">Nueva Categoría</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="saveCategory">
-              <div class="mb-3">
-                <label class="form-label">Nombre <span class="text-danger">*</span></label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="form.name"
-                  required
-                  placeholder="Ej: PORCELANATO, PAREDES, FACHALETAS"
-                />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Imagen</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="form.image_url"
-                  placeholder="Nombre del archivo (ej: porcelanato.jpg)"
-                />
-                <small class="text-muted">Solo el nombre del archivo, sin ruta completa</small>
-              </div>
-
-              <div class="mb-3">
-                <div class="status-toggle modal-status d-flex justify-content-between align-items-center">
-                  <span class="status-label">Estado</span>
-                  <input type="checkbox" id="category-add-status" class="check" v-model="form.is_active" />
-                  <label for="category-add-status" class="checktoggle"></label>
+          <div class="page-wrapper-new p-0">
+            <div class="content">
+              <div class="modal-header">
+                <div class="page-title">
+                  <h4>Nueva Categoría</h4>
                 </div>
+                <button
+                  type="button"
+                  class="close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
               </div>
+              <div class="modal-body">
+                <form @submit.prevent="saveCategory">
+                  <div class="mb-3">
+                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="form.name"
+                      required
+                      placeholder="Ej: PORCELANATO, PAREDES, FACHALETAS"
+                    />
+                  </div>
 
-              <div v-if="error" class="alert alert-danger">{{ error }}</div>
-              <div v-if="success" class="alert alert-success">{{ success }}</div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-primary" @click="saveCategory" :disabled="saving">
-              <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
-              {{ saving ? 'Guardando...' : 'Crear' }}
-            </button>
+                  <div class="mb-3">
+                    <label class="form-label">Imagen</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="form.image_url"
+                      placeholder="Nombre del archivo (ej: porcelanato.jpg)"
+                    />
+                    <small class="text-muted">Solo el nombre del archivo, sin ruta completa</small>
+                  </div>
+
+                  <div class="mb-3">
+                    <div class="status-toggle modal-status d-flex justify-content-between align-items-center">
+                      <span class="status-label">Estado</span>
+                      <input type="checkbox" id="category-add-status" class="check" v-model="form.is_active" />
+                      <label for="category-add-status" class="checktoggle"></label>
+                    </div>
+                  </div>
+
+                  <div v-if="error" class="alert alert-danger">{{ error }}</div>
+                  <div v-if="success" class="alert alert-success">{{ success }}</div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" @click="saveCategory" :disabled="saving">
+                  <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
+                  {{ saving ? 'Guardando...' : 'Crear' }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -59,55 +72,131 @@
     <div class="modal fade" id="edit-category" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="editModalLabel">Editar Categoría</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="saveCategory">
-              <div class="mb-3">
-                <label class="form-label">Nombre <span class="text-danger">*</span></label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="formEdit.name"
-                  required
-                />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Imagen</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="formEdit.image_url"
-                  placeholder="Nombre del archivo (ej: porcelanato.jpg)"
-                />
-                <small class="text-muted">Solo el nombre del archivo, sin ruta completa</small>
-              </div>
-
-              <div class="mb-3">
-                <div class="status-toggle modal-status d-flex justify-content-between align-items-center">
-                  <span class="status-label">Estado</span>
-                  <input type="checkbox" id="category-edit-status" class="check" v-model="formEdit.is_active" />
-                  <label for="category-edit-status" class="checktoggle"></label>
+          <div class="page-wrapper-new p-0">
+            <div class="content">
+              <div class="modal-header">
+                <div class="page-title">
+                  <h4>Editar Categoría</h4>
                 </div>
+                <button
+                  type="button"
+                  class="close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
               </div>
+              <div class="modal-body">
+                <form @submit.prevent="saveCategory">
+                  <div class="mb-3">
+                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="formEdit.name"
+                      required
+                    />
+                  </div>
 
-              <div v-if="errorEdit" class="alert alert-danger">{{ errorEdit }}</div>
-              <div v-if="successEdit" class="alert alert-success">{{ successEdit }}</div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-primary" @click="updateCategory" :disabled="savingEdit">
-              <span v-if="savingEdit" class="spinner-border spinner-border-sm me-2"></span>
-              {{ savingEdit ? 'Guardando...' : 'Actualizar' }}
-            </button>
+                  <div class="mb-3">
+                    <label class="form-label">Imagen</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="formEdit.image_url"
+                      placeholder="Nombre del archivo (ej: porcelanato.jpg)"
+                    />
+                    <small class="text-muted">Solo el nombre del archivo, sin ruta completa</small>
+                  </div>
+
+                  <div class="mb-3">
+                    <div class="status-toggle modal-status d-flex justify-content-between align-items-center">
+                      <span class="status-label">Estado</span>
+                      <input type="checkbox" id="category-edit-status" class="check" v-model="formEdit.is_active" />
+                      <label for="category-edit-status" class="checktoggle"></label>
+                    </div>
+                  </div>
+
+                  <div v-if="errorEdit" class="alert alert-danger">{{ errorEdit }}</div>
+                  <div v-if="successEdit" class="alert alert-success">{{ successEdit }}</div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" @click="updateCategory" :disabled="savingEdit">
+                  <span v-if="savingEdit" class="spinner-border spinner-border-sm me-2"></span>
+                  {{ savingEdit ? 'Guardando...' : 'Actualizar' }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Modal Visualizar Categoría -->
+    <div class="modal fade" id="view-category" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="page-wrapper-new p-0">
+            <div class="content">
+              <div class="modal-header">
+                <div class="page-title">
+                  <h4>Detalles de la Categoría</h4>
+                </div>
+                <button
+                  type="button"
+                  class="close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="row" v-if="category">
+                  <div class="col-lg-6 mb-3">
+                    <label class="form-label fw-bold">ID:</label>
+                    <p class="form-control-plaintext">{{ category.id || '-' }}</p>
+                  </div>
+                  <div class="col-lg-6 mb-3">
+                    <label class="form-label fw-bold">Nombre:</label>
+                    <p class="form-control-plaintext">{{ category.name || '-' }}</p>
+                  </div>
+                  <div class="col-lg-6 mb-3">
+                    <label class="form-label fw-bold">Imagen:</label>
+                    <p class="form-control-plaintext">{{ category.image_url || '-' }}</p>
+                  </div>
+                  <div class="col-lg-6 mb-3">
+                    <label class="form-label fw-bold">Subcategorías:</label>
+                    <p class="form-control-plaintext">{{ category.subcategories_count || 0 }}</p>
+                  </div>
+                  <div class="col-lg-6 mb-3">
+                    <label class="form-label fw-bold">Estado:</label>
+                    <p class="form-control-plaintext">
+                      <span :class="category.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                        {{ category.is_active ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /Modal Visualizar Categoría -->
 
     <!-- Modal Eliminar Categoría -->
     <div class="modal fade" id="delete-category-modal" tabindex="-1" aria-hidden="true">

@@ -35,13 +35,9 @@
         "hasSubRoute": true,
         "showSubRoute": false,
         "subRoutes": [
-          { "tittle": "Ajustes de Empresa", "route": "/website-settings/company-settings" },
-          { "tittle": "Localización", "route": "/website-settings/localization-settings" },
           { "tittle": "Ajustes de Factura", "route": "/app-settings/invoice-settings" },
-          { "tittle": "Plantilla de Factura", "route": "/app-settings/invoice-templates" },
-          { "tittle": "Impresora", "route": "/app-settings/printer-settings" },
           { "tittle": "POS", "route": "/app-settings/pos-settings" },
-          { "tittle": "Campos Personalizados", "route": "/app-settings/custom-fields" }
+          { "tittle": "Resoluciones", "route": "/app-settings/invoice-templates" }
         ]
       },
       {
@@ -81,7 +77,7 @@
             "active_link": "/coupons"
           },
           {
-            "tittle": "Descuentos",
+            "tittle": "Ofertas",
             "route": "/discount/discount-list",
             "active_link": "/discount/discount-list"
           }
@@ -93,9 +89,9 @@
         "hasSubRoute": true,
         "showSubRoute": false,
         "subRoutes": [
-          { "tittle": "Documentos Ventas", "route": "/pos/pos-5" },
+          { "tittle": "POS Facturación", "route": "/pos/pos-5" },
           { "tittle": "Devoluciones", "route": "/sales/sales-returns" },
-          { "tittle": "Envíos", "route": "/sales/pos-orders" },
+          { "tittle": "Guias de Remision", "route": "/shipments" },
           { "tittle": "En Linea", "route": "/sales/online-orders" },
           { "tittle": "En Punto de Venta", "route": "/sales/pos-orders" },
           { "tittle": "Cotizaciones", "route": "/sales/quotation-list" }

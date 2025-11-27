@@ -12,6 +12,16 @@
         </div>
         <ul class="table-top-head">
           <li>
+            <a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF">
+              <img src="@/assets/img/icons/pdf.svg" alt="PDF" />
+            </a>
+          </li>
+          <li>
+            <a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel">
+              <img src="@/assets/img/icons/excel.svg" alt="Excel" />
+            </a>
+          </li>
+          <li>
             <a @click="loadBeneficiaryTypes" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
               ><i class="ti ti-refresh"></i
             ></a>
@@ -87,6 +97,16 @@
                             <a
                               class="me-2 p-2"
                               href="#"
+                              @click.prevent="openViewModal(type)"
+                              data-bs-toggle="modal"
+                              data-bs-target="#view-beneficiary-type"
+                              title="Ver detalles"
+                            >
+                              <i data-feather="eye" class="feather-eye"></i>
+                            </a>
+                            <a
+                              class="me-2 p-2"
+                              href="#"
                               @click.prevent="openEditModal(type)"
                               data-bs-toggle="modal"
                               data-bs-target="#edit-beneficiary-type"
@@ -137,6 +157,7 @@
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
 
 export default {
   data() {
@@ -181,6 +202,10 @@ export default {
       this.isEditMode = true;
     },
 
+    openViewModal(type) {
+      this.selectedBeneficiaryType = { ...type };
+    },
+
     openDeleteModal(type) {
       this.selectedBeneficiaryType = type;
     },
@@ -196,6 +221,46 @@ export default {
     toggleHeader() {
       document.getElementById("collapse-header").classList.toggle("active");
       document.body.classList.toggle("header-collapse");
+    },
+
+    exportToPDF() {
+      if (!this.beneficiaryTypes || this.beneficiaryTypes.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin datos',
+          text: 'No hay datos para exportar',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const exportData = this.beneficiaryTypes.map(item => ({
+        'ID': item.id || '',
+        'Nombre': item.nombre || '',
+        'Estado': item.is_active ? 'Activo' : 'Inactivo'
+      }));
+
+      exportPDF(exportData, 'tipos-beneficiarios', 'Lista de Tipos de Beneficiarios');
+    },
+
+    exportToExcel() {
+      if (!this.beneficiaryTypes || this.beneficiaryTypes.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin datos',
+          text: 'No hay datos para exportar',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const exportData = this.beneficiaryTypes.map(item => ({
+        'ID': item.id || '',
+        'Nombre': item.nombre || '',
+        'Estado': item.is_active ? 'Activo' : 'Inactivo'
+      }));
+
+      exportExcel(exportData, 'tipos-beneficiarios');
     },
   },
 };

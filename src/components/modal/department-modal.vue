@@ -1,6 +1,65 @@
 <template>
+  <!-- View Department -->
+  <div class="modal fade" id="view-department" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="page-wrapper-new p-0">
+          <div class="content">
+            <div class="modal-header">
+              <div class="page-title">
+                <h4>Detalles del Departamento</h4>
+              </div>
+              <button
+                type="button"
+                class="close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row" v-if="department">
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">ID:</label>
+                  <p class="form-control-plaintext">{{ department.id || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Nombre:</label>
+                  <p class="form-control-plaintext">{{ department.nombre || '-' }}</p>
+                </div>
+                <div class="col-lg-12 mb-3">
+                  <label class="form-label fw-bold">Descripción:</label>
+                  <p class="form-control-plaintext">{{ department.descripcion || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Estado:</label>
+                  <p class="form-control-plaintext">
+                    <span :class="department.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                      {{ department.is_active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /View Department -->
+
   <!-- Add Department -->
-  <div class="modal fade" id="add-department">
+  <div class="modal fade" id="add-department" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -77,7 +136,7 @@
   <!-- /Add Department -->
 
   <!-- Edit Department -->
-  <div class="modal fade" id="edit-department">
+  <div class="modal fade" id="edit-department" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -152,7 +211,7 @@
   <!-- /Edit Department -->
 
   <!-- delete modal -->
-  <div class="modal fade" id="delete-modal">
+  <div class="modal fade" id="delete-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">

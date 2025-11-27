@@ -142,12 +142,7 @@
                 </h4>
               </div>
 
-              <!-- Credenciales de desarrollo -->
-              <div v-if="isDevelopment" class="alert alert-info mt-3">
-                <strong>Modo Desarrollo:</strong><br>
-                Email: <code>admin@prosperpos.com</code><br>
-                Contraseña: <code>admin123</code>
-              </div>
+              
             </div>
           </form>
         </div>

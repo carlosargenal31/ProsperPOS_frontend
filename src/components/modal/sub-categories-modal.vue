@@ -4,11 +4,22 @@
     <div class="modal fade" id="add-subcategory" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="addModalLabel">Nueva Subcategoría</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
+          <div class="page-wrapper-new p-0">
+            <div class="content">
+              <div class="modal-header">
+                <div class="page-title">
+                  <h4>Nueva Subcategoría</h4>
+                </div>
+                <button
+                  type="button"
+                  class="close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
             <form @submit.prevent="saveSubcategory">
               <div class="mb-3">
                 <label class="form-label">Categoría Padre <span class="text-danger">*</span></label>
@@ -53,13 +64,15 @@
               <div v-if="error" class="alert alert-danger">{{ error }}</div>
               <div v-if="success" class="alert alert-success">{{ success }}</div>
             </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-primary" @click="saveSubcategory" :disabled="saving">
-              <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
-              {{ saving ? 'Guardando...' : 'Crear' }}
-            </button>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" @click="saveSubcategory" :disabled="saving">
+                  <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
+                  {{ saving ? 'Guardando...' : 'Crear' }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

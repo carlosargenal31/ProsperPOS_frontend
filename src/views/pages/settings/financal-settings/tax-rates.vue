@@ -12,6 +12,16 @@
         </div>
         <ul class="table-top-head">
           <li>
+            <a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF">
+              <img src="@/assets/img/icons/pdf.svg" alt="PDF" />
+            </a>
+          </li>
+          <li>
+            <a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel">
+              <img src="@/assets/img/icons/excel.svg" alt="Excel" />
+            </a>
+          </li>
+          <li>
             <a @click="loadTaxRates" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
               ><i class="ti ti-refresh"></i
             ></a>
@@ -96,6 +106,16 @@
                             <a
                               class="me-2 p-2"
                               href="#"
+                              @click.prevent="openViewModal(taxRate)"
+                              data-bs-toggle="modal"
+                              data-bs-target="#view-tax"
+                              title="Ver detalles"
+                            >
+                              <i data-feather="eye" class="feather-eye"></i>
+                            </a>
+                            <a
+                              class="me-2 p-2"
+                              href="#"
                               @click.prevent="openEditModal(taxRate)"
                               data-bs-toggle="modal"
                               data-bs-target="#edit-tax"
@@ -147,6 +167,7 @@
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
 
 export default {
   data() {
@@ -189,6 +210,10 @@ export default {
     openEditModal(taxRate) {
       this.selectedTaxRate = { ...taxRate };
       this.isEditMode = true;
+    },
+
+    openViewModal(taxRate) {
+      this.selectedTaxRate = { ...taxRate };
     },
 
     openDeleteModal(taxRate) {
@@ -234,6 +259,54 @@ export default {
     toggleHeader() {
       document.getElementById("collapse-header").classList.toggle("active");
       document.body.classList.toggle("header-collapse");
+    },
+
+    exportToPDF() {
+      if (!this.taxRates || this.taxRates.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin datos',
+          text: 'No hay datos para exportar',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const exportData = this.taxRates.map(item => ({
+        'Nombre': item.name || '',
+        'Tasa (%)': item.rate || '',
+        'Descripción': item.description || '-',
+        'Productos': item.products_count || 0,
+        'Estado': item.is_active ? 'Activo' : 'Inactivo',
+        'Por Defecto': item.is_default ? 'Sí' : 'No',
+        'Creado': this.formatDate(item.created_at)
+      }));
+
+      exportPDF(exportData, 'tasas-impuesto', 'Lista de Tasas de Impuesto');
+    },
+
+    exportToExcel() {
+      if (!this.taxRates || this.taxRates.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin datos',
+          text: 'No hay datos para exportar',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const exportData = this.taxRates.map(item => ({
+        'Nombre': item.name || '',
+        'Tasa (%)': item.rate || '',
+        'Descripción': item.description || '-',
+        'Productos': item.products_count || 0,
+        'Estado': item.is_active ? 'Activo' : 'Inactivo',
+        'Por Defecto': item.is_default ? 'Sí' : 'No',
+        'Creado': this.formatDate(item.created_at)
+      }));
+
+      exportExcel(exportData, 'tasas-impuesto');
     },
   },
 };

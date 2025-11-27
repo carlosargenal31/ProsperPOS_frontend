@@ -57,7 +57,7 @@
                   <th @click="sortBy('nombre')" style="cursor: pointer;">
                     Nombre <i :class="getSortIcon('nombre')"></i>
                   </th>
-                  <th @click="sortBy('aplicar_a')\" style="cursor: pointer;">
+                  <th @click="sortBy('aplicar_a')" style="cursor: pointer;">
                     Oferta <i :class="getSortIcon('aplicar_a')"></i>
                   </th>
                   <th @click="sortBy('tipo_descuento')" style="cursor: pointer;">

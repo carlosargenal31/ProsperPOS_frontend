@@ -12,6 +12,16 @@
         </div>
         <ul class="table-top-head">
           <li>
+            <a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF">
+              <img src="@/assets/img/icons/pdf.svg" alt="img" />
+            </a>
+          </li>
+          <li>
+            <a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel">
+              <img src="@/assets/img/icons/excel.svg" alt="img" />
+            </a>
+          </li>
+          <li>
             <a @click="loadEmployees" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
               ><i class="ti ti-refresh"></i
             ></a>
@@ -104,6 +114,16 @@
                       <a
                         class="me-2 p-2"
                         href="#"
+                        @click.prevent="openViewModal(employee)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#view-employee"
+                        title="Ver detalles"
+                      >
+                        <i data-feather="eye" class="feather-eye"></i>
+                      </a>
+                      <a
+                        class="me-2 p-2"
+                        href="#"
                         @click.prevent="openEditModal(employee)"
                         data-bs-toggle="modal"
                         data-bs-target="#edit-employee"
@@ -140,6 +160,7 @@
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
 
 export default {
   data() {
@@ -184,6 +205,10 @@ export default {
     openEditModal(employee) {
       this.selectedEmployee = { ...employee };
       this.isEditMode = true;
+    },
+
+    openViewModal(employee) {
+      this.selectedEmployee = { ...employee };
     },
 
     openDeleteModal(employee) {
@@ -234,6 +259,76 @@ export default {
         return 'ti ti-selector';
       }
       return this.sortDirection === 'asc' ? 'ti ti-arrow-up' : 'ti ti-arrow-down';
+    },
+
+    exportToPDF() {
+      try {
+        const columns = [
+          { header: 'ID', dataKey: 'id' },
+          { header: 'Código', dataKey: 'codigo' },
+          { header: 'Nombre', dataKey: 'nombre_completo' },
+          { header: 'Cargo', dataKey: 'position_name' },
+          { header: 'Estado', dataKey: 'is_active' }
+        ];
+
+        const data = this.employees.map(employee => ({
+          ...employee,
+          nombre_completo: `${employee.nombre} ${employee.apellido}`,
+          is_active: employee.is_active ? 'Activo' : 'Inactivo'
+        }));
+
+        exportPDF(data, columns, 'empleados', 'Lista de Empleados');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'PDF Generado',
+          text: 'El archivo PDF se ha descargado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error al exportar PDF:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el archivo PDF'
+        });
+      }
+    },
+
+    exportToExcel() {
+      try {
+        const columns = [
+          { header: 'ID', dataKey: 'id' },
+          { header: 'Código', dataKey: 'codigo' },
+          { header: 'Nombre', dataKey: 'nombre_completo' },
+          { header: 'Cargo', dataKey: 'position_name' },
+          { header: 'Estado', dataKey: 'is_active' }
+        ];
+
+        const data = this.employees.map(employee => ({
+          ...employee,
+          nombre_completo: `${employee.nombre} ${employee.apellido}`,
+          is_active: employee.is_active ? 'Activo' : 'Inactivo'
+        }));
+
+        exportExcel(data, columns, 'empleados', 'Empleados');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Excel Generado',
+          text: 'El archivo Excel se ha descargado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error al exportar Excel:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el archivo Excel'
+        });
+      }
     },
   },
 };

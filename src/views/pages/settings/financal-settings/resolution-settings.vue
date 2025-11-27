@@ -12,6 +12,16 @@
         </div>
         <ul class="table-top-head">
           <li>
+            <a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF">
+              <img src="@/assets/img/icons/pdf.svg" alt="PDF" />
+            </a>
+          </li>
+          <li>
+            <a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel">
+              <img src="@/assets/img/icons/excel.svg" alt="Excel" />
+            </a>
+          </li>
+          <li>
             <a @click="loadResolutions" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
               ><i class="ti ti-refresh"></i
             ></a>
@@ -151,6 +161,7 @@
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import ResolutionSettingsModal from '@/components/modal/resolution-settings-modal.vue';
+import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
 
 export default {
   components: {
@@ -286,7 +297,51 @@ export default {
       if (text === 'Vigente') return 'badge bg-success-light';
       if (text === 'Por iniciar') return 'badge bg-warning-light';
       return 'badge bg-danger-light';
-    }
+    },
+
+    exportToPDF() {
+      if (!this.resolutions || this.resolutions.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin datos',
+          text: 'No hay datos para exportar',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const exportData = this.resolutions.map(item => ({
+        'Resolución': item.numero_resolucion || '',
+        'Prefijo': item.prefijo_control || '0',
+        'Fecha Inicio': this.formatDateShort(item.fecha_inicio),
+        'Fecha Vencimiento': this.formatDateShort(item.fecha_fin),
+        'Estado': item.is_active ? 'ACTIVO' : 'INACTIVO'
+      }));
+
+      exportPDF(exportData, 'resoluciones', 'Lista de Resoluciones');
+    },
+
+    exportToExcel() {
+      if (!this.resolutions || this.resolutions.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin datos',
+          text: 'No hay datos para exportar',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const exportData = this.resolutions.map(item => ({
+        'Resolución': item.numero_resolucion || '',
+        'Prefijo': item.prefijo_control || '0',
+        'Fecha Inicio': this.formatDateShort(item.fecha_inicio),
+        'Fecha Vencimiento': this.formatDateShort(item.fecha_fin),
+        'Estado': item.is_active ? 'ACTIVO' : 'INACTIVO'
+      }));
+
+      exportExcel(exportData, 'resoluciones');
+    },
   },
 };
 </script>

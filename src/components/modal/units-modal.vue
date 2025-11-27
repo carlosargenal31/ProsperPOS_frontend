@@ -103,6 +103,69 @@
     </div>
   </div>
 
+  <!-- Modal Visualizar Unidad -->
+  <div class="modal fade" id="view-unit">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="page-wrapper-new p-0">
+          <div class="content">
+            <div class="modal-header">
+              <div class="page-title">
+                <h4>Detalles de la Unidad</h4>
+              </div>
+              <button
+                type="button"
+                class="close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row" v-if="unit">
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">ID:</label>
+                  <p class="form-control-plaintext">{{ unit.id || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Nombre:</label>
+                  <p class="form-control-plaintext">{{ unit.name || '-' }}</p>
+                </div>
+                <div class="col-lg-12 mb-3">
+                  <label class="form-label fw-bold">Descripción:</label>
+                  <p class="form-control-plaintext">{{ unit.description || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Productos:</label>
+                  <p class="form-control-plaintext">{{ unit.products_count || 0 }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Estado:</label>
+                  <p class="form-control-plaintext">
+                    <span :class="unit.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                      {{ unit.is_active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /Modal Visualizar Unidad -->
+
   <!-- Modal Eliminar Unidad -->
   <div class="modal fade" id="delete-unit-modal">
     <div class="modal-dialog modal-dialog-centered">

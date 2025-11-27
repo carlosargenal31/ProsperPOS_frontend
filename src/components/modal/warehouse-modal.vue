@@ -1,6 +1,69 @@
 <template>
+  <!-- View Warehouse -->
+  <div class="modal fade" id="view-warehouse" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="page-wrapper-new p-0">
+          <div class="content">
+            <div class="modal-header">
+              <div class="page-title">
+                <h4>Detalles de la Bodega</h4>
+              </div>
+              <button
+                type="button"
+                class="close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row" v-if="warehouse">
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">ID:</label>
+                  <p class="form-control-plaintext">{{ warehouse.id || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Nombre:</label>
+                  <p class="form-control-plaintext">{{ warehouse.nombre || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Encargado:</label>
+                  <p class="form-control-plaintext">{{ warehouse.encargado || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Ubicación:</label>
+                  <p class="form-control-plaintext">{{ warehouse.ubicacion || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Estado:</label>
+                  <p class="form-control-plaintext">
+                    <span :class="warehouse.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                      {{ warehouse.is_active ? 'Activa' : 'Inactiva' }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /View Warehouse -->
+
   <!-- Add Warehouse -->
-  <div class="modal fade" id="add-warehouse">
+  <div class="modal fade" id="add-warehouse" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -88,7 +151,7 @@
   <!-- /Add Warehouse -->
 
   <!-- Edit Warehouse -->
-  <div class="modal fade" id="edit-warehouse">
+  <div class="modal fade" id="edit-warehouse" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -173,7 +236,7 @@
   <!-- /Edit Warehouse -->
 
   <!-- delete modal -->
-  <div class="modal fade" id="delete-modal">
+  <div class="modal fade" id="delete-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">

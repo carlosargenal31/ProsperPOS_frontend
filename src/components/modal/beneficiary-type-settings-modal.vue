@@ -125,6 +125,65 @@
   </div>
   <!-- /Edit Beneficiary Type -->
 
+  <!-- View Beneficiary Type -->
+  <div class="modal fade" id="view-beneficiary-type">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="page-wrapper-new p-0">
+          <div class="content">
+            <div class="modal-header">
+              <div class="page-title">
+                <h4>Detalles del Tipo de Beneficiario</h4>
+              </div>
+              <button
+                type="button"
+                class="close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">ID</label>
+                  <p class="form-control-plaintext border rounded px-3 py-2 bg-light">
+                    {{ beneficiaryType?.id || '-' }}
+                  </p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Estado</label>
+                  <p class="form-control-plaintext">
+                    <span :class="beneficiaryType?.is_active ? 'badge bg-success' : 'badge bg-secondary'">
+                      {{ beneficiaryType?.is_active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </p>
+                </div>
+                <div class="col-lg-12 mb-3">
+                  <label class="form-label fw-bold">Nombre</label>
+                  <p class="form-control-plaintext border rounded px-3 py-2 bg-light">
+                    {{ beneficiaryType?.nombre || '-' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary fs-13 fw-medium p-2 px-3"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /View Beneficiary Type -->
+
   <!-- delete modal -->
   <div class="modal fade" id="delete-modal">
     <div class="modal-dialog modal-dialog-centered">

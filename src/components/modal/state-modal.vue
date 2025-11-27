@@ -1,6 +1,65 @@
 <template>
+  <!-- View State -->
+  <div class="modal fade" id="view-state" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="page-wrapper-new p-0">
+          <div class="content">
+            <div class="modal-header">
+              <div class="page-title">
+                <h4>Detalles del Departamento</h4>
+              </div>
+              <button
+                type="button"
+                class="close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row" v-if="state">
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">ID:</label>
+                  <p class="form-control-plaintext">{{ state.id || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Nombre:</label>
+                  <p class="form-control-plaintext">{{ state.nombre || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">País:</label>
+                  <p class="form-control-plaintext">{{ state.country_name || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Estado:</label>
+                  <p class="form-control-plaintext">
+                    <span :class="state.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                      {{ state.is_active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /View State -->
+
   <!-- Add State -->
-  <div class="modal fade" id="add-state">
+  <div class="modal fade" id="add-state" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -77,7 +136,7 @@
   <!-- /Add State -->
 
   <!-- Edit State -->
-  <div class="modal fade" id="edit-state">
+  <div class="modal fade" id="edit-state" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -153,7 +212,7 @@
   <!-- /Edit State -->
 
   <!-- delete modal -->
-  <div class="modal fade" id="delete-modal">
+  <div class="modal fade" id="delete-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">

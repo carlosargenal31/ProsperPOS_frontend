@@ -1,6 +1,73 @@
 <template>
+  <!-- View Supplier -->
+  <div class="modal fade" id="view-supplier" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="page-wrapper-new p-0">
+          <div class="content">
+            <div class="modal-header">
+              <div class="page-title">
+                <h4>Detalles del Proveedor</h4>
+              </div>
+              <button
+                type="button"
+                class="close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row" v-if="supplier">
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">ID:</label>
+                  <p class="form-control-plaintext">{{ supplier.id || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Nombre:</label>
+                  <p class="form-control-plaintext">{{ supplier.nombre || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Tipo Proveedor:</label>
+                  <p class="form-control-plaintext">{{ supplier.tipo_proveedor || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Doc. Identificación:</label>
+                  <p class="form-control-plaintext">{{ supplier.doc_identificacion || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Tipo Beneficiario:</label>
+                  <p class="form-control-plaintext">{{ supplier.beneficiary_type_name || '-' }}</p>
+                </div>
+                <div class="col-lg-6 mb-3">
+                  <label class="form-label fw-bold">Estado:</label>
+                  <p class="form-control-plaintext">
+                    <span :class="supplier.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                      {{ supplier.is_active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /View Supplier -->
+
   <!-- Add Supplier -->
-  <div class="modal fade" id="add-supplier">
+  <div class="modal fade" id="add-supplier" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -109,7 +176,7 @@
   <!-- /Add Supplier -->
 
   <!-- Edit Supplier -->
-  <div class="modal fade" id="edit-supplier">
+  <div class="modal fade" id="edit-supplier" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
@@ -216,7 +283,7 @@
   <!-- /Edit Supplier -->
 
   <!-- Delete Confirmation Modal -->
-  <div class="modal fade" id="delete-modal">
+  <div class="modal fade" id="delete-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">

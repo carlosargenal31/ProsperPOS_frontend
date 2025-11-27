@@ -12,6 +12,16 @@
         </div>
         <ul class="table-top-head">
           <li>
+            <a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF">
+              <img src="@/assets/img/icons/pdf.svg" alt="PDF" />
+            </a>
+          </li>
+          <li>
+            <a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel">
+              <img src="@/assets/img/icons/excel.svg" alt="Excel" />
+            </a>
+          </li>
+          <li>
             <a @click="loadCurrencies" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
               ><i class="ti ti-refresh"></i
             ></a>
@@ -100,6 +110,16 @@
                             <a
                               class="me-2 p-2"
                               href="#"
+                              @click.prevent="openViewModal(currency)"
+                              data-bs-toggle="modal"
+                              data-bs-target="#view-currency"
+                              title="Ver detalles"
+                            >
+                              <i data-feather="eye" class="feather-eye"></i>
+                            </a>
+                            <a
+                              class="me-2 p-2"
+                              href="#"
                               @click.prevent="openEditModal(currency)"
                               data-bs-toggle="modal"
                               data-bs-target="#edit-currency"
@@ -151,6 +171,7 @@
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
 
 export default {
   data() {
@@ -195,6 +216,10 @@ export default {
       this.isEditMode = true;
     },
 
+    openViewModal(currency) {
+      this.selectedCurrency = { ...currency };
+    },
+
     openDeleteModal(currency) {
       if (currency.is_default) {
         Swal.fire({
@@ -224,6 +249,54 @@ export default {
     toggleHeader() {
       document.getElementById("collapse-header").classList.toggle("active");
       document.body.classList.toggle("header-collapse");
+    },
+
+    exportToPDF() {
+      if (!this.currencies || this.currencies.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin datos',
+          text: 'No hay datos para exportar',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const exportData = this.currencies.map(item => ({
+        'ID': item.id || '',
+        'Símbolo': item.simbolo || '',
+        'Nombre': item.plural || '',
+        'Factor de Cambio': this.formatFactor(item.factor_cambio),
+        'Tipo': item.extranjera ? 'Extranjera' : 'Local',
+        'Estado': item.is_active ? 'Activa' : 'Inactiva',
+        'Por Defecto': item.is_default ? 'Sí' : 'No'
+      }));
+
+      exportPDF(exportData, 'monedas', 'Lista de Monedas');
+    },
+
+    exportToExcel() {
+      if (!this.currencies || this.currencies.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin datos',
+          text: 'No hay datos para exportar',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const exportData = this.currencies.map(item => ({
+        'ID': item.id || '',
+        'Símbolo': item.simbolo || '',
+        'Nombre': item.plural || '',
+        'Factor de Cambio': this.formatFactor(item.factor_cambio),
+        'Tipo': item.extranjera ? 'Extranjera' : 'Local',
+        'Estado': item.is_active ? 'Activa' : 'Inactiva',
+        'Por Defecto': item.is_default ? 'Sí' : 'No'
+      }));
+
+      exportExcel(exportData, 'monedas');
     },
   },
 };

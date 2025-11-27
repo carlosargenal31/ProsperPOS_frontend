@@ -32,9 +32,9 @@
             "active_link": "/coupons"
           },
           {
-            "menuValue": "Descuentos",
-            "route": "/discount/discount-list",
-            "active_link": "/discount/discount-list"
+            "menuValue": "Ofertas",
+            "route": "/offers",
+            "active_link": "/offers"
           }
         ]
       },
@@ -46,28 +46,16 @@
         "icon": "ti ti-device-laptop",
         "subMenus": [
           {
-            "menuValue": "Documentos Ventas",
-            "route": "/pos/pos-5"
+            "menuValue": "POS Facturación",
+            "route": "/pos-invoice"
           },
           {
             "menuValue": "Devoluciones Ventas",
             "route": "/sales/sales-returns"
           },
           {
-            "menuValue": "Envíos",
-            "route": "/sales/pos-orders"
-          },
-          {
-            "menuValue": "En Linea",
-            "route": "/sales/online-orders"
-          },
-          {
-            "menuValue": "En Punto de Venta",
-            "route": "/sales/pos-orders"
-          },
-          {
-            "menuValue": "Cotizaciones",
-            "route": "/sales/quotation-list"
+            "menuValue": "Guías de Remisión",
+            "route": "/shipments"
           }
         ]
       },
@@ -87,7 +75,7 @@
           },
           {
             "menuValue": "Ventas por Vendedor",
-            "route": "/sales-report/best-sellers",
+            "route": "/sales-report/sales-by-seller",
             "hasSubRoute": false,
             "showSubRoute": false
           },
@@ -214,8 +202,8 @@
       {
         "menuValue": "Documentos Compras",
         "icon": "ti ti-shopping-bag",
-        "route": "/purchases/purchase-list",
-        "active_link" : "/purchases/purchase-list",
+        "route": "/pos-purchases",
+        "active_link" : "/pos-purchases",
         "hasSubRoute": false,
         "showSubRoute": false
       },
@@ -469,37 +457,9 @@
         "showSubRoute": false,
         "subMenus": [
           {
-            "menuValue": "Ajustes de Empresa",
-            "route": "/website-settings/company-settings",
-            "active_link": "/website-settings/company-settings",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "Localización",
-            "route": "/website-settings/localization-settings",
-            "active_link": "/website-settings/localization-settings",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
             "menuValue": "Ajustes de Factura",
-            "route": "/app-settings/invoice-settings",
-            "active_link": "/app-settings/invoice-settings",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "Plantilla de Factura",
-            "route": "/app-settings/invoice-templates",
-            "active_link": "/app-settings/invoice-templates",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "Impresora",
-            "route": "/app-settings/printer-settings",
-            "active_link": "/app-settings/printer-settings",
+            "route": "/website-settings/invoice-settings",
+            "active_link": "/website-settings/invoice-settings",
             "hasSubRoute": false,
             "showSubRoute": false
           },
@@ -511,9 +471,9 @@
             "showSubRoute": false
           },
           {
-            "menuValue": "Campos Personalizados",
-            "route": "/app-settings/custom-fields",
-            "active_link": "/app-settings/custom-fields",
+            "menuValue": "Resoluciones",
+            "route": "/financial-settings/resolution-settings",
+            "active_link": "/financial-settings/resolution-settings",
             "hasSubRoute": false,
             "showSubRoute": false
           }

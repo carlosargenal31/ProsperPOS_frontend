@@ -87,6 +87,9 @@
                 </template>
                 <template v-else-if="column.key === 'action'">
                   <div class="action-icon d-inline-flex">
+                    <a href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#view-brand" @click="viewBrand(record)" title="Ver detalles">
+                      <i class="ti ti-eye"></i>
+                    </a>
                     <a href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#edit-brand" @click="editBrand(record)" title="Editar">
                       <i class="ti ti-edit"></i>
                     </a>
@@ -226,6 +229,9 @@ export default {
         this.loadBrands();
       }
       // Si no hay cambios en el ordenamiento, solo se cambia de página (no hacer nada más)
+    },
+    viewBrand(brand) {
+      this.selectedBrand = { ...brand };
     },
     editBrand(brand) {
       this.selectedBrand = brand;

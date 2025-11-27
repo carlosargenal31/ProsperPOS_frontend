@@ -15,13 +15,8 @@
       "title": "Ajustes del Sitio Web",
       "page": "website-settings",
       "subMenu": [
-        { "title": "Ajustes de Empresa", "routes": "/website-settings/company-settings" },
-        { "title": "Localización", "routes": "/website-settings/localization-settings" },
-        { "title": "Ajustes de Factura", "routes": "/app-settings/invoice-settings" },
-        { "title": "Plantilla de Factura", "routes": "/app-settings/invoice-templates"},
-        { "title": "Impresora", "routes": "/app-settings/printer-settings" },
+        { "title": "Ajustes de Factura", "routes": "/website-settings/invoice-settings" },
         { "title": "POS", "routes": "/app-settings/pos-settings" },
-        { "title": "Campos Personalizados", "routes": "/app-settings/custom-fields" },
         { "title": "Resoluciones", "routes": "/financial-settings/resolution-settings" }
       ]
     },

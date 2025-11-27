@@ -79,6 +79,9 @@
 
                 <template v-else-if="column.key === 'action'">
                   <div class="action-icon d-inline-flex">
+                    <a href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#view-subcategory" @click="viewSubcategory(record)" title="Ver detalles">
+                      <i class="ti ti-eye"></i>
+                    </a>
                     <a href="#" class="me-2 d-flex align-items-center p-2 border rounded" data-bs-toggle="modal" data-bs-target="#edit-subcategory" @click="editSubcategory(record)" title="Editar">
                       <i class="ti ti-edit"></i>
                     </a>
@@ -233,6 +236,9 @@ export default {
       this.paginationConfig.current = pagination.current;
       this.paginationConfig.pageSize = pagination.pageSize;
       this.loadSubcategories();
+    },
+    viewSubcategory(subcategory) {
+      this.selectedSubcategory = { ...subcategory };
     },
     editSubcategory(subcategory) {
       this.selectedSubcategory = subcategory;

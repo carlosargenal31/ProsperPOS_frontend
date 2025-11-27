@@ -12,6 +12,16 @@
         </div>
         <ul class="table-top-head">
           <li>
+            <a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF">
+              <img src="@/assets/img/icons/pdf.svg" alt="PDF" />
+            </a>
+          </li>
+          <li>
+            <a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel">
+              <img src="@/assets/img/icons/excel.svg" alt="Excel" />
+            </a>
+          </li>
+          <li>
             <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"
               ><i class="ti ti-refresh"></i
             ></a>
@@ -150,6 +160,16 @@
                                   <a
                                     class="me-2 p-2"
                                     href="javascript:void(0);"
+                                    @click.prevent="openViewModal(record)"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#view-account"
+                                    title="Ver detalles"
+                                  >
+                                    <i data-feather="eye" class="feather-eye"></i>
+                                  </a>
+                                  <a
+                                    class="me-2 p-2"
+                                    href="javascript:void(0);"
                                     data-bs-toggle="modal"
                                     data-bs-target="#edit-account"
                                   >
@@ -181,6 +201,9 @@
 </template>
 
 <script>
+import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
+import Swal from 'sweetalert2';
+
 const columns = [
   {
     title: "Name",
@@ -306,6 +329,7 @@ export default {
       selected: [],
       selectedOne: [],
       selectedTwo: [],
+      selectedAccount: null,
       BankSort: [
         {label: "Sort by Date", value: "Sort by Date"}, 
         {label: "Newest", value: "Newest"}, 
@@ -328,9 +352,59 @@ export default {
     };
   },
   methods: {
+    openViewModal(account) {
+      this.selectedAccount = { ...account };
+    },
+
     toggleHeader() {
       document.getElementById("collapse-header").classList.toggle("active");
       document.body.classList.toggle("header-collapse");
+    },
+
+    exportToPDF() {
+      if (!this.data || this.data.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin datos',
+          text: 'No hay datos para exportar',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const exportData = this.data.map(item => ({
+        'Nombre': item.Name || '',
+        'Banco': item.Bank || '',
+        'Sucursal': item.Branch || '',
+        'Número de Cuenta': item.AccountNo || '',
+        'IFSC': item.IFSC || '',
+        'Creado': item.CreatedOn || ''
+      }));
+
+      exportPDF(exportData, 'cuentas-bancarias', 'Lista de Cuentas Bancarias');
+    },
+
+    exportToExcel() {
+      if (!this.data || this.data.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin datos',
+          text: 'No hay datos para exportar',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const exportData = this.data.map(item => ({
+        'Nombre': item.Name || '',
+        'Banco': item.Bank || '',
+        'Sucursal': item.Branch || '',
+        'Número de Cuenta': item.AccountNo || '',
+        'IFSC': item.IFSC || '',
+        'Creado': item.CreatedOn || ''
+      }));
+
+      exportExcel(exportData, 'cuentas-bancarias');
     },
   },
 };
