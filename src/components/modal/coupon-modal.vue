@@ -685,42 +685,42 @@
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
-            <div class="modal-body" v-if="Coupon">
+            <div class="modal-body" v-if="coupon">
               <div class="row">
                 <div class="col-lg-3 mb-3">
                   <label class="form-label fw-bold">Código:</label>
-                  <p class="form-control-plaintext">{{ Coupon.codigo }}</p>
+                  <p class="form-control-plaintext">{{ coupon.codigo }}</p>
                 </div>
                 <div class="col-lg-6 mb-3">
                   <label class="form-label fw-bold">Nombre:</label>
-                  <p class="form-control-plaintext">{{ Coupon.nombre }}</p>
+                  <p class="form-control-plaintext">{{ coupon.nombre }}</p>
                 </div>
                 <div class="col-lg-3 mb-3">
                   <label class="form-label fw-bold">Agencia:</label>
-                  <p class="form-control-plaintext">{{ Coupon.agencia_nombre || 'N/A' }}</p>
+                  <p class="form-control-plaintext">{{ coupon.agencia_nombre || 'N/A' }}</p>
                 </div>
               </div>
 
-              <!-- Para cup�ns de tipo grupo o producto único -->
-              <div v-if="Coupon.tipo_aplicacion !== 'multiple'" class="row">
+              <!-- Para cupones de tipo grupo o producto único -->
+              <div v-if="coupon.tipo_aplicacion !== 'multiple'" class="row">
                 <div class="col-lg-4 mb-3">
                   <label class="form-label fw-bold">Categoría:</label>
-                  <p class="form-control-plaintext">{{ Coupon.categoria_nombre || 'N/A' }}</p>
+                  <p class="form-control-plaintext">{{ coupon.categoria_nombre || 'N/A' }}</p>
                 </div>
                 <div class="col-lg-4 mb-3">
                   <label class="form-label fw-bold">Subcategoría:</label>
-                  <p class="form-control-plaintext">{{ Coupon.subcategoria_nombre || 'N/A' }}</p>
+                  <p class="form-control-plaintext">{{ coupon.subcategoria_nombre || 'N/A' }}</p>
                 </div>
                 <div class="col-lg-4 mb-3">
                   <label class="form-label fw-bold">Producto:</label>
-                  <p class="form-control-plaintext">{{ Coupon.producto_nombre || 'N/A' }}</p>
+                  <p class="form-control-plaintext">{{ coupon.producto_nombre || 'N/A' }}</p>
                 </div>
               </div>
 
-              <!-- Para cup�ns de tipo múltiple: mostrar lista de productos -->
-              <div v-if="Coupon.tipo_aplicacion === 'multiple' && Coupon.items && Coupon.items.length > 0" class="row">
+              <!-- Para cupones de tipo múltiple: mostrar lista de productos -->
+              <div v-if="coupon.tipo_aplicacion === 'multiple' && coupon.items && coupon.items.length > 0" class="row">
                 <div class="col-12 mb-3">
-                  <label class="form-label fw-bold">Productos Incluidos ({{ Coupon.items.length }}):</label>
+                  <label class="form-label fw-bold">Productos Incluidos ({{ coupon.items.length }}):</label>
                   <div class="table-responsive">
                     <table class="table table-sm table-bordered">
                       <thead>
@@ -732,7 +732,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="item in Coupon.items" :key="item.id">
+                        <tr v-for="item in coupon.items" :key="item.id">
                           <td>{{ item.product_code }}</td>
                           <td>{{ item.product_name }}</td>
                           <td>{{ item.descuento_porcentaje }}%</td>
@@ -747,38 +747,38 @@
               <div class="row">
                 <div class="col-lg-4 mb-3">
                   <label class="form-label fw-bold">Tipo de Descuento:</label>
-                  <p class="form-control-plaintext">{{ Coupon.tipo_descuento === 'porcentaje' ? 'Porcentaje' : 'Monto' }}</p>
+                  <p class="form-control-plaintext">{{ coupon.tipo_descuento === 'porcentaje' ? 'Porcentaje' : 'Monto' }}</p>
                 </div>
                 <div class="col-lg-4 mb-3">
                   <label class="form-label fw-bold">Valor:</label>
-                  <p class="form-control-plaintext">{{ Coupon.valor_descuento }}{{ Coupon.tipo_descuento === 'porcentaje' ? '%' : '' }}</p>
+                  <p class="form-control-plaintext">{{ coupon.valor_descuento }}{{ coupon.tipo_descuento === 'porcentaje' ? '%' : '' }}</p>
                 </div>
                 <div class="col-lg-4 mb-3">
                   <label class="form-label fw-bold">Estado:</label>
                   <p class="form-control-plaintext">
-                    <span :class="Coupon.is_active ? 'badge bg-success' : 'badge bg-danger'">
-                      {{ Coupon.is_active ? 'ACTIVO' : 'INACTIVO' }}
+                    <span :class="coupon.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                      {{ coupon.is_active ? 'ACTIVO' : 'INACTIVO' }}
                     </span>
                   </p>
                 </div>
               </div>
 
-              <div v-if="Coupon.limitar_fecha" class="row">
+              <div v-if="coupon.limitar_fecha" class="row">
                 <div class="col-lg-6 mb-3">
                   <label class="form-label fw-bold">Fecha Desde:</label>
-                  <p class="form-control-plaintext">{{ Coupon.fecha_desde || 'N/A' }}</p>
+                  <p class="form-control-plaintext">{{ coupon.fecha_desde || 'N/A' }}</p>
                 </div>
                 <div class="col-lg-6 mb-3">
                   <label class="form-label fw-bold">Fecha Hasta:</label>
-                  <p class="form-control-plaintext">{{ Coupon.fecha_hasta || 'N/A' }}</p>
+                  <p class="form-control-plaintext">{{ coupon.fecha_hasta || 'N/A' }}</p>
                 </div>
               </div>
               <div class="row">
                 <div class="col-lg-4 mb-3">
                   <label class="form-label fw-bold">Suspendida:</label>
                   <p class="form-control-plaintext">
-                    <span :class="Coupon.suspendida ? 'badge bg-warning' : 'badge bg-success'">
-                      {{ Coupon.suspendida ? 'SÍ' : 'NO' }}
+                    <span :class="coupon.suspendida ? 'badge bg-warning' : 'badge bg-success'">
+                      {{ coupon.suspendida ? 'SÍ' : 'NO' }}
                     </span>
                   </p>
                 </div>
@@ -805,7 +805,7 @@
               <div class="delete-action">
                 <div class="delete-heads">
                   <h4>¿Estás seguro?</h4>
-                  <p>¿Deseas eliminar esta cup�n?</p>
+                  <p>¿Deseas eliminar este cupón?</p>
                 </div>
                 <div class="modal-footer justify-content-center">
                   <button
@@ -1498,7 +1498,7 @@ export default {
     },
 
     async confirmDelete() {
-      if (!this.Coupon || !this.Coupon.id) return;
+      if (!this.coupon || !this.coupon.id) return;
 
       this.isSubmitting = true;
       try {
@@ -1507,7 +1507,7 @@ export default {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        this.$emit('couponDeleted');
+        this.$emit('coupon-deleted');
 
         const modalElement = document.getElementById('delete-coupon-modal');
         if (modalElement) {
@@ -1519,7 +1519,7 @@ export default {
           Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
-            text: 'cup�n eliminada exitosamente',
+            text: 'Cupón eliminado exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
@@ -1530,7 +1530,7 @@ export default {
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al eliminar la cup�n',
+          text: error.response?.data?.message || 'Error al eliminar el cupón',
           confirmButtonColor: '#dc3545'
         });
       } finally {

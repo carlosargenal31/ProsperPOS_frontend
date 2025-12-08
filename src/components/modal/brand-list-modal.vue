@@ -202,6 +202,7 @@
 import { brandService } from '@/services/api.service';
 
 export default {
+  emits: ['saved', 'deleted'],
   props: {
     brand: {
       type: Object,
@@ -258,12 +259,12 @@ export default {
 
       try {
         await brandService.createBrand(this.formAdd);
-        this.successAdd = 'Marca creada exitosamente';
+        this.successAdd = `La marca "${this.formAdd.name}" ha sido creada exitosamente`;
 
         setTimeout(() => {
           this.$emit('saved');
           this.closeModalAdd();
-        }, 1000);
+        }, 1500);
 
       } catch (err) {
         this.errorAdd = err.response?.data?.message || 'Error al crear la marca';
@@ -279,12 +280,12 @@ export default {
 
       try {
         await brandService.updateBrand(this.formEdit.id, this.formEdit);
-        this.successEdit = 'Marca actualizada exitosamente';
+        this.successEdit = `La marca "${this.formEdit.name}" ha sido actualizada exitosamente`;
 
         setTimeout(() => {
           this.$emit('saved');
           this.closeModalEdit();
-        }, 1000);
+        }, 1500);
 
       } catch (err) {
         this.errorEdit = err.response?.data?.message || 'Error al actualizar la marca';
@@ -328,25 +329,52 @@ export default {
     },
 
     cleanupModal(modalId = null) {
-      if (typeof window !== 'undefined' && window.bootstrap) {
-        if (modalId) {
-          const modalElement = document.getElementById(modalId);
-          if (modalElement) {
-            const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
-            if (modalInstance) {
-              modalInstance.hide();
-            }
-          }
+      if (!modalId) return;
+
+      const modalElement = document.getElementById(modalId);
+      if (!modalElement) return;
+
+      // Método 1: Intentar con jQuery si está disponible
+      if (typeof window !== 'undefined' && window.$ && window.$.fn && window.$.fn.modal) {
+        try {
+          window.$(`#${modalId}`).modal('hide');
+        } catch (e) {
+          console.log('jQuery modal hide failed, trying Bootstrap');
         }
+      }
 
-        // Limpiar backdrops
+      // Método 2: Bootstrap 5 nativo
+      if (typeof window !== 'undefined' && window.bootstrap) {
+        try {
+          const bsModal = window.bootstrap.Modal.getInstance(modalElement) ||
+                         new window.bootstrap.Modal(modalElement);
+          bsModal.hide();
+        } catch (e) {
+          console.log('Bootstrap modal hide failed');
+        }
+      }
+
+      // Método 3: Manipulación directa del DOM (fallback agresivo)
+      setTimeout(() => {
+        // Remover clases del modal
+        modalElement.classList.remove('show');
+        modalElement.style.display = 'none';
+        modalElement.setAttribute('aria-hidden', 'true');
+        modalElement.removeAttribute('aria-modal');
+
+        // Limpiar todos los backdrops
         const backdrops = document.querySelectorAll('.modal-backdrop');
-        backdrops.forEach(backdrop => backdrop.remove());
+        backdrops.forEach(backdrop => {
+          backdrop.remove();
+        });
 
+        // Limpiar el body
         document.body.classList.remove('modal-open');
         document.body.style.overflow = '';
         document.body.style.paddingRight = '';
-      }
+        document.body.removeAttribute('data-bs-overflow');
+        document.body.removeAttribute('data-bs-padding-right');
+      }, 100);
     },
 
     resetFormAdd() {

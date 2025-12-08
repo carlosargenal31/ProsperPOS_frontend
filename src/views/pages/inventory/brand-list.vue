@@ -11,8 +11,8 @@
           </div>
         </div>
         <ul class="table-top-head">
-          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="PDF"><img src="@/assets/img/icons/pdf.svg" alt="img" /></a></li>
-          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="@/assets/img/icons/excel.svg" alt="img" /></a></li>
+          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Descargar PDF" @click="handleExportPDF"><img src="@/assets/img/icons/pdf.svg" alt="img" /></a></li>
+          <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Descargar Excel" @click="handleExportExcel"><img src="@/assets/img/icons/excel.svg" alt="img" /></a></li>
           <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar" @click="loadBrands"><i class="ti ti-refresh"></i></a></li>
           <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Contraer" id="collapse-header" @click="toggleHeader"><i class="ti ti-chevron-up"></i></a></li>
         </ul>
@@ -116,6 +116,7 @@
 <script>
 import { brandService } from '@/services/api.service';
 import { hasPermission } from '@/utils/permissions';
+import { exportToPDF, exportToExcel } from '@/utils/export-helpers';
 
 const columns = [
   { title: 'Código', dataIndex: 'id', key: 'id', sorter: true, width: 120 },
@@ -263,6 +264,106 @@ export default {
     onBrandDeleted() {
       this.loadBrands();
       this.brandToDelete = null;
+    },
+    async handleExportPDF() {
+      try {
+        if (!this.brands || this.brands.length === 0) {
+          this.$swal({
+            icon: 'warning',
+            title: 'Sin datos',
+            text: 'No hay marcas para exportar',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#ffc107'
+          });
+          return;
+        }
+
+        // Preparar datos para exportación
+        const headers = ['Código', 'Marca', 'Productos', 'Fecha Creación', 'Estado'];
+        const data = this.brands.map(brand => [
+          brand.id,
+          brand.name,
+          brand.products_count || 0,
+          this.formatDate(brand.created_at),
+          brand.is_active ? 'Activo' : 'Inactivo'
+        ]);
+
+        await exportToPDF({
+          title: 'Listado de Marcas',
+          headers,
+          data,
+          filename: `marcas_${new Date().toISOString().split('T')[0]}`
+        });
+
+        this.$swal({
+          icon: 'success',
+          title: '¡PDF Generado!',
+          text: 'El archivo PDF se ha descargado exitosamente',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#28a745',
+          timer: 2000,
+          timerProgressBar: true
+        });
+      } catch (error) {
+        console.error('Error exporting PDF:', error);
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el PDF. Intenta nuevamente.',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#dc3545'
+        });
+      }
+    },
+    async handleExportExcel() {
+      try {
+        if (!this.brands || this.brands.length === 0) {
+          this.$swal({
+            icon: 'warning',
+            title: 'Sin datos',
+            text: 'No hay marcas para exportar',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#ffc107'
+          });
+          return;
+        }
+
+        // Preparar datos para exportación
+        const headers = ['Código', 'Marca', 'Productos', 'Fecha Creación', 'Estado'];
+        const data = this.brands.map(brand => [
+          brand.id,
+          brand.name,
+          brand.products_count || 0,
+          this.formatDate(brand.created_at),
+          brand.is_active ? 'Activo' : 'Inactivo'
+        ]);
+
+        await exportToExcel({
+          title: 'Listado de Marcas',
+          headers,
+          data,
+          filename: `marcas_${new Date().toISOString().split('T')[0]}`
+        });
+
+        this.$swal({
+          icon: 'success',
+          title: '¡Excel Generado!',
+          text: 'El archivo Excel se ha descargado exitosamente',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#28a745',
+          timer: 2000,
+          timerProgressBar: true
+        });
+      } catch (error) {
+        console.error('Error exporting Excel:', error);
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el Excel. Intenta nuevamente.',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#dc3545'
+        });
+      }
     }
   }
 };

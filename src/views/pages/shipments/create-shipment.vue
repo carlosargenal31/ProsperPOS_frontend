@@ -527,6 +527,59 @@
       </div>
     </div>
 
+    <!-- Modal de Documentos de Guía de Remisión -->
+    <div class="modal fade" :class="{ show: showDocumentsModal }" :style="{ display: showDocumentsModal ? 'block' : 'none' }" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-white py-2">
+            <h6 class="modal-title mb-0">
+              <i class="ti ti-check-circle text-success me-2"></i>Guía de Remisión Creada
+            </h6>
+            <button type="button" class="btn-close" @click="closeDocumentsModal"></button>
+          </div>
+
+          <div class="modal-body py-3 px-3">
+            <div class="text-center mb-3">
+              <div class="avatar avatar-xl bg-success-transparent rounded-circle mb-3 mx-auto">
+                <i class="ti ti-truck-delivery text-success" style="font-size: 2.5rem;"></i>
+              </div>
+              <h5 class="text-success mb-2">¡Guía Creada Exitosamente!</h5>
+              <p class="text-muted mb-0" v-if="savedShipment">
+                Guía de Remisión <strong class="text-primary">{{ savedShipment.shipment_number }}</strong>
+              </p>
+            </div>
+
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+              <i class="ti ti-info-circle me-2"></i>
+              <small>Selecciona cómo deseas exportar o imprimir la guía de remisión</small>
+            </div>
+          </div>
+
+          <div class="modal-footer justify-content-center border-0 pb-3">
+            <button type="button" class="btn btn-sm btn-warning" @click="exportToExcel">
+              <i class="ti ti-file-spreadsheet me-1"></i>Abrir Guía
+            </button>
+            <button type="button" class="btn btn-sm btn-danger" @click="exportToPDF">
+              <i class="ti ti-file-type-pdf me-1"></i>PDF
+            </button>
+            <button type="button" class="btn btn-sm btn-info" @click="exportToImage">
+              <i class="ti ti-photo me-1"></i>Imagen
+            </button>
+            <button type="button" class="btn btn-sm btn-success" @click="printShipment">
+              <i class="ti ti-printer me-1"></i>Imprimir
+            </button>
+          </div>
+
+          <div class="modal-footer justify-content-center border-top pt-2">
+            <button type="button" class="btn btn-sm btn-secondary" @click="closeDocumentsModal">
+              <i class="ti ti-x me-1"></i>Cerrar y Volver
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop fade show" v-if="showDocumentsModal" @click="closeDocumentsModal"></div>
+
   </div>
 </template>
 
@@ -604,7 +657,10 @@ export default {
       showCustomerModal: false,
       customerSearch: '',
       deliveryType: 'enviar', // 'enviar' o 'recoger'
-      saving: false
+      saving: false,
+      showDocumentsModal: false,
+      savedShipmentId: null,
+      savedShipment: null
     };
   },
   computed: {
@@ -916,19 +972,51 @@ export default {
 
         if (response.data.success) {
           const shipmentId = response.data.data?.id || response.data.data;
+          this.savedShipmentId = shipmentId;
 
-          // Redirigir a imprimir la guía directamente sin notificación
-          if (shipmentId) {
-            window.open(`/shipments/print/${shipmentId}`, '_blank');
+          // Cargar los datos completos del envío
+          const shipmentResponse = await api.get(`/shipments/${shipmentId}`);
+          if (shipmentResponse.data.success) {
+            this.savedShipment = shipmentResponse.data.data;
+            this.showDocumentsModal = true;
           }
-
-          this.$router.push('/shipments');
         }
       } catch (error) {
         console.error('Error saving shipment:', error);
         Swal.fire('Error', error.response?.data?.message || 'No se pudo guardar el envío', 'error');
       } finally {
         this.saving = false;
+      }
+    },
+
+    closeDocumentsModal() {
+      this.showDocumentsModal = false;
+      this.savedShipmentId = null;
+      this.savedShipment = null;
+      this.$router.push('/shipments');
+    },
+
+    printShipment() {
+      if (this.savedShipmentId) {
+        window.open(`/shipments/print/${this.savedShipmentId}`, '_blank');
+      }
+    },
+
+    async exportToPDF() {
+      if (this.savedShipmentId) {
+        window.open(`/shipments/print/${this.savedShipmentId}`, '_blank');
+      }
+    },
+
+    async exportToImage() {
+      if (this.savedShipmentId) {
+        window.open(`/shipments/print/${this.savedShipmentId}`, '_blank');
+      }
+    },
+
+    async exportToExcel() {
+      if (this.savedShipmentId) {
+        window.open(`/shipments/print/${this.savedShipmentId}`, '_blank');
       }
     }
   }

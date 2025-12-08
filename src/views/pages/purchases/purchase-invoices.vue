@@ -7,18 +7,18 @@
       <div class="page-header">
         <div class="add-item d-flex">
           <div class="page-title">
-            <h4>📚 Libro de Compras</h4>
-            <h6>Gestiona tus facturas de compras con tecnología OCR</h6>
+            <h4>Libro de Compras</h4>
+            <h6>Gestiona tus facturas de compras</h6>
           </div>
         </div>
         <ul class="table-top-head">
           <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Exportar PDF" @click="exportToPDF">
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="PDF" @click="exportToPDF">
               <img src="@/assets/img/icons/pdf.svg" alt="PDF">
             </a>
           </li>
           <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Exportar Excel" @click="exportToExcel">
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel" @click="exportToExcel">
               <img src="@/assets/img/icons/excel.svg" alt="Excel">
             </a>
           </li>
@@ -34,104 +34,36 @@
           </li>
         </ul>
         <div class="page-btn">
-          <a href="#" class="btn btn-added" @click.prevent="openAddPurchaseModal">
+          <a href="#" class="btn btn-added" data-bs-toggle="modal" data-bs-target="#add-purchase-modal">
             <i class="ti ti-plus me-2"></i>Nueva Factura de Compra
           </a>
         </div>
       </div>
 
-      <!-- Statistics Cards -->
-      <div class="row" v-if="statistics">
-        <div class="col-xl-3 col-sm-6 col-12">
-          <div class="card color-info bg-primary mb-4">
-            <div class="card-body">
-              <div class="dash-widget-header">
-                <span class="dash-widget-icon">
-                  <i class="ti ti-file-invoice"></i>
-                </span>
-                <div class="dash-count">
-                  <div class="dash-title">Total Facturas</div>
-                  <div class="dash-counts">
-                    <p>{{ statistics.total_documents || 0 }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-sm-6 col-12">
-          <div class="card color-info bg-success mb-4">
-            <div class="card-body">
-              <div class="dash-widget-header">
-                <span class="dash-widget-icon">
-                  <i class="ti ti-currency-dollar"></i>
-                </span>
-                <div class="dash-count">
-                  <div class="dash-title">Total Compras</div>
-                  <div class="dash-counts">
-                    <p>L {{ formatCurrency(statistics.total_amount) }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-sm-6 col-12">
-          <div class="card color-info bg-info mb-4">
-            <div class="card-body">
-              <div class="dash-widget-header">
-                <span class="dash-widget-icon">
-                  <i class="ti ti-percentage"></i>
-                </span>
-                <div class="dash-count">
-                  <div class="dash-title">ISV Pagado</div>
-                  <div class="dash-counts">
-                    <p>L {{ formatCurrency(statistics.total_tax) }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-sm-6 col-12">
-          <div class="card color-info bg-warning mb-4">
-            <div class="card-body">
-              <div class="dash-widget-header">
-                <span class="dash-widget-icon">
-                  <i class="ti ti-clock"></i>
-                </span>
-                <div class="dash-count">
-                  <div class="dash-title">Pendiente Pago</div>
-                  <div class="dash-counts">
-                    <p>L {{ formatCurrency(statistics.total_pending) }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Filters -->
-      <div class="card mb-3">
-        <div class="card-body pb-2">
+      <div class="card mb-0">
+        <div class="card-body pb-1">
           <div class="row">
             <div class="col-lg-3 col-sm-6">
               <div class="input-blocks">
                 <label>Fecha Desde</label>
-                <input type="date" class="form-control" v-model="filters.date_from" @change="loadPurchases">
+                <div class="input-groupicon calender-input">
+                  <input type="date" class="form-control" v-model="filters.date_from" @change="loadPurchases">
+                </div>
               </div>
             </div>
             <div class="col-lg-3 col-sm-6">
               <div class="input-blocks">
                 <label>Fecha Hasta</label>
-                <input type="date" class="form-control" v-model="filters.date_to" @change="loadPurchases">
+                <div class="input-groupicon calender-input">
+                  <input type="date" class="form-control" v-model="filters.date_to" @change="loadPurchases">
+                </div>
               </div>
             </div>
             <div class="col-lg-3 col-sm-6">
               <div class="input-blocks">
-                <label>Buscar</label>
-                <input type="text" class="form-control" v-model="filters.search" @input="debouncedSearch" placeholder="Proveedor, N° Factura...">
+                <label>Proveedor</label>
+                <input type="text" class="form-control" v-model="filters.search" @input="debouncedSearch" placeholder="Buscar proveedor...">
               </div>
             </div>
             <div class="col-lg-3 col-sm-6">
@@ -150,89 +82,160 @@
         </div>
       </div>
 
-      <!-- Purchase List Table -->
+      <!-- Purchase Statistics -->
+      <div class="row" v-if="statistics">
+        <div class="col-xl-3 col-sm-6">
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="avatar avatar-lg bg-primary-transparent rounded-circle">
+                  <i class="ti ti-file-invoice fs-24 text-primary"></i>
+                </div>
+                <div class="ms-3 flex-fill">
+                  <h6 class="mb-1">Total Facturas</h6>
+                  <h4 class="mb-0">{{ statistics.total_documents || 0 }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="avatar avatar-lg bg-success-transparent rounded-circle">
+                  <i class="ti ti-currency-dollar fs-24 text-success"></i>
+                </div>
+                <div class="ms-3 flex-fill">
+                  <h6 class="mb-1">Total Compras</h6>
+                  <h4 class="mb-0">L {{ formatCurrency(statistics.total_amount) }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="avatar avatar-lg bg-info-transparent rounded-circle">
+                  <i class="ti ti-percentage fs-24 text-info"></i>
+                </div>
+                <div class="ms-3 flex-fill">
+                  <h6 class="mb-1">ISV Pagado</h6>
+                  <h4 class="mb-0">L {{ formatCurrency(statistics.total_tax) }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="avatar avatar-lg bg-warning-transparent rounded-circle">
+                  <i class="ti ti-clock fs-24 text-warning"></i>
+                </div>
+                <div class="ms-3 flex-fill">
+                  <h6 class="mb-1">Pendiente</h6>
+                  <h4 class="mb-0">L {{ formatCurrency(statistics.total_pending) }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase List -->
       <div class="card table-list-card">
         <div class="card-body">
+          <div class="table-top">
+            <div class="search-set">
+              <div class="search-input">
+                <a href="#" class="btn btn-searchset">
+                  <i class="ti ti-search"></i>
+                </a>
+                <input type="search" class="form-control" v-model="filters.search" @input="debouncedSearch" placeholder="Buscar...">
+              </div>
+            </div>
+          </div>
+
           <div class="table-responsive" v-if="!loading">
-            <table class="table table-hover">
-              <thead class="thead-light">
+            <table class="table datanew">
+              <thead>
                 <tr>
-                  <th style="width: 5%;">
+                  <th>
                     <label class="checkboxs">
                       <input type="checkbox" v-model="selectAll" @change="toggleSelectAll">
                       <span class="checkmarks"></span>
                     </label>
                   </th>
-                  <th style="width: 10%;">Fecha</th>
-                  <th style="width: 15%;">N° Factura</th>
-                  <th style="width: 20%;">Proveedor</th>
-                  <th style="width: 12%;">RTN/ID</th>
-                  <th class="text-end" style="width: 10%;">Subtotal</th>
-                  <th class="text-end" style="width: 8%;">ISV</th>
-                  <th class="text-end" style="width: 10%;">Total</th>
-                  <th style="width: 10%;">Estado</th>
-                  <th class="text-center" style="width: 10%;">Acciones</th>
+                  <th>Fecha</th>
+                  <th>N° Factura</th>
+                  <th>Proveedor</th>
+                  <th>RTN/ID</th>
+                  <th>Subtotal</th>
+                  <th>ISV</th>
+                  <th>Total</th>
+                  <th>Estado Pago</th>
+                  <th>Imagen</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="purchase in purchases" :key="purchase.id" :class="{ 'table-active': selectedPurchases.includes(purchase.id) }">
+                <tr v-for="purchase in purchases" :key="purchase.id">
                   <td>
                     <label class="checkboxs">
                       <input type="checkbox" v-model="selectedPurchases" :value="purchase.id">
                       <span class="checkmarks"></span>
                     </label>
                   </td>
+                  <td>{{ formatDate(purchase.purchase_date) }}</td>
                   <td>
-                    <span class="text-muted small">{{ formatDate(purchase.purchase_date) }}</span>
+                    <span class="fw-bold">{{ purchase.invoice_number || purchase.purchase_number }}</span>
                   </td>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <i v-if="purchase.invoice_image" class="ti ti-photo text-success me-2" data-bs-toggle="tooltip" title="Tiene imagen"></i>
-                      <span class="fw-semibold">{{ purchase.invoice_number || purchase.purchase_number }}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="productimgname">
-                      <span class="text-dark fw-medium">{{ purchase.supplier_name }}</span>
-                    </div>
-                  </td>
-                  <td><span class="text-muted small">{{ purchase.supplier_id_number || '-' }}</span></td>
-                  <td class="text-end">L {{ formatCurrency(purchase.net_amount) }}</td>
-                  <td class="text-end text-info">L {{ formatCurrency(purchase.tax_amount) }}</td>
-                  <td class="text-end fw-bold text-primary">L {{ formatCurrency(purchase.total_amount) }}</td>
+                  <td>{{ purchase.supplier_name }}</td>
+                  <td>{{ purchase.supplier_id_number || '-' }}</td>
+                  <td>L {{ formatCurrency(purchase.net_amount) }}</td>
+                  <td>L {{ formatCurrency(purchase.tax_amount) }}</td>
+                  <td class="fw-bold">L {{ formatCurrency(purchase.total_amount) }}</td>
                   <td>
                     <span :class="getPaymentStatusClass(purchase.payment_status)">
                       {{ getPaymentStatusText(purchase.payment_status) }}
                     </span>
                   </td>
                   <td>
-                    <div class="action-table-data text-center">
+                    <span v-if="purchase.invoice_image" class="badge bg-success">
+                      <i class="ti ti-photo"></i>
+                    </span>
+                    <span v-else class="badge bg-secondary">
+                      <i class="ti ti-photo-off"></i>
+                    </span>
+                  </td>
+                  <td>
+                    <div class="action-table-data">
                       <div class="edit-delete-action">
                         <a class="me-2 p-2" href="#" @click.prevent="viewPurchase(purchase)" data-bs-toggle="tooltip" title="Ver Detalles">
-                          <i class="ti ti-eye fs-5"></i>
+                          <i class="ti ti-eye"></i>
                         </a>
                         <a class="me-2 p-2" href="#" @click.prevent="viewInvoiceImage(purchase)" v-if="purchase.invoice_image" data-bs-toggle="tooltip" title="Ver Factura">
-                          <i class="ti ti-file-invoice fs-5 text-primary"></i>
+                          <i class="ti ti-file-invoice"></i>
                         </a>
                         <a class="me-2 p-2" href="#" @click.prevent="editPurchase(purchase)" data-bs-toggle="tooltip" title="Editar">
-                          <i class="ti ti-edit fs-5 text-info"></i>
+                          <i class="ti ti-edit"></i>
                         </a>
                         <a class="p-2 confirm-text" href="#" @click.prevent="confirmDelete(purchase)" data-bs-toggle="tooltip" title="Eliminar">
-                          <i class="ti ti-trash fs-5 text-danger"></i>
+                          <i class="ti ti-trash"></i>
                         </a>
                       </div>
                     </div>
                   </td>
                 </tr>
                 <tr v-if="purchases.length === 0">
-                  <td colspan="10" class="text-center py-5">
-                    <div class="empty-state">
-                      <i class="ti ti-inbox fs-48 text-muted mb-3 d-block"></i>
-                      <h5 class="text-muted mb-2">No hay facturas registradas</h5>
-                      <p class="text-muted small">Comienza agregando tu primera factura de compra</p>
-                      <button class="btn btn-primary mt-3" @click="openAddPurchaseModal">
-                        <i class="ti ti-plus me-2"></i>Nueva Factura
-                      </button>
+                  <td colspan="11" class="text-center py-4">
+                    <div class="text-muted">
+                      <i class="ti ti-inbox fs-48 mb-2"></i>
+                      <p class="mb-0">No se encontraron facturas de compras</p>
                     </div>
                   </td>
                 </tr>
@@ -240,35 +243,30 @@
             </table>
           </div>
 
-          <!-- Loading State -->
+          <!-- Loading -->
           <div v-if="loading" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <div class="spinner-border text-primary" role="status">
               <span class="visually-hidden">Cargando...</span>
             </div>
-            <p class="text-muted mt-3">Cargando facturas...</p>
           </div>
 
           <!-- Pagination -->
-          <div class="d-flex justify-content-between align-items-center mt-3" v-if="pagination.totalPages > 1 && !loading">
+          <div class="d-flex justify-content-between align-items-center mt-3" v-if="pagination.totalPages > 1">
             <div class="dataTables_info">
               Mostrando {{ (pagination.currentPage - 1) * pagination.perPage + 1 }} a
               {{ Math.min(pagination.currentPage * pagination.perPage, pagination.totalRecords) }}
               de {{ pagination.totalRecords }} registros
             </div>
             <div class="dataTables_paginate">
-              <ul class="pagination mb-0">
+              <ul class="pagination">
                 <li class="paginate_button page-item" :class="{ disabled: pagination.currentPage === 1 }">
-                  <a href="#" class="page-link" @click.prevent="changePage(pagination.currentPage - 1)">
-                    <i class="ti ti-chevron-left"></i>
-                  </a>
+                  <a href="#" class="page-link" @click.prevent="changePage(pagination.currentPage - 1)">Anterior</a>
                 </li>
                 <li v-for="page in visiblePages" :key="page" class="paginate_button page-item" :class="{ active: page === pagination.currentPage }">
-                  <a href="#" class="page-link" @click.prevent="page !== '...' && changePage(page)">{{ page }}</a>
+                  <a href="#" class="page-link" @click.prevent="changePage(page)">{{ page }}</a>
                 </li>
                 <li class="paginate_button page-item" :class="{ disabled: pagination.currentPage === pagination.totalPages }">
-                  <a href="#" class="page-link" @click.prevent="changePage(pagination.currentPage + 1)">
-                    <i class="ti ti-chevron-right"></i>
-                  </a>
+                  <a href="#" class="page-link" @click.prevent="changePage(pagination.currentPage + 1)">Siguiente</a>
                 </li>
               </ul>
             </div>
@@ -278,39 +276,37 @@
     </div>
   </div>
 
-  <!-- Modals -->
+  <!-- Add/Edit Purchase Modal -->
   <purchase-invoice-modal
-    v-if="showPurchaseModal"
     :is-open="showPurchaseModal"
     :purchase="selectedPurchase"
     @close="closePurchaseModal"
     @save="handleSavePurchase"
-  />
+  ></purchase-invoice-modal>
 
+  <!-- View Invoice Image Modal -->
   <invoice-image-modal
-    v-if="showImageModal"
     :is-open="showImageModal"
     :image-url="selectedImageUrl"
     @close="closeImageModal"
-  />
+  ></invoice-image-modal>
 
+  <!-- View Purchase Details Modal -->
   <purchase-details-modal
-    v-if="showDetailsModal"
     :is-open="showDetailsModal"
     :purchase="selectedPurchase"
     @close="closeDetailsModal"
-  />
+  ></purchase-details-modal>
 </template>
 
 <script>
 import axios from 'axios';
-import Swal from 'sweetalert2';
 import PurchaseInvoiceModal from '@/components/modal/purchase-invoice-modal.vue';
 import InvoiceImageModal from '@/components/modal/invoice-image-modal.vue';
 import PurchaseDetailsModal from '@/components/modal/purchase-details-modal.vue';
 
 export default {
-  name: 'PurchaseList',
+  name: 'PurchaseInvoices',
   components: {
     PurchaseInvoiceModal,
     InvoiceImageModal,
@@ -374,7 +370,6 @@ export default {
   mounted() {
     this.loadPurchases();
     this.loadStatistics();
-    this.initializeTooltips();
   },
   methods: {
     async loadPurchases() {
@@ -388,14 +383,10 @@ export default {
         this.pagination = response.data.data.pagination || {};
       } catch (error) {
         console.error('Error loading purchases:', error);
-        Swal.fire({
+        this.$swal({
           icon: 'error',
           title: 'Error',
-          text: 'Error al cargar las facturas de compras',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
+          text: 'Error al cargar las facturas de compras'
         });
       } finally {
         this.loading = false;
@@ -439,29 +430,14 @@ export default {
       }
     },
 
-    openAddPurchaseModal() {
-      this.selectedPurchase = null;
-      this.showPurchaseModal = true;
-    },
-
     viewPurchase(purchase) {
       this.selectedPurchase = purchase;
       this.showDetailsModal = true;
     },
 
-    async editPurchase(purchase) {
-      try {
-        const response = await axios.get(`/api/purchases/${purchase.id}`);
-        this.selectedPurchase = response.data.data;
-        this.showPurchaseModal = true;
-      } catch (error) {
-        console.error('Error loading purchase:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Error al cargar la factura'
-        });
-      }
+    editPurchase(purchase) {
+      this.selectedPurchase = purchase;
+      this.showPurchaseModal = true;
     },
 
     viewInvoiceImage(purchase) {
@@ -472,16 +448,15 @@ export default {
     },
 
     confirmDelete(purchase) {
-      Swal.fire({
+      this.$swal({
         title: '¿Estás seguro?',
-        html: `¿Deseas eliminar la factura <strong>${purchase.invoice_number || purchase.purchase_number}</strong>?<br><small class="text-muted">Esta acción no se puede deshacer</small>`,
+        text: 'Esta acción no se puede deshacer',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: '<i class="ti ti-trash me-1"></i> Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-        reverseButtons: true
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
       }).then(async (result) => {
         if (result.isConfirmed) {
           await this.deletePurchase(purchase.id);
@@ -493,13 +468,10 @@ export default {
       try {
         await axios.delete(`/api/purchases/${id}`);
 
-        Swal.fire({
+        this.$swal({
           icon: 'success',
-          title: '¡Eliminada!',
-          text: 'Factura eliminada exitosamente',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
+          title: 'Eliminado',
+          text: 'Factura de compra eliminada exitosamente',
           timer: 2000
         });
 
@@ -507,10 +479,10 @@ export default {
         this.loadStatistics();
       } catch (error) {
         console.error('Error deleting purchase:', error);
-        Swal.fire({
+        this.$swal({
           icon: 'error',
           title: 'Error',
-          text: 'Error al eliminar la factura'
+          text: 'Error al eliminar la factura de compra'
         });
       }
     },
@@ -572,155 +544,44 @@ export default {
     },
 
     toggleHeader() {
-      document.getElementById('collapse-header')?.classList.toggle('active');
+      document.getElementById('collapse-header').classList.toggle('active');
       document.body.classList.toggle('header-collapse');
     },
 
     async exportToPDF() {
-      Swal.fire({
+      // TODO: Implement PDF export
+      this.$swal({
         icon: 'info',
         title: 'Exportar a PDF',
-        text: 'Función en desarrollo',
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 2000
+        text: 'Función en desarrollo'
       });
     },
 
     async exportToExcel() {
-      Swal.fire({
+      // TODO: Implement Excel export
+      this.$swal({
         icon: 'info',
         title: 'Exportar a Excel',
-        text: 'Función en desarrollo',
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 2000
+        text: 'Función en desarrollo'
       });
-    },
-
-    initializeTooltips() {
-      setTimeout(() => {
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-          return new window.bootstrap.Tooltip(tooltipTriggerEl);
-        });
-      }, 500);
-    }
-  },
-  watch: {
-    'filters.date_from'() {
-      this.loadStatistics();
-    },
-    'filters.date_to'() {
-      this.loadStatistics();
     }
   }
 };
 </script>
 
 <style scoped>
-.dash-widget-header {
-  display: flex;
-  align-items: center;
-  color: #fff;
-}
-
-.dash-widget-icon {
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  margin-right: 15px;
-}
-
-.dash-widget-icon i {
-  font-size: 24px;
-}
-
-.dash-count {
-  flex: 1;
-}
-
-.dash-title {
-  font-size: 14px;
-  font-weight: 500;
-  opacity: 0.9;
-  margin-bottom: 5px;
-}
-
-.dash-counts p {
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-}
-
-.color-info {
-  border-radius: 10px;
-  transition: transform 0.2s;
-}
-
-.color-info:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.table-hover tbody tr:hover {
-  background-color: rgba(0, 123, 255, 0.05);
-}
-
-.empty-state {
-  padding: 40px 20px;
-}
-
 .badge {
   font-size: 11px;
-  padding: 5px 10px;
-  font-weight: 600;
+  padding: 4px 8px;
 }
 
 .action-table-data a {
   display: inline-flex;
-  align-items-center;
+  align-items: center;
   justify-content: center;
-  transition: all 0.2s;
 }
 
-.action-table-data a:hover {
-  transform: scale(1.1);
-}
-
-.input-blocks label {
-  font-weight: 500;
-  color: #6c757d;
-  margin-bottom: 8px;
-  font-size: 13px;
-}
-
-.thead-light th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  font-size: 13px;
-  color: #495057;
-  border-bottom: 2px solid #dee2e6;
-}
-
-.table td {
-  vertical-align: middle;
-  font-size: 14px;
-}
-
-.pagination .page-link {
-  border-radius: 5px;
-  margin: 0 2px;
-}
-
-.pagination .page-item.active .page-link {
-  background-color: #007bff;
-  border-color: #007bff;
+.table-responsive {
+  min-height: 300px;
 }
 </style>

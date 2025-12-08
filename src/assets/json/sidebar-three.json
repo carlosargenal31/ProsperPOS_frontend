@@ -167,7 +167,7 @@
             "tittle": "POS",
             "hasSubRoute": false,
             "showSubRoute": false,
-            "route": "/pos/pos-5",
+            "route": "/pos-invoice",
             "subRoutes": []
           }
         ]
@@ -197,7 +197,7 @@
             "tittle": "Purchase Return",
             "hasSubRoute": false,
             "showSubRoute": false,
-            "route": "/purchases/purchase-returns",
+            "route": "/purchase-returns",
             "subRoutes": []
           },
           {

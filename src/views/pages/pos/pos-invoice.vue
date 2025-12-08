@@ -27,22 +27,26 @@
             <div class="card mb-2 flex-shrink-0">
               <div class="card-body p-3">
                 <div class="row g-3">
-                  <div class="col-md-3">
+                  <!-- Consecutivo -->
+                  <div :class="documentType === 'COTIZACION' ? 'col-md-6' : 'col-md-3'">
                     <label class="form-label fw-bold">Consecutivo</label>
-                    <div class="input-group">
-                      <span class="input-group-text bg-danger text-white">{{ documentType === 'FACTURA' ? 'FAC' : 'COT' }}</span>
-                      <input type="text" class="form-control fw-bold" v-model="invoice.consecutive" readonly>
+                    <input type="text" class="form-control fw-bold text-center fs-4" :value="currentConsecutive" readonly>
+                  </div>
+
+                  <!-- Campos de Resolución - Solo para FACTURA -->
+                  <template v-if="documentType === 'FACTURA'">
+                    <div class="col-md-3">
+                      <label class="form-label fw-bold">No. Resolución</label>
+                      <input type="text" class="form-control" :value="resolution.cai" readonly>
                     </div>
-                  </div>
-                  <div class="col-md-3">
-                    <label class="form-label fw-bold">No. Resolución</label>
-                    <input type="text" class="form-control" :value="resolution.cai" readonly>
-                  </div>
-                  <div class="col-md-3">
-                    <label class="form-label fw-bold">Consec. Resolución</label>
-                    <input type="text" class="form-control text-primary fw-bold" v-model="invoiceNumber" readonly>
-                  </div>
-                  <div class="col-md-3">
+                    <div class="col-md-3">
+                      <label class="form-label fw-bold">Consec. Resolución</label>
+                      <input type="text" class="form-control text-primary fw-bold" v-model="invoiceNumber" readonly>
+                    </div>
+                  </template>
+
+                  <!-- Tipo de Documento -->
+                  <div :class="documentType === 'COTIZACION' ? 'col-md-6' : 'col-md-3'">
                     <label class="form-label fw-bold">Documento</label>
                     <select class="form-select" v-model="documentType">
                       <option value="FACTURA">FACTURA</option>
@@ -624,16 +628,12 @@
               <button class="btn btn-info btn-lg"><i class="ti ti-cash-register me-2"></i>APERTURA DE CAJA</button>
               <button class="btn btn-info btn-lg"><i class="ti ti-cash me-2"></i>EGRESO DE CAJA</button>
               <button class="btn btn-info btn-lg"><i class="ti ti-coins me-2"></i>RETIRAR EFECTIVO</button>
-              <button class="btn btn-info btn-lg"><i class="ti ti-discount-2 me-2"></i>% DSCTO. GLOBAL</button>
               <button class="btn btn-info btn-lg"><i class="ti ti-file-certificate me-2"></i>EXONERACIÓN ISV</button>
-              <button class="btn btn-info btn-lg"><i class="ti ti-percentage me-2"></i>% APLICAR RECARGO</button>
-              <button class="btn btn-info btn-lg"><i class="ti ti-coin me-2"></i>% APLICAR PROPINA</button>
-              <button class="btn btn-info btn-lg"><i class="ti ti-arrows-split me-2"></i>↔ DIVIDIR/ UNIR CUENTAS</button>
-              <button class="btn btn-info btn-lg"><i class="ti ti-ticket me-2"></i>🎫 APLICAR CUPON DE DESCUENTO</button>
-              <button class="btn btn-info btn-lg"><i class="ti ti-calculator me-2"></i>√ RECALCULAR TASA DE CAMBIO</button>
-              <button class="btn btn-info btn-lg"><i class="ti ti-refresh me-2"></i>🔄 ACTUALIZAR PRECIOS</button>
-              <button class="btn btn-outline-secondary btn-lg"><i class="ti ti-keyboard me-2"></i>⌨ ATAJOS DE TECLADO</button>
-              <button class="btn btn-outline-secondary btn-lg"><i class="ti ti-settings me-2"></i>🔧 CONFIG. DOCUMENTO</button>
+              <button class="btn btn-info btn-lg" @click="showCouponModal = true; showAdditionalOptions = false"><i class="ti ti-ticket me-2"></i>APLICAR CUPÓN DE DESCUENTO</button>
+              <button class="btn btn-info btn-lg" @click="showOffersModal = true; showAdditionalOptions = false"><i class="ti ti-tag me-2"></i>VER OFERTAS DISPONIBLES</button>
+              <button class="btn btn-info btn-lg"><i class="ti ti-calculator me-2"></i>RECALCULAR TASA DE CAMBIO</button>
+              <button class="btn btn-outline-secondary btn-lg"><i class="ti ti-keyboard me-2"></i>ATAJOS DE TECLADO</button>
+              <button class="btn btn-outline-secondary btn-lg"><i class="ti ti-settings me-2"></i>CONFIG. DOCUMENTO</button>
             </div>
           </div>
           <div class="modal-footer">
@@ -1071,6 +1071,151 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal: Aplicar Cupón -->
+    <div v-if="showCouponModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title text-white">Aplicar Cupón de Descuento</h5>
+            <button type="button" class="btn-close" @click="closeCouponModal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row mb-3">
+              <div class="col-12">
+                <label class="form-label fw-bold">Código del Cupón</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" v-model="couponCode" placeholder="Ingrese el código del cupón" @keypress.enter="applyCoupon">
+                  <button class="btn btn-primary" @click="applyCoupon">
+                    <i class="ti ti-check me-1"></i>APLICAR
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="appliedCoupon" class="alert alert-success">
+              <h6 class="fw-bold mb-2">Cupón Aplicado</h6>
+              <p class="mb-1"><strong>Código:</strong> {{ appliedCoupon.code }}</p>
+              <p class="mb-1"><strong>Descuento:</strong> {{ appliedCoupon.discount_type === 'percentage' ? appliedCoupon.discount_value + '%' : 'L ' + appliedCoupon.discount_value }}</p>
+              <button class="btn btn-sm btn-danger mt-2" @click="removeCoupon">
+                <i class="ti ti-x me-1"></i>Remover Cupón
+              </button>
+            </div>
+
+            <hr>
+
+            <h6 class="fw-bold mb-3">Cupones Disponibles</h6>
+            <div class="table-responsive" style="max-height: 300px;">
+              <table class="table table-sm table-hover">
+                <thead class="table-light sticky-top">
+                  <tr>
+                    <th>Código</th>
+                    <th>Descuento</th>
+                    <th>Válido Hasta</th>
+                    <th class="text-center">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="coupon in availableCoupons" :key="coupon.id">
+                    <td>{{ coupon.code }}</td>
+                    <td>{{ coupon.discount_type === 'percentage' ? coupon.discount_value + '%' : 'L ' + coupon.discount_value }}</td>
+                    <td>{{ formatDate(coupon.valid_until) }}</td>
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-primary" @click="selectCoupon(coupon)">
+                        Aplicar
+                      </button>
+                    </td>
+                  </tr>
+                  <tr v-if="availableCoupons.length === 0">
+                    <td colspan="4" class="text-center text-muted py-3">No hay cupones disponibles</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeCouponModal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Ver Ofertas -->
+    <div v-if="showOffersModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title text-white">Ofertas Disponibles</h5>
+            <button type="button" class="btn-close" @click="closeOffersModal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <input type="text" class="form-control" v-model="offersSearch" placeholder="Buscar ofertas...">
+              </div>
+              <div class="col-md-3">
+                <select class="form-select" v-model="offersTypeFilter">
+                  <option value="">Todos los tipos</option>
+                  <option value="percentage">Porcentaje</option>
+                  <option value="fixed">Monto fijo</option>
+                  <option value="2x1">2x1</option>
+                  <option value="3x2">3x2</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <select class="form-select" v-model="offersStatusFilter">
+                  <option value="active">Solo activas</option>
+                  <option value="all">Todas</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive" style="max-height: 400px;">
+              <table class="table table-sm table-hover">
+                <thead class="table-light sticky-top">
+                  <tr>
+                    <th>Oferta</th>
+                    <th>Tipo</th>
+                    <th>Descuento</th>
+                    <th>Productos</th>
+                    <th>Válido Hasta</th>
+                    <th class="text-center">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="offer in filteredOffers" :key="offer.id">
+                    <td>
+                      <strong>{{ offer.name }}</strong>
+                      <br>
+                      <small class="text-muted">{{ offer.description }}</small>
+                    </td>
+                    <td>
+                      <span class="badge bg-info">{{ offer.offer_type }}</span>
+                    </td>
+                    <td>{{ offer.discount_type === 'percentage' ? offer.discount_value + '%' : 'L ' + offer.discount_value }}</td>
+                    <td>
+                      <small>{{ offer.applies_to === 'all' ? 'Todos los productos' : offer.product_count + ' productos' }}</small>
+                    </td>
+                    <td>{{ formatDate(offer.valid_until) }}</td>
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-success" @click="viewOfferDetails(offer)">
+                        <i class="ti ti-eye me-1"></i>Ver
+                      </button>
+                    </td>
+                  </tr>
+                  <tr v-if="filteredOffers.length === 0">
+                    <td colspan="6" class="text-center text-muted py-3">No hay ofertas disponibles</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeOffersModal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
 </template>
 
  
@@ -1103,7 +1248,7 @@ export default {
         name: 'CARLOS ARGEÑAL'
       },
       invoice: {
-        consecutive: '0000031836',
+        consecutive: '0000031837',
         warehouse_id: null,
         is_delivery: false,
         items: [],
@@ -1112,9 +1257,10 @@ export default {
         shipping_cost: 0
       },
       resolution: {
+        id: 1, // ID de la resolución activa
         cai: '2A9170-F8828A-8815E0-63BE03-090956-9D',
         prefix: '000-002-01-',
-        current: 31836
+        current: 31838 // Actualizado al siguiente disponible
       },
       customerInfo: {
         id: 1,
@@ -1222,12 +1368,73 @@ export default {
         id: null,
         type: null, // 'pending-invoice' or 'quote'
         number: null
-      }
+      },
+      // Consecutivos numéricos por tipo de documento
+      consecutives: {
+        quote: 1,      // Consecutivo para cotizaciones
+        invoice: 31837,    // Consecutivo para facturas - sincronizado con resolución
+        pending: 1     // Consecutivo para facturas en espera
+      },
+      // Modal de Cupones
+      showCouponModal: false,
+      couponCode: '',
+      appliedCoupon: null,
+      availableCoupons: [],
+      // Modal de Ofertas
+      showOffersModal: false,
+      offersSearch: '',
+      offersTypeFilter: '',
+      offersStatusFilter: 'active',
+      availableOffers: []
     };
   },
   computed: {
+    // Consecutivo actual según el tipo de documento
+    currentConsecutive() {
+      if (this.documentType === 'FACTURA') {
+        // Para facturas, el consecutivo debe coincidir con la resolución
+        return String(this.resolution.current).padStart(8, '0');
+      } else if (this.documentType === 'COTIZACION') {
+        return String(this.consecutives.quote).padStart(10, '0');
+      } else if (this.documentType === 'PENDING') {
+        return String(this.consecutives.pending).padStart(10, '0');
+      }
+      return '0000000001';
+    },
+
     invoiceNumber() {
       return `${this.resolution.prefix}${String(this.resolution.current).padStart(8, '0')}`;
+    },
+
+    // Ofertas filtradas
+    filteredOffers() {
+      if (!Array.isArray(this.availableOffers)) return [];
+      let filtered = [...this.availableOffers];
+
+      // Filtrar por búsqueda
+      if (this.offersSearch) {
+        const search = this.offersSearch.toLowerCase();
+        filtered = filtered.filter(o =>
+          (o.name || '').toLowerCase().includes(search) ||
+          (o.description || '').toLowerCase().includes(search)
+        );
+      }
+
+      // Filtrar por tipo
+      if (this.offersTypeFilter) {
+        filtered = filtered.filter(o => o.offer_type === this.offersTypeFilter);
+      }
+
+      // Filtrar por estado
+      if (this.offersStatusFilter === 'active') {
+        const now = new Date();
+        filtered = filtered.filter(o => {
+          const validUntil = new Date(o.valid_until);
+          return o.is_active && validUntil >= now;
+        });
+      }
+
+      return filtered;
     },
     
     filteredCustomers() {
@@ -1419,11 +1626,77 @@ export default {
     },
     async loadInitialData() {
       await Promise.all([
+        this.loadConsecutives(),
         this.loadCustomers(),
         this.loadProducts(),
         this.loadWarehouses(),
-        this.loadVendors()
+        this.loadVendors(),
+        this.loadAvailableCoupons(),
+        this.loadAvailableOffers(),
+        this.loadResolutionCurrent()
       ]);
+    },
+
+    async loadConsecutives() {
+      try {
+        // Cargar TODOS los consecutivos desde la base de datos
+        const response = await api.get('/consecutives');
+
+        if (response.data?.success && response.data.data) {
+          const consecutivesArray = response.data.data;
+
+          // Mapear los consecutivos por tipo
+          consecutivesArray.forEach(consecutive => {
+            if (consecutive.document_type === 'quote') {
+              this.consecutives.quote = consecutive.current_number;
+            } else if (consecutive.document_type === 'pending_invoice') {
+              this.consecutives.pending = consecutive.current_number;
+            } else if (consecutive.document_type === 'invoice') {
+              this.consecutives.invoice = consecutive.current_number;
+            }
+          });
+
+          console.log('📊 Consecutivos cargados desde BD:', this.consecutives);
+        }
+      } catch (error) {
+        console.error('Error cargando consecutivos desde BD:', error);
+        // Si falla, usar valores por defecto
+        this.consecutives = {
+          quote: 1,
+          invoice: 31839,
+          pending: 1
+        };
+      }
+    },
+
+    async loadResolutionCurrent() {
+      try {
+        const response = await api.get('/resolutions/active');
+
+        if (response.data?.success && response.data.data) {
+          const activeResolution = response.data.data;
+
+          // Actualizar toda la información de la resolución
+          this.resolution.id = activeResolution.id;
+          this.resolution.cai = activeResolution.numero_resolucion || this.resolution.cai;
+          this.resolution.prefix = (activeResolution.prefijo_control || '') +
+                                   (activeResolution.sufijo_control || '');
+
+          // Sincronizar el consecutivo de factura con la resolución activa
+          if (activeResolution.nro_actual_control) {
+            this.consecutives.invoice = activeResolution.nro_actual_control;
+            this.resolution.current = activeResolution.nro_actual_control;
+            console.log('📄 Resolución activa cargada:', {
+              id: this.resolution.id,
+              current: this.resolution.current,
+              prefix: this.resolution.prefix,
+              cai: this.resolution.cai
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading active resolution:', error);
+      }
     },
     async loadCustomers() {
       try {
@@ -1692,18 +1965,34 @@ export default {
 
         console.log('📄 Datos de factura para impresión:', this.createdInvoiceData);
 
-        // Si había un documento importado (pending-invoice o quote), eliminarlo
+        // Actualizar el estado de documentos importados
         if (this.importedDocument.id) {
           try {
-            if (this.importedDocument.type === 'pending-invoice') {
-              await api.delete(`/pending-invoices/${this.importedDocument.id}`);
-              console.log('Pending invoice eliminada tras cobro:', this.importedDocument.id);
-            } else if (this.importedDocument.type === 'quote') {
-              await api.delete(`/quotes/${this.importedDocument.id}`);
-              console.log('Quote eliminada tras cobro:', this.importedDocument.id);
+            if (this.importedDocument.type === 'quote') {
+              // Actualizar estado de cotización a convertida en factura
+              await api.put(`/quotes/${this.importedDocument.id}`, {
+                status: 'converted_to_invoice',
+                converted_to_type: 'invoice',
+                converted_to_id: response.data.data.id || null,
+                converted_to_number: this.invoiceNumber,
+                original_consecutive: this.importedDocument.number,
+                converted_at: new Date().toISOString()
+              });
+              console.log('Quote marcada como convertida a factura:', this.importedDocument.id);
+            } else if (this.importedDocument.type === 'pending-invoice') {
+              // Actualizar estado de factura en espera a convertida en factura
+              await api.put(`/pending-invoices/${this.importedDocument.id}`, {
+                status: 'converted_to_invoice',
+                converted_to_type: 'invoice',
+                converted_to_id: response.data.data.id || null,
+                converted_to_number: this.invoiceNumber,
+                original_consecutive: this.importedDocument.number,
+                converted_at: new Date().toISOString()
+              });
+              console.log('Pending invoice marcada como convertida a factura:', this.importedDocument.id);
             }
           } catch (error) {
-            console.error('Error eliminando documento importado:', error);
+            console.error('Error actualizando estado de documento importado:', error);
           }
         }
 
@@ -1714,8 +2003,9 @@ export default {
         // Limpiar la factura
         this.clearInvoice();
 
-        // Incrementar el número de factura
+        // Incrementar el número de factura y el consecutivo
         this.resolution.current++;
+        this.incrementConsecutive();
 
         // Resetear método de pago
         this.quickPayment.method = 'TRANSFERENCIA';
@@ -1817,18 +2107,34 @@ export default {
 
         console.log('📄 Datos de factura detallada para impresión:', this.createdInvoiceData);
 
-        // Si había un documento importado (pending-invoice o quote), eliminarlo
+        // Actualizar el estado de documentos importados
         if (this.importedDocument.id) {
           try {
-            if (this.importedDocument.type === 'pending-invoice') {
-              await api.delete(`/pending-invoices/${this.importedDocument.id}`);
-              console.log('Pending invoice eliminada tras cobro detallado:', this.importedDocument.id);
-            } else if (this.importedDocument.type === 'quote') {
-              await api.delete(`/quotes/${this.importedDocument.id}`);
-              console.log('Quote eliminada tras cobro detallado:', this.importedDocument.id);
+            if (this.importedDocument.type === 'quote') {
+              // Actualizar estado de cotización a convertida en factura
+              await api.put(`/quotes/${this.importedDocument.id}`, {
+                status: 'converted_to_invoice',
+                converted_to_type: 'invoice',
+                converted_to_id: response.data.data.id || null,
+                converted_to_number: this.invoiceNumber,
+                original_consecutive: this.importedDocument.number,
+                converted_at: new Date().toISOString()
+              });
+              console.log('Quote marcada como convertida a factura (pago detallado):', this.importedDocument.id);
+            } else if (this.importedDocument.type === 'pending-invoice') {
+              // Actualizar estado de factura en espera a convertida en factura
+              await api.put(`/pending-invoices/${this.importedDocument.id}`, {
+                status: 'converted_to_invoice',
+                converted_to_type: 'invoice',
+                converted_to_id: response.data.data.id || null,
+                converted_to_number: this.invoiceNumber,
+                original_consecutive: this.importedDocument.number,
+                converted_at: new Date().toISOString()
+              });
+              console.log('Pending invoice marcada como convertida a factura (pago detallado):', this.importedDocument.id);
             }
           } catch (error) {
-            console.error('Error eliminando documento importado:', error);
+            console.error('Error actualizando estado de documento importado:', error);
           }
         }
 
@@ -1839,8 +2145,9 @@ export default {
         // Limpiar la factura
         this.clearInvoice();
 
-        // Incrementar el número de factura
+        // Incrementar el número de factura y el consecutivo
         this.resolution.current++;
+        this.incrementConsecutive();
 
         // Resetear métodos de pago detallados
         this.detailedPayment.methods = [
@@ -1935,13 +2242,21 @@ export default {
           response = await api.put(`/quotes/${this.importedDocument.id}`, quoteData);
           quoteNumber = this.importedDocument.number;
         }
-        // Si viene de una pending-invoice importada, eliminar la pending-invoice y crear quote
+        // Si viene de una pending-invoice importada, actualizar estado y crear quote
         else if (this.importedDocument.id && this.importedDocument.type === 'pending-invoice') {
-          // Eliminar la pending-invoice
-          await api.delete(`/pending-invoices/${this.importedDocument.id}`);
           // Crear nueva quote
           response = await api.post('/quotes', quoteData);
           quoteNumber = response.data.data.quote_number;
+
+          // Actualizar el estado de la pending-invoice (NO eliminarla)
+          await api.put(`/pending-invoices/${this.importedDocument.id}`, {
+            status: 'converted_to_quote',
+            converted_to_type: 'quote',
+            converted_to_id: response.data.data.id,
+            converted_to_number: quoteNumber,
+            original_consecutive: this.importedDocument.number,
+            converted_at: new Date().toISOString()
+          });
         }
         // Si no viene de importación, crear nueva
         else {
@@ -1952,9 +2267,12 @@ export default {
         Swal.fire({
           icon: 'success',
           title: 'Cotización Guardada',
-          html: `<p>Número: ${quoteNumber}</p>`,
+          html: `<p>Número: ${quoteNumber}</p><p>Consecutivo: ${this.currentConsecutive}</p>`,
           timer: 3000
         });
+
+        // Incrementar el consecutivo de cotizaciones
+        this.incrementConsecutive();
 
         this.clearInvoice();
       } catch (error) {
@@ -2002,13 +2320,21 @@ export default {
           response = await api.put(`/pending-invoices/${this.importedDocument.id}`, pendingInvoiceData);
           documentNumber = this.importedDocument.number;
         }
-        // Si viene de una cotización importada, eliminar la cotización y crear pending-invoice
+        // Si viene de una cotización importada, actualizar estado de cotización y crear pending-invoice
         else if (this.importedDocument.id && this.importedDocument.type === 'quote') {
-          // Eliminar la cotización
-          await api.delete(`/quotes/${this.importedDocument.id}`);
           // Crear nueva pending-invoice
           response = await api.post('/pending-invoices', pendingInvoiceData);
           documentNumber = response.data.data.document_number;
+
+          // Actualizar el estado de la cotización (NO eliminarla)
+          await api.put(`/quotes/${this.importedDocument.id}`, {
+            status: 'converted_to_pending',
+            converted_to_type: 'pending_invoice',
+            converted_to_id: response.data.data.id,
+            converted_to_number: documentNumber,
+            original_consecutive: this.importedDocument.number,
+            converted_at: new Date().toISOString()
+          });
         }
         // Si no viene de importación, crear nueva
         else {
@@ -2019,9 +2345,12 @@ export default {
         Swal.fire({
           icon: 'success',
           title: 'Operación Guardada',
-          html: `<p>Número: ${documentNumber}</p>`,
+          html: `<p>Número: ${documentNumber}</p><p>Consecutivo: ${this.currentConsecutive}</p>`,
           timer: 3000
         });
+
+        // NO incrementar el consecutivo cuando se guarda como operación en espera
+        // El consecutivo se mantiene igual para poder continuar con la misma numeración
 
         this.clearInvoice();
       } catch (error) {
@@ -2051,34 +2380,27 @@ export default {
           Swal.fire({
             icon: 'success',
             title: 'Pago Procesado',
-            html: `<p>Cambio: L ${this.formatCurrency(change)}</p>`
+            html: `<p>Consecutivo: ${this.currentConsecutive}</p><p>Cambio: L ${this.formatCurrency(change)}</p>`
           });
         } else {
-          Swal.fire('Guardado', 'Factura guardada', 'success');
+          Swal.fire('Guardado', `Factura guardada con consecutivo: ${this.currentConsecutive}`, 'success');
         }
 
-        this.clearInvoice();
+        // Incrementar el consecutivo de facturas
+        this.incrementConsecutive();
         this.resolution.current++;
+
+        this.clearInvoice();
       } catch (error) {
         Swal.fire('Error', 'Error al guardar la factura', 'error');
       }
     },
     async clearInvoice() {
-      // Si hay un documento importado, manejarlo según el tipo actual
+      // Si hay un documento importado, solo resetear el tracking
+      // IMPORTANTE: NO eliminamos pending-invoices ni cotizaciones
+      // Solo limpiamos la referencia del documento importado
       if (this.importedDocument.id) {
-        // Si estoy en FACTURA y el documento importado es una pending-invoice, eliminarlo
-        if (this.documentType === 'FACTURA' && this.importedDocument.type === 'pending-invoice') {
-          try {
-            await api.delete(`/pending-invoices/${this.importedDocument.id}`);
-            console.log('Pending invoice eliminada:', this.importedDocument.id);
-          } catch (error) {
-            console.error('Error eliminando pending invoice:', error);
-          }
-        }
-        // Si estoy en COTIZACIÓN y el documento importado es una cotización, NO eliminarlo
-        // (las cotizaciones no se eliminan al hacer clic en ELIMINAR)
-
-        // Resetear el tracking
+        // Resetear el tracking sin eliminar documentos
         this.importedDocument = {
           id: null,
           type: null,
@@ -2643,6 +2965,218 @@ export default {
       } catch (error) {
         console.error('Error importing document:', error);
         Swal.fire('Error', 'No se pudo importar el documento', 'error');
+      }
+    },
+
+    // ===================================================================
+    // MÉTODOS DE CUPONES
+    // ===================================================================
+    async loadAvailableCoupons() {
+      try {
+        const response = await api.get('/coupons?is_active=1');
+        if (response.data && response.data.data) {
+          this.availableCoupons = response.data.data.coupons || response.data.data || [];
+        }
+      } catch (error) {
+        console.error('Error loading coupons:', error);
+        this.availableCoupons = [];
+      }
+    },
+
+    async applyCoupon() {
+      try {
+        if (!this.couponCode) {
+          Swal.fire('Error', 'Ingrese un código de cupón', 'warning');
+          return;
+        }
+
+        // Buscar el cupón por código
+        const response = await api.get(`/coupons/validate/${this.couponCode}`);
+        if (response.data && response.data.data) {
+          const coupon = response.data.data;
+
+          // Validar si el cupón es aplicable
+          if (!coupon.is_active) {
+            Swal.fire('Error', 'Este cupón no está activo', 'error');
+            return;
+          }
+
+          const now = new Date();
+          const validUntil = new Date(coupon.valid_until);
+          if (validUntil < now) {
+            Swal.fire('Error', 'Este cupón ha expirado', 'error');
+            return;
+          }
+
+          // Aplicar el cupón
+          this.appliedCoupon = coupon;
+
+          // Aplicar descuento según el tipo
+          if (coupon.discount_type === 'percentage') {
+            // Aplicar descuento porcentual a todos los items
+            this.invoice.items.forEach((item, index) => {
+              item.discount_percent = parseFloat(coupon.discount_value);
+              this.calculateItemTotal(index);
+            });
+          } else if (coupon.discount_type === 'fixed') {
+            // Aplicar descuento fijo al total
+            const discountPerItem = parseFloat(coupon.discount_value) / this.invoice.items.length;
+            this.invoice.items.forEach((item, index) => {
+              const itemTotal = item.price * item.quantity;
+              item.discount_percent = (discountPerItem / itemTotal) * 100;
+              this.calculateItemTotal(index);
+            });
+          }
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Cupón Aplicado',
+            text: `Se ha aplicado el cupón ${coupon.code}`,
+            timer: 2000
+          });
+
+          this.couponCode = '';
+        }
+      } catch (error) {
+        console.error('Error applying coupon:', error);
+        Swal.fire('Error', 'Cupón no válido o no encontrado', 'error');
+      }
+    },
+
+    selectCoupon(coupon) {
+      this.couponCode = coupon.code;
+      this.applyCoupon();
+    },
+
+    removeCoupon() {
+      // Remover descuentos aplicados
+      this.invoice.items.forEach((item, index) => {
+        item.discount_percent = 0;
+        this.calculateItemTotal(index);
+      });
+
+      this.appliedCoupon = null;
+      this.couponCode = '';
+
+      Swal.fire({
+        icon: 'info',
+        title: 'Cupón Removido',
+        text: 'El cupón ha sido removido',
+        timer: 1500
+      });
+    },
+
+    closeCouponModal() {
+      this.showCouponModal = false;
+      this.couponCode = '';
+    },
+
+    // ===================================================================
+    // MÉTODOS DE OFERTAS
+    // ===================================================================
+    async loadAvailableOffers() {
+      try {
+        const response = await api.get('/offers?is_active=1');
+        if (response.data && response.data.data) {
+          this.availableOffers = response.data.data.offers || response.data.data || [];
+        }
+      } catch (error) {
+        console.error('Error loading offers:', error);
+        this.availableOffers = [];
+      }
+    },
+
+    viewOfferDetails(offer) {
+      let productsHtml = '';
+
+      if (offer.applies_to === 'all') {
+        productsHtml = '<p>Esta oferta aplica a todos los productos</p>';
+      } else if (offer.products && offer.products.length > 0) {
+        productsHtml = '<ul class="text-left">';
+        offer.products.forEach(p => {
+          productsHtml += `<li>${p.product_name} - ${p.product_code}</li>`;
+        });
+        productsHtml += '</ul>';
+      }
+
+      Swal.fire({
+        title: offer.name,
+        html: `
+          <div class="text-left">
+            <p><strong>Descripción:</strong> ${offer.description}</p>
+            <p><strong>Tipo:</strong> ${offer.offer_type}</p>
+            <p><strong>Descuento:</strong> ${offer.discount_type === 'percentage' ? offer.discount_value + '%' : 'L ' + offer.discount_value}</p>
+            <p><strong>Válido hasta:</strong> ${this.formatDate(offer.valid_until)}</p>
+            <hr>
+            <p><strong>Productos incluidos:</strong></p>
+            ${productsHtml}
+          </div>
+        `,
+        icon: 'info',
+        confirmButtonText: 'Cerrar'
+      });
+    },
+
+    closeOffersModal() {
+      this.showOffersModal = false;
+      this.offersSearch = '';
+      this.offersTypeFilter = '';
+      this.offersStatusFilter = 'active';
+    },
+
+    // ===================================================================
+    // MÉTODO PARA FORMATEAR FECHA
+    // ===================================================================
+    formatDate(date) {
+      if (!date) return 'N/A';
+      const d = new Date(date);
+      return d.toLocaleDateString('es-HN');
+    },
+
+    // ===================================================================
+    // MÉTODO PARA INCREMENTAR CONSECUTIVOS (CONECTADO A BD)
+    // ===================================================================
+    async incrementConsecutive() {
+      try {
+        let documentType = '';
+
+        if (this.documentType === 'FACTURA') {
+          documentType = 'invoice';
+          // Incrementar consecutivo en la tabla consecutives
+          const response = await api.post(`/consecutives/${documentType}/increment`);
+          if (response.data?.success && response.data.data) {
+            this.consecutives.invoice = response.data.data.current_number;
+          }
+
+          // También incrementar en la resolución
+          await api.patch(`/resolutions/${this.resolution.id}/increment`);
+          this.resolution.current = this.consecutives.invoice;
+
+          console.log('➕ Consecutivo FACTURA incrementado en BD:', this.consecutives.invoice);
+
+        } else if (this.documentType === 'COTIZACION') {
+          documentType = 'quote';
+          // Incrementar consecutivo en la tabla consecutives
+          const response = await api.post(`/consecutives/${documentType}/increment`);
+          if (response.data?.success && response.data.data) {
+            this.consecutives.quote = response.data.data.current_number;
+          }
+
+          console.log('➕ Consecutivo COTIZACION incrementado en BD:', this.consecutives.quote);
+
+        } else if (this.documentType === 'PENDING') {
+          documentType = 'pending_invoice';
+          // Incrementar consecutivo en la tabla consecutives
+          const response = await api.post(`/consecutives/${documentType}/increment`);
+          if (response.data?.success && response.data.data) {
+            this.consecutives.pending = response.data.data.current_number;
+          }
+
+          console.log('➕ Consecutivo PENDING incrementado en BD:', this.consecutives.pending);
+        }
+
+      } catch (error) {
+        console.error('Error incrementando consecutivo en BD:', error);
       }
     }
   }

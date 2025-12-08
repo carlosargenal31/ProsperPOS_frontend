@@ -145,7 +145,7 @@
                                 </li>
                                 <li><router-link to="/purchases/purchase-list"><span>Purchases</span></router-link></li>
                                 <li><router-link to="/purchases/purchase-order-report"><span>Purchase Order</span></router-link></li>
-                                <li><router-link to="/purchases/purchase-returns"><span>Purchase Return</span></router-link></li>
+                                <li><router-link to="/purchase-returns"><span>Purchase Return</span></router-link></li>
                                 <li class="submenu">
                                     <a href="javascript:void(0);"><span>Expenses</span><span class="menu-arrow"></span></a>
                                     <ul>

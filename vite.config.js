@@ -22,7 +22,16 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        secure: false
+        secure: false,
+        ws: true,
+        configure: (proxy, options) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            proxyReq.setTimeout(300000); // 5 minutes
+          });
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            proxyRes.setTimeout(300000); // 5 minutes
+          });
+        }
       }
     }
   },

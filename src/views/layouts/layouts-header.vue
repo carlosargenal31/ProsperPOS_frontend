@@ -104,7 +104,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/pos/pos-5" class="link-item">
+                                <router-link to="/pos-invoice" class="link-item">
                                     <span class="link-icon">
                                         <i class="ti ti-shopping-cart"></i>
                                     </span>
@@ -180,7 +180,7 @@
                 </li>
                 
                 <li class="nav-item pos-nav">
-                    <router-link to="/pos/pos-5" class="btn btn-dark btn-md d-inline-flex align-items-center">
+                    <router-link to="/pos-invoice" class="btn btn-dark btn-md d-inline-flex align-items-center">
                         <i class="ti ti-device-laptop me-1"></i>POS
                     </router-link>
                 </li>

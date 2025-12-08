@@ -7,7 +7,7 @@
       <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-2">
         <div class="mb-3">
           <h1 class="mb-1">Bienvenido, Admin</h1>
-          
+
         </div>
         <div class="input-icon-start position-relative mb-3">
           <span class="input-icon-addon fs-16 text-gray-9">
@@ -17,7 +17,7 @@
             type="text"
             class="form-control date-range bookingrange"
             ref="dateRangeInput"
-            placeholder="Buscar Producto"
+            placeholder="Seleccionar Rango de Fechas"
           />
         </div>
       </div>
@@ -33,10 +33,13 @@
               <div class="ms-2">
                 <p class="text-white mb-1">Ventas Totales</p>
                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                  <h4 class="text-white">$48,988,078</h4>
-                  <span class="badge badge-soft-primary"
-                    ><i class="ti ti-arrow-up me-1"></i>+22%</span
-                  >
+                  <h4 class="text-white">L {{ formatNumber(dashboardStats.sales?.total_amount || 0) }}</h4>
+                  <span class="badge badge-soft-primary" v-if="dashboardStats.sales?.change_percentage >= 0">
+                    <i class="ti ti-arrow-up me-1"></i>+{{ dashboardStats.sales?.change_percentage || 0 }}%
+                  </span>
+                  <span class="badge badge-soft-danger" v-else>
+                    <i class="ti ti-arrow-down me-1"></i>{{ dashboardStats.sales?.change_percentage || 0 }}%
+                  </span>
                 </div>
               </div>
             </div>
@@ -51,10 +54,10 @@
               <div class="ms-2">
                 <p class="text-white mb-1">Devoluciones de Ventas</p>
                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                  <h4 class="text-white">$16,478,145</h4>
-                  <span class="badge badge-soft-danger"
-                    ><i class="ti ti-arrow-down me-1"></i>-22%</span
-                  >
+                  <h4 class="text-white">L {{ formatNumber(dashboardStats.sales_returns?.total_amount || 0) }}</h4>
+                  <span class="badge badge-soft-danger">
+                    <i class="ti ti-arrow-down me-1"></i>{{ dashboardStats.sales_returns?.total_count || 0 }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -69,10 +72,10 @@
               <div class="ms-2">
                 <p class="text-white mb-1">Compras Totales</p>
                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                  <h4 class="text-white">$24,145,789</h4>
-                  <span class="badge badge-soft-success"
-                    ><i class="ti ti-arrow-up me-1"></i>+22%</span
-                  >
+                  <h4 class="text-white">L {{ formatNumber(dashboardStats.purchases?.total_amount || 0) }}</h4>
+                  <span class="badge badge-soft-success">
+                    <i class="ti ti-arrow-up me-1"></i>{{ dashboardStats.purchases?.total_count || 0 }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -87,137 +90,15 @@
               <div class="ms-2">
                 <p class="text-white mb-1">Devoluciones de Compras</p>
                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                  <h4 class="text-white">$18,458,747</h4>
-                  <span class="badge badge-soft-success"
-                    ><i class="ti ti-arrow-up me-1"></i>+22%</span
-                  >
+                  <h4 class="text-white">L {{ formatNumber(dashboardStats.purchase_returns?.total_amount || 0) }}</h4>
+                  <span class="badge badge-soft-success">
+                    <i class="ti ti-arrow-up me-1"></i>{{ dashboardStats.purchase_returns?.total_count || 0 }}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="row">
-        <!-- Profit -->
-        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-          <div class="card revenue-widget flex-fill">
-            <div class="card-body">
-              <div
-                class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom"
-              >
-                <div>
-                  <h4 class="mb-1">$8,458,798</h4>
-                  <p>Ganancias</p>
-                </div>
-                <span class="revenue-icon bg-cyan-transparent text-cyan">
-                  <i class="fa-solid fa-layer-group fs-16"></i>
-                </span>
-              </div>
-              <div class="d-flex align-items-center justify-content-between">
-                <p class="mb-0">
-                  <span class="fs-13 fw-bold text-success">+35%</span> vs Mes Anterior
-                </p>
-                <router-link
-                  to="/reports/profit-and-loss"
-                  class="text-decoration-underline fs-13 fw-medium"
-                  >Ver Todo</router-link
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- /Profit -->
-
-        <!-- Invoice -->
-        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-          <div class="card revenue-widget flex-fill">
-            <div class="card-body">
-              <div
-                class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom"
-              >
-                <div>
-                  <h4 class="mb-1">$48,988,78</h4>
-                  <p>Facturas Pendientes</p>
-                </div>
-                <span class="revenue-icon bg-teal-transparent text-teal">
-                  <i class="ti ti-chart-pie fs-16"></i>
-                </span>
-              </div>
-              <div class="d-flex align-items-center justify-content-between">
-                <p class="mb-0">
-                  <span class="fs-13 fw-bold text-success">+35%</span> vs Mes Anterior
-                </p>
-                <router-link
-                  to="/reports/invoice-report"
-                  class="text-decoration-underline fs-13 fw-medium"
-                  >Ver Todo</router-link
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- /Invoice -->
-
-        <!-- Expenses -->
-        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-          <div class="card revenue-widget flex-fill">
-            <div class="card-body">
-              <div
-                class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom"
-              >
-                <div>
-                  <h4 class="mb-1">$8,980,097</h4>
-                  <p>Gastos Totales</p>
-                </div>
-                <span class="revenue-icon bg-orange-transparent text-orange">
-                  <i class="ti ti-lifebuoy fs-16"></i>
-                </span>
-              </div>
-              <div class="d-flex align-items-center justify-content-between">
-                <p class="mb-0">
-                  <span class="fs-13 fw-bold text-success">+41%</span> vs Mes Anterior
-                </p>
-                <router-link
-                  to="/expenses/expenses-list"
-                  class="text-decoration-underline fs-13 fw-medium"
-                  >Ver Todo</router-link
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- /Expenses -->
-
-        <!-- Returns -->
-        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-          <div class="card revenue-widget flex-fill">
-            <div class="card-body">
-              <div
-                class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom"
-              >
-                <div>
-                  <h4 class="mb-1">$78,458,798</h4>
-                  <p>Devoluciones de Pagos</p>
-                </div>
-                <span class="revenue-icon bg-indigo-transparent text-indigo">
-                  <i class="ti ti-hash fs-16"></i>
-                </span>
-              </div>
-              <div class="d-flex align-items-center justify-content-between">
-                <p class="mb-0">
-                  <span class="fs-13 fw-bold text-danger">-20%</span> vs Mes Anterior
-                </p>
-                <router-link
-                  to="/sales-report/sales-report"
-                  class="text-decoration-underline fs-13 fw-medium"
-                  >Ver Todo</router-link
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- /Returns -->
       </div>
 
       <div class="row">
@@ -232,35 +113,36 @@
                 <h5 class="card-title mb-0">Ventas y Compras</h5>
               </div>
               <ul class="nav btn-group custom-btn-group">
-									<a class="btn btn-outline-light" href="javascript:void(0);">1D</a>
-									<a class="btn btn-outline-light" href="javascript:void(0);">1S</a>
-									<a class="btn btn-outline-light" href="javascript:void(0);">1M</a>
-									<a class="btn btn-outline-light" href="javascript:void(0);">3M</a>
-									<a class="btn btn-outline-light" href="javascript:void(0);">6M</a>
-									<a class="btn btn-outline-light active" href="javascript:void(0);">1A</a>
-								</ul>
+                <a class="btn btn-outline-light" @click="changePeriod('1D')" :class="{ active: selectedPeriod === '1D' }">1D</a>
+                <a class="btn btn-outline-light" @click="changePeriod('1S')" :class="{ active: selectedPeriod === '1S' }">1S</a>
+                <a class="btn btn-outline-light" @click="changePeriod('1M')" :class="{ active: selectedPeriod === '1M' }">1M</a>
+                <a class="btn btn-outline-light" @click="changePeriod('3M')" :class="{ active: selectedPeriod === '3M' }">3M</a>
+                <a class="btn btn-outline-light" @click="changePeriod('6M')" :class="{ active: selectedPeriod === '6M' }">6M</a>
+                <a class="btn btn-outline-light" @click="changePeriod('1A')" :class="{ active: selectedPeriod === '1A' }">1A</a>
+              </ul>
             </div>
             <div class="card-body pb-0">
                 <div>
-									<div class="d-flex align-items-center gap-2">
-										<div class="border p-2 br-8">
-											<p class="d-inline-flex align-items-center mb-1"><i class="ti ti-circle-filled fs-8 text-primary-300 me-1"></i>Compras Totales</p>
-											<h4>3K</h4>
-										</div>
-										<div class="border p-2 br-8">
-											<p class="d-inline-flex align-items-center mb-1"><i class="ti ti-circle-filled fs-8 text-primary me-1"></i>Ventas Totales</p>
-											<h4>1K</h4>
-										</div>
-									</div>
-									<div id="sales-daychart">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="border p-2 br-8">
+                      <p class="d-inline-flex align-items-center mb-1"><i class="ti ti-circle-filled fs-8 text-primary-300 me-1"></i>Compras Totales</p>
+                      <h4>L {{ formatNumber(getTotalPurchases()) }}</h4>
+                    </div>
+                    <div class="border p-2 br-8">
+                      <p class="d-inline-flex align-items-center mb-1"><i class="ti ti-circle-filled fs-8 text-primary me-1"></i>Ventas Totales</p>
+                      <h4>L {{ formatNumber(getTotalSales()) }}</h4>
+                    </div>
+                  </div>
+                  <div id="sales-daychart">
                     <apexchart
+                      :key="chartKey"
                       type="bar"
                       height="245"
                       :options="salesDaychart.sline"
                       :series="salesDaychart.series"
                     ></apexchart>
                   </div>
-								</div>
+                </div>
             </div>
           </div>
         </div>
@@ -285,7 +167,7 @@
                       <i class="ti ti-user-check"></i>
                     </div>
                     <p class="mb-1">Proveedores</p>
-                    <h5>6987</h5>
+                    <h5>{{ overallInfo.suppliers || 0 }}</h5>
                   </div>
                 </div>
                 <div class="col-md-4">
@@ -294,7 +176,7 @@
                       <i class="ti ti-users"></i>
                     </div>
                     <p class="mb-1">Clientes</p>
-                    <h5>4896</h5>
+                    <h5>{{ overallInfo.customers || 0 }}</h5>
                   </div>
                 </div>
                 <div class="col-md-4">
@@ -302,8 +184,8 @@
                     <div class="mb-3 text-teal fs-24">
                       <i class="ti ti-shopping-cart"></i>
                     </div>
-                    <p class="mb-1">Pedidos</p>
-                    <h5>487</h5>
+                    <p class="mb-1">Ventas</p>
+                    <h5>{{ overallInfo.sales || 0 }}</h5>
                   </div>
                 </div>
               </div>
@@ -313,36 +195,37 @@
                 class="d-flex align-items-center justify-content-between flex-wrap gap-3"
               >
                 <h6>Resumen de Clientes</h6>
-                <div class="dropdown dropdown-wraper">
+                <div class="dropdown">
                   <a
                     href="javascript:void(0);"
-                    class="dropdown-toggle btn btn-sm"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
+                    class="dropdown-toggle btn btn-sm btn-white"
+                    @click="toggleCustomersDropdown"
+                    :aria-expanded="showCustomersDropdown"
                   >
-                    <i class="ti ti-calendar me-1"></i>Hoy
+                    <i class="ti ti-calendar me-1"></i>{{ customersPeriod === 'today' ? 'Hoy' : customersPeriod === 'week' ? 'Semanal' : 'Mensual' }}
                   </a>
-                  <ul class="dropdown-menu p-3">
+                  <ul class="dropdown-menu p-3" :class="{ 'show': showCustomersDropdown }">
                     <li>
-                      <a href="javascript:void(0);" class="dropdown-item">Hoy</a>
+                      <a href="javascript:void(0);" class="dropdown-item" @click="changeCustomersPeriod('today')">Hoy</a>
                     </li>
                     <li>
-                      <a href="javascript:void(0);" class="dropdown-item">Semanal</a>
+                      <a href="javascript:void(0);" class="dropdown-item" @click="changeCustomersPeriod('week')">Semanal</a>
                     </li>
                     <li>
-                      <a href="javascript:void(0);" class="dropdown-item">Mensual</a>
+                      <a href="javascript:void(0);" class="dropdown-item" @click="changeCustomersPeriod('month')">Mensual</a>
                     </li>
                   </ul>
                 </div>
               </div>
               <div class="row align-items-center">
                 <div class="col-sm-5">
-                  <div id="customer-chart">
+                  <div id="customers-overview-chart">
                     <apexchart
-                      type="radialBar"
-                      height="130"
-                      :options="customerChart.chart"
-                      :series="customerChart.series"
+                      :key="`customers-${customersOverview.first_time}-${customersOverview.returning}`"
+                      type="donut"
+                      height="160"
+                      :options="customersDonutChart.options"
+                      :series="[customersOverview.first_time || 0, customersOverview.returning || 0]"
                     ></apexchart>
                   </div>
                 </div>
@@ -350,21 +233,23 @@
                   <div class="row gx-0">
                     <div class="col-sm-6">
                       <div class="text-center border-end">
-                        <h2 class="mb-1">5.5K</h2>
+                        <h2 class="mb-1">{{ formatNumber(customersOverview.first_time || 0) }}</h2>
                         <p class="text-orange mb-2">Primera Vez</p>
                         <span
-                          class="badge badge-success badge-xs d-inline-flex align-items-center"
-                          ><i class="ti ti-arrow-up-left me-1"></i>25%</span
+                          class="badge badge-xs d-inline-flex align-items-center"
+                          :class="customersOverview.first_time_percentage >= 0 ? 'badge-success' : 'badge-danger'"
+                          ><i class="ti me-1" :class="customersOverview.first_time_percentage >= 0 ? 'ti-arrow-up' : 'ti-arrow-down'"></i>{{ Math.abs(customersOverview.first_time_percentage || 0) }}%</span
                         >
                       </div>
                     </div>
                     <div class="col-sm-6">
                       <div class="text-center">
-                        <h2 class="mb-1">3.5K</h2>
+                        <h2 class="mb-1">{{ formatNumber(customersOverview.returning || 0) }}</h2>
                         <p class="text-teal mb-2">Recurrente</p>
                         <span
-                          class="badge badge-success badge-xs d-inline-flex align-items-center"
-                          ><i class="ti ti-arrow-up-left me-1"></i>21%</span
+                          class="badge badge-xs d-inline-flex align-items-center"
+                          :class="customersOverview.returning_percentage >= 0 ? 'badge-success' : 'badge-danger'"
+                          ><i class="ti me-1" :class="customersOverview.returning_percentage >= 0 ? 'ti-arrow-up' : 'ti-arrow-down'"></i>{{ Math.abs(customersOverview.returning_percentage || 0) }}%</span
                         >
                       </div>
                     </div>
@@ -377,9 +262,8 @@
         <!-- /Overall Information -->
       </div>
 
+      <!-- Top Selling Products -->
       <div class="row">
-
-        <!-- Top Selling Products -->
         <div class="col-xxl-4 col-md-6 d-flex">
           <div class="card flex-fill">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -388,193 +272,78 @@
                 <h5 class="card-title mb-0">Productos Más Vendidos</h5>
               </div>
               <div class="dropdown">
-                <a href="javascript:void(0);" class="dropdown-toggle btn btn-sm btn-white" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="ti ti-calendar me-1"></i>Hoy
+                <a href="javascript:void(0);" class="dropdown-toggle btn btn-sm btn-white" @click="toggleTopProductsDropdown" :aria-expanded="showTopProductsDropdown">
+                  <i class="ti ti-calendar me-1"></i>{{ topProductsPeriod === 'today' ? 'Hoy' : topProductsPeriod === 'week' ? 'Semanal' : 'Mensual' }}
                 </a>
-                <ul class="dropdown-menu p-3">
+                <ul class="dropdown-menu p-3" :class="{ 'show': showTopProductsDropdown }">
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Hoy</a>
+                    <a href="javascript:void(0);" class="dropdown-item" @click="changeTopProductsPeriod('today')">Hoy</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Semanal</a>
+                    <a href="javascript:void(0);" class="dropdown-item" @click="changeTopProductsPeriod('week')">Semanal</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Mensual</a>
+                    <a href="javascript:void(0);" class="dropdown-item" @click="changeTopProductsPeriod('month')">Mensual</a>
                   </li>
                 </ul>
               </div>
             </div>
             <div class="card-body sell-product">
-              <div class="d-flex align-items-center justify-content-between border-bottom">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-01.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Charger Cable - Lighting</a></h6>
-                    <div class="d-flex align-items-center item-list">			
-                      <p>$187</p>
-                      <p>247+ Ventas</p>
-                    </div>
-                  </div>
-                </div>
-                <span class="badge bg-outline-success badge-xs d-inline-flex align-items-center"><i class="ti ti-arrow-up-left me-1"></i>25%</span>
+              <div v-if="topProducts.length === 0" class="text-center py-4">
+                <p class="text-muted">No hay datos disponibles</p>
               </div>
-              <div class="d-flex align-items-center justify-content-between border-bottom">
+              <div v-else v-for="(product, index) in topProducts" :key="product.id" class="d-flex align-items-center justify-content-between" :class="{ 'border-bottom': index < topProducts.length - 1 }">
                 <div class="d-flex align-items-center">
                   <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-16.jpg" alt="img">
+                    <img :src="getProductImage(product.image)" alt="img" @error="$event.target.src = getProductImage(null)">
                   </a>
                   <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Yves Saint Eau De Parfum</a></h6>
-                    <div class="d-flex align-items-center item-list">			
-                      <p>$145</p>
-                      <p>289+ Ventas</p>
+                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">{{ product.name }}</a></h6>
+                    <div class="d-flex align-items-center item-list">
+                      <p>L {{ formatNumber(product.price) }}</p>
+                      <p>{{ product.total_sold }}+ Ventas</p>
                     </div>
                   </div>
                 </div>
-                <span class="badge bg-outline-success badge-xs d-inline-flex align-items-center"><i class="ti ti-arrow-up-left me-1"></i>25%</span>
-              </div>
-              <div class="d-flex align-items-center justify-content-between border-bottom">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-03.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Apple Airpods 2</a></h6>
-                    <div class="d-flex align-items-center item-list">			
-                      <p>$458</p>
-                      <p>300+ Ventas</p>
-                    </div>
-                  </div>
-                </div>
-                <span class="badge bg-outline-success badge-xs d-inline-flex align-items-center"><i class="ti ti-arrow-up-left me-1"></i>25%</span>
-              </div>
-              <div class="d-flex align-items-center justify-content-between border-bottom">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-04.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Vacuum Cleaner</a></h6>
-                    <div class="d-flex align-items-center item-list">			
-                      <p>$139</p>
-                      <p>225+ Ventas</p>
-                    </div>
-                  </div>
-                </div>
-                <span class="badge bg-outline-danger badge-xs d-inline-flex align-items-center"><i class="ti ti-arrow-down-left me-1"></i>21%</span>
-              </div>
-              <div class="d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-05.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Samsung Galaxy S21 Fe 5g</a></h6>
-                    <div class="d-flex align-items-center item-list">			
-                      <p>$898</p>
-                      <p>365+ Ventas</p>
-                    </div>
-                  </div>
-                </div>
-                <span class="badge bg-outline-success badge-xs d-inline-flex align-items-center"><i class="ti ti-arrow-up-left me-1"></i>25%</span>
+                <span class="badge bg-outline-success badge-xs d-inline-flex align-items-center"><i class="ti ti-arrow-up-left me-1"></i>Top {{ index + 1 }}</span>
               </div>
             </div>
           </div>
         </div>
-        <!-- /Top Selling Products -->
 
-        <!-- Low Stock Products -->
+        <!-- Low Stock Products - En desarrollo
         <div class="col-xxl-4 col-md-6 d-flex">
           <div class="card flex-fill">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
               <div class="d-inline-flex align-items-center">
                 <span class="title-icon bg-soft-danger fs-16 me-2"><i class="ti ti-alert-triangle"></i></span>
                 <h5 class="card-title mb-0">Productos con Bajo Stock</h5>
-              </div>								
+              </div>
               <router-link to="/inventory/low-stocks" class="fs-13 fw-medium text-decoration-underline">Ver Todo</router-link>
             </div>
             <div class="card-body">
-              <div class="d-flex align-items-center justify-content-between mb-4">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-06.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Dell XPS 13</a></h6>
-                    <p class="fs-13">ID : #665814</p>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <p class="fs-13 mb-1">En Stock</p>
-                  <h6 class="text-orange fw-medium">08</h6>
-                </div>
+              <div v-if="lowStockProducts.length === 0" class="text-center py-4">
+                <p class="text-muted">No hay productos con bajo stock</p>
               </div>
-              <div class="d-flex align-items-center justify-content-between mb-4">
+              <div v-else v-for="product in lowStockProducts" :key="product.id" class="d-flex align-items-center justify-content-between mb-4">
                 <div class="d-flex align-items-center">
                   <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-07.jpg" alt="img">
+                    <img :src="product.image || '@/assets/img/products/product-06.jpg'" alt="img">
                   </a>
                   <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Vacuum Cleaner Robot</a></h6>
-                    <p class="fs-13">ID : #940004</p>
+                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">{{ product.name }}</a></h6>
+                    <p class="fs-13">ID : #{{ product.code }}</p>
                   </div>
                 </div>
                 <div class="text-end">
                   <p class="fs-13 mb-1">En Stock</p>
-                  <h6 class="text-orange fw-medium">14</h6>
-                </div>
-              </div>
-              <div class="d-flex align-items-center justify-content-between mb-4">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-08.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">KitchenAid Stand Mixer</a></h6>
-                    <p class="fs-13">ID : #325569</p>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <p class="fs-13 mb-1">En Stock</p>
-                  <h6 class="text-orange fw-medium">21</h6>
-                </div>
-              </div>
-              <div class="d-flex align-items-center justify-content-between mb-4">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-09.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Levi's Trucker Jacket</a></h6>
-                    <p class="fs-13">ID : #124588</p>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <p class="fs-13 mb-1">En Stock</p>
-                  <h6 class="text-orange fw-medium">12</h6>
-                </div>
-              </div>
-              <div class="d-flex align-items-center justify-content-between mb-0">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-10.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Lay's Classic</a></h6>
-                    <p class="fs-13">ID : #365586</p>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <p class="fs-13 mb-1">En Stock</p>
-                  <h6 class="text-orange fw-medium">10</h6>
+                  <h6 class="text-orange fw-medium">{{ product.current_stock }}</h6>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <!-- /Low Stock Products -->
+        -->
 
         <!-- Recent Sales -->
         <div class="col-xxl-4 col-md-12 d-flex">
@@ -586,620 +355,52 @@
               </div>
               <div class="dropdown">
                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-sm btn-white"  data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="ti ti-calendar me-1"></i>Semanal
+                  <i class="ti ti-calendar me-1"></i>{{ recentSalesPeriod === 'today' ? 'Hoy' : recentSalesPeriod === 'week' ? 'Semanal' : 'Mensual' }}
                 </a>
                 <ul class="dropdown-menu p-3">
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Hoy</a>
+                    <a href="javascript:void(0);" class="dropdown-item" @click="changeRecentSalesPeriod('today')">Hoy</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Semanal</a>
+                    <a href="javascript:void(0);" class="dropdown-item" @click="changeRecentSalesPeriod('week')">Semanal</a>
                   </li>
                   <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Mensual</a>
+                    <a href="javascript:void(0);" class="dropdown-item" @click="changeRecentSalesPeriod('month')">Mensual</a>
                   </li>
                 </ul>
               </div>
             </div>
             <div class="card-body">
-              <div class="d-flex align-items-center justify-content-between mb-4">
+              <div v-if="recentSales.length === 0" class="text-center py-4">
+                <p class="text-muted">No hay ventas recientes</p>
+              </div>
+              <div v-else v-for="(sale, index) in recentSales" :key="sale.id" class="d-flex align-items-center justify-content-between" :class="{ 'mb-4': index < recentSales.length - 1, 'mb-0': index === recentSales.length - 1 }">
                 <div class="d-flex align-items-center">
                   <a href="javascript:void(0);" class="avatar avatar-lg">
                     <img src="@/assets/img/products/product-11.jpg" alt="img">
                   </a>
                   <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Apple Watch Series 9</a></h6>
-                    <div class="d-flex align-items-center item-list">			
-                      <p>Electrónica</p>
-                      <p class="text-gray-9">$640</p>
+                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">{{ sale.products || 'Producto' }}</a></h6>
+                    <div class="d-flex align-items-center item-list">
+                      <p>{{ sale.customer_first_name }} {{ sale.customer_last_name }}</p>
+                      <p class="text-gray-9">${{ formatNumber(sale.total) }}</p>
                     </div>
                   </div>
                 </div>
                 <div class="text-end">
-                  <p class="fs-13 mb-1">Hoy</p>
-                  <span class="badge bg-purple badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Procesando</span>
-                </div>									
-              </div>
-              <div class="d-flex align-items-center justify-content-between mb-4">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-12.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Gold Bracelet</a></h6>
-                    <div class="d-flex align-items-center item-list">			
-                      <p>Moda</p>
-                      <p class="text-gray-9">$126</p>
-                    </div>
-                  </div>
+                  <p class="fs-13 mb-1">{{ formatDate(sale.created_at) }}</p>
+                  <span class="badge badge-success badge-xs d-inline-flex align-items-center">
+                    <i class="ti ti-circle-filled fs-5 me-1"></i>{{ sale.status }}
+                  </span>
                 </div>
-                <div class="text-end">
-                  <p class="fs-13 mb-1">Hoy</p>
-                  <span class="badge badge-danger badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Cancelado</span>
-                </div>									
-              </div>
-              <div class="d-flex align-items-center justify-content-between mb-4">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-13.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Parachute Down Duvet</a></h6>
-                    <div class="d-flex align-items-center item-list">			
-                      <p>Salud</p>
-                      <p class="text-gray-9">$69</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <p class="fs-13 mb-1">15 Ene 2025</p>
-                  <span class="badge badge-cyan badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>En Espera</span>
-                </div>									
-              </div>
-              <div class="d-flex align-items-center justify-content-between mb-4">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-14.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">YETI Rambler Tumbler</a></h6>
-                    <div class="d-flex align-items-center item-list">			
-                      <p>Deportes</p>
-                      <p class="text-gray-9">$65</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <p class="fs-13 mb-1">12 Ene 2025</p>
-                  <span class="badge bg-purple badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Procesando</span>
-                </div>									
-              </div>
-              <div class="d-flex align-items-center justify-content-between mb-0">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-15.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">Osmo Genius Starter Kit</a></h6>
-                    <div class="d-flex align-items-center item-list">			
-                      <p>Estilo de Vida</p>
-                      <p class="text-gray-9">$87.56</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <p class="fs-13 mb-1">11 Ene 2025</p>
-                  <span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span>
-                </div>									
               </div>
             </div>
           </div>
         </div>
-        <!-- /Recent Sales -->
-
       </div>
 
+      <!-- Top Customers -->
       <div class="row">
-
-        <!-- Sales Statics -->
-        <div class="col-xl-6 col-sm-12 col-12 d-flex">
-          <div class="card flex-fill">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <div class="d-inline-flex align-items-center">
-                <span class="title-icon bg-soft-danger fs-16 me-2"><i class="ti ti-alert-triangle"></i></span>
-                <h5 class="card-title mb-0">Estadísticas de Ventas</h5>
-              </div>
-              <div class="dropdown">
-                <a href="javascript:void(0);" class="dropdown-toggle btn btn-sm btn-white"  data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="ti ti-calendar me-1"></i>2025
-                </a>
-                <ul class="dropdown-menu p-3">
-                  <li>
-                    <a href="javascript:void(0);" class="dropdown-item">2025</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0);" class="dropdown-item">2024</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0);" class="dropdown-item">2023</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div class="card-body pb-0">
-              <div class="d-flex align-items-center flex-wrap gap-2">
-                <div class="border p-2 br-8">
-                  <h5 class="d-inline-flex align-items-center text-teal">$12,189<span class="badge badge-success badge-xs d-inline-flex align-items-center ms-2"><i class="ti ti-arrow-up-left me-1"></i>25%</span></h5>
-                  <p>Ingresos</p>
-                </div>
-                <div class="border p-2 br-8">
-                  <h5 class="d-inline-flex align-items-center text-orange">$48,988,078<span class="badge badge-danger badge-xs d-inline-flex align-items-center ms-2"><i class="ti ti-arrow-down-right me-1"></i>25%</span></h5>
-                  <p>Gastos</p>
-                </div>
-              </div>
-              <div id="sales-statistics">
-                <apexchart
-                  type="bar"
-                  height="290"
-                  :options="salesStatistics.sline"
-                  :series="salesStatistics.series"
-                ></apexchart>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- /Sales Statics -->
-
-        <!-- Recent Transactions -->
-        <div class="col-xl-6 col-sm-12 col-12 d-flex">
-          <div class="card flex-fill">
-            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-3">
-              <div class="d-inline-flex align-items-center">
-                <span class="title-icon bg-soft-orange fs-16 me-2"><i class="ti ti-flag"></i></span>
-                <h5 class="card-title mb-0">Transacciones Recientes</h5>
-              </div>
-              <router-link to="/sales/online-orders" class="fs-13 fw-medium text-decoration-underline">Ver Todo</router-link>
-            </div>
-            <div class="card-body p-0">
-              <ul class="nav nav-tabs nav-justified transaction-tab">
-                <li class="nav-item"><a class="nav-link active" href="#sale" data-bs-toggle="tab">Venta</a></li>
-                <li class="nav-item"><a class="nav-link" href="#purchase-transaction" data-bs-toggle="tab">Compra</a></li>
-                <li class="nav-item"><a class="nav-link" href="#quotation" data-bs-toggle="tab">Cotización</a></li>
-                <li class="nav-item"><a class="nav-link" href="#expenses" data-bs-toggle="tab">Gastos</a></li>
-                <li class="nav-item"><a class="nav-link" href="#invoices" data-bs-toggle="tab">Facturas</a></li>
-              </ul>
-              <div class="tab-content">
-                <div class="tab-pane show active" id="sale">
-                  <div class="table-responsive">
-                    <table class="table table-borderless custom-table">
-                      <thead class="thead-light">
-                        <tr>
-                          <th>Fecha</th>
-                          <th>Cliente</th>
-                          <th>Estado</th>
-                          <th>Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>24 May 2025</td>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer16.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6><a href="javascript:void(0);" class="fw-bold">Andrea Willer</a></h6>
-                                <span class="fs-13 text-orange">#114589</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
-                          <td class="fs-16 fw-bold text-gray-9">$4,560</td>
-                        </tr>
-                        <tr>
-                          <td>23 May 2025</td>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer17.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6><a href="javascript:void(0);" class="fw-bold">Timothy Sandsr</a></h6>
-                                <span class="fs-13 text-orange">#114589</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
-                          <td class="fs-16 fw-bold text-gray-9">$3,569</td>
-                        </tr>
-                        <tr>
-                          <td>22 May 2025</td>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer18.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6><a href="javascript:void(0);" class="fw-bold">Bonnie Rodrigues</a></h6>
-                                <span class="fs-13 text-orange">#114589</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td><span class="badge badge-pink badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Borrador</span></td>
-                          <td class="fs-16 fw-bold text-gray-9">$4,560</td>
-                        </tr>
-                        <tr>
-                          <td>21 May 2025</td>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer15.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6><a href="javascript:void(0);" class="fw-bold">Randy McCree</a></h6>
-                                <span class="fs-13 text-orange">#114589</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
-                          <td class="fs-16 fw-bold text-gray-9">$2,155</td>
-                        </tr>
-                        <tr>
-                          <td>21 May 2025</td>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer13.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6><a href="javascript:void(0);" class="fw-bold">Dennis Anderson</a></h6>
-                                <span class="fs-13 text-orange">#114589</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
-                          <td class="fs-16 fw-bold text-gray-9">$5,123</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <div class="tab-pane fade" id="purchase-transaction">
-                  <div class="table-responsive">
-                    <table class="table table-borderless custom-table">
-                      <thead class="thead-light">
-                        <tr>
-                          <th>Fecha</th>
-                          <th>Proveedor</th>
-                          <th>Estado</th>
-                          <th>Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>24 May 2025</td>
-                          <td>
-                            <a href="javascript:void(0);" class="fw-semibold">Electro Mart</a>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
-                          <td class="text-gray-9">$1000</td>
-                        </tr>
-                        <tr>
-                          <td>23 May 2025</td>
-                          <td>
-                            <a href="javascript:void(0);" class="fw-semibold">Quantum Gadgets</a>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
-                          <td class="text-gray-9">$1500</td>
-                        </tr>
-                        <tr>
-                          <td>22 May 2025</td>
-                          <td>
-                            <a href="javascript:void(0);" class="fw-semibold">Prime Bazaar</a>
-                          </td>
-                          <td><span class="badge badge-cyan badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pendiente</span></td>
-                          <td class="text-gray-9">$2000</td>
-                        </tr>
-                        <tr>
-                          <td>21 May 2025</td>
-                          <td>
-                            <a href="javascript:void(0);" class="fw-semibold">Alpha Mobiles</a>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
-                          <td class="text-gray-9">$1200</td>
-                        </tr>
-                        <tr>
-                          <td>21 May 2025</td>
-                          <td>
-                            <a href="javascript:void(0);" class="fw-semibold">Aesthetic Bags</a>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
-                          <td class="text-gray-9">$1300</td>
-                        </tr>
-                        <tr>
-                          <td>28 May 2025</td>
-                          <td>
-                            <a href="javascript:void(0);" class="fw-semibold">Sigma Chairs</a>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
-                          <td class="text-gray-9">$1600</td>
-                        </tr>
-                        <tr>
-                          <td>26 May 2025</td>
-                          <td>
-                            <a href="javascript:void(0);" class="fw-semibold">A-Z Stores</a>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Completado</span></td>
-                          <td class="text-gray-9">$1100</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <div class="tab-pane" id="quotation">
-                  <div class="table-responsive">
-                    <table class="table table-borderless custom-table">
-                      <thead class="thead-light">
-                        <tr>
-                          <th>Fecha</th>
-                          <th>Cliente</th>
-                          <th>Estado</th>
-                          <th>Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>24 May 2025</td>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer16.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6 class="fw-medium"><a href="javascript:void(0);">Andrea Willer</a></h6>
-                                <span class="fs-13 text-orange">#114589</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Enviado</span></td>
-                          <td class="text-gray-9">$4,560</td>
-                        </tr>
-                        <tr>
-                          <td>23 May 2025</td>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer17.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6 class="fw-medium"><a href="javascript:void(0);">Timothy Sandsr</a></h6>
-                                <span class="fs-13 text-orange">#114589</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td><span class="badge badge-warning badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Ordenado</span></td>
-                          <td class="text-gray-9">$3,569</td>
-                        </tr>
-                        <tr>
-                          <td>22 May 2025</td>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer18.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6 class="fw-medium"><a href="javascript:void(0);">Bonnie Rodrigues</a></h6>
-                                <span class="fs-13 text-orange">#114589</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td><span class="badge badge-cyan badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pendiente</span></td>
-                          <td class="text-gray-9">$4,560</td>
-                        </tr>
-                        <tr>
-                          <td>21 May 2025</td>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer15.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6 class="fw-medium"><a href="javascript:void(0);">Randy McCree</a></h6>
-                                <span class="fs-13 text-orange">#114589</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td><span class="badge badge-warning badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Ordenado</span></td>
-                          <td class="text-gray-9">$2,155</td>
-                        </tr>
-                        <tr>
-                          <td>21 May 2025</td>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer13.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6 class="fw-medium"><a href="javascript:void(0);">Dennis Anderson</a></h6>
-                                <span class="fs-13 text-orange">#114589</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Enviado</span></td>
-                          <td class="text-gray-9">$5,123</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <div class="tab-pane fade" id="expenses">
-                  <div class="table-responsive">
-                    <table class="table table-borderless custom-table">
-                      <thead class="thead-light">
-                        <tr>
-                          <th>Fecha</th>
-                          <th>Gastos</th>
-                          <th>Estado</th>
-                          <th>Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>24 May 2025</td>
-                          <td>
-                            <h6 class="fw-medium"><a href="javascript:void(0);">Pago de Electricidad</a></h6>
-                            <span class="fs-13 text-orange">#EX849</span>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Aprobado</span></td>
-                          <td class="text-gray-9">$200</td>
-                        </tr>
-                        <tr>
-                          <td>23 May 2025</td>
-                          <td>
-                            <h6 class="fw-medium"><a href="javascript:void(0);">Pago de Electricidad</a></h6>
-                            <span class="fs-13 text-orange">#EX849</span>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Aprobado</span></td>
-                          <td class="text-gray-9">$200</td>
-                        </tr>
-                        <tr>
-                          <td>22 May 2025</td>
-                          <td>
-                            <h6 class="fw-medium"><a href="javascript:void(0);">Compra de Papelería</a></h6>
-                            <span class="fs-13 text-orange">#EX848</span>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Aprobado</span></td>
-                          <td class="text-gray-9">$50</td>
-                        </tr>
-                        <tr>
-                          <td>21 May 2025</td>
-                          <td>
-                            <h6 class="fw-medium"><a href="javascript:void(0);">Servicio de Reparación AC</a></h6>
-                            <span class="fs-13 text-orange">#EX847</span>
-                          </td>
-                          <td><span class="badge badge-cyan badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pendiente</span></td>
-                          <td class="text-gray-9">$800</td>
-                        </tr>
-                        <tr>
-                          <td>21 May 2025</td>
-                          <td>
-                            <h6 class="fw-medium"><a href="javascript:void(0);">Reunión con Cliente</a></h6>
-                            <span class="fs-13 text-orange">#EX846</span>
-                          </td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Aprobado</span></td>
-                          <td class="text-gray-9">$100</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <div class="tab-pane" id="invoices">
-                  <div class="table-responsive">
-                    <table class="table table-borderless custom-table">
-                      <thead class="thead-light">
-                        <tr>
-                          <th>Cliente</th>
-                          <th>Fecha de Vencimiento</th>
-                          <th>Estado</th>
-                          <th>Monto</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer16.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6 class="fw-bold"><a href="javascript:void(0);">Andrea Willer</a></h6>
-                                <span class="fs-13 text-orange">#INV005</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td>24 May 2025</td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pagado</span></td>
-                          <td class="text-gray-9">$1300</td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer17.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6 class="fw-bold"><a href="javascript:void(0);">Timothy Sandsr</a></h6>
-                                <span class="fs-13 text-orange">#INV004</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td>23 May 2025</td>
-                          <td><span class="badge badge-warning badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Vencido</span></td>
-                          <td class="text-gray-9">$1250</td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer18.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6 class="fw-bold"><a href="javascript:void(0);">Bonnie Rodrigues</a></h6>
-                                <span class="fs-13 text-orange">#INV003</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td>22 May 2025</td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pagado</span></td>
-                          <td class="text-gray-9">$1700</td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer15.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6 class="fw-bold"><a href="javascript:void(0);">Randy McCree</a></h6>
-                                <span class="fs-13 text-orange">#INV002</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td>21 May 2025</td>
-                          <td><span class="badge badge-danger badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Sin Pagar</span></td>
-                          <td class="text-gray-9">$1500</td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="d-flex align-items-center file-name-icon">
-                              <a href="javascript:void(0);" class="avatar avatar-md">
-                                <img src="@/assets/img/customer/customer13.jpg" class="img-fluid" alt="img">
-                              </a>
-                              <div class="ms-2">
-                                <h6 class="fw-bold"><a href="javascript:void(0);">Dennis Anderson</a></h6>
-                                <span class="fs-13 text-orange">#INV001</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td>21 May 2025</td>
-                          <td><span class="badge badge-success badge-xs d-inline-flex align-items-center"><i class="ti ti-circle-filled fs-5 me-1"></i>Pagado</span></td>
-                          <td class="text-gray-9">$1000</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>						
-            </div>
-          </div>
-        </div>
-        <!-- /Recent Transactions -->
-
-      </div>
-
-      <div class="row">
-        <!-- Top Customers -->
         <div class="col-xxl-4 col-md-6 d-flex">
           <div class="card flex-fill">
             <div
@@ -1218,8 +419,15 @@
               >
             </div>
             <div class="card-body">
+              <div v-if="topCustomers.length === 0" class="text-center py-4">
+                <p class="text-muted">No hay datos disponibles</p>
+              </div>
               <div
-                class="d-flex align-items-center justify-content-between border-bottom mb-3 pb-3"
+                v-else
+                v-for="(customer, index) in topCustomers"
+                :key="customer.id"
+                class="d-flex align-items-center justify-content-between"
+                :class="{ 'border-bottom mb-3 pb-3': index < topCustomers.length - 1 }"
               >
                 <div class="d-flex align-items-center">
                   <a href="javascript:void(0);" class="avatar avatar-lg">
@@ -1227,255 +435,27 @@
                   </a>
                   <div class="ms-2">
                     <h6 class="fs-14 fw-medium mb-1">
-                      <a href="javascript:void(0);">Carlos Curran</a>
+                      <a href="javascript:void(0);">{{ customer.first_name }} {{ customer.last_name }}</a>
                     </h6>
                     <div class="d-flex align-items-center item-list">
                       <p class="d-inline-flex align-items-center">
-                        <i class="ti ti-map-pin me-1"></i>USA
+                        <i class="ti ti-map-pin me-1"></i>{{ customer.country || 'N/A' }}
                       </p>
-                      <p>24 Pedidos</p>
+                      <p>{{ customer.total_orders }} Pedidos</p>
                     </div>
                   </div>
                 </div>
                 <div class="text-end">
-                  <h5>$8,965</h5>
-                </div>
-              </div>
-              <div
-                class="d-flex align-items-center justify-content-between border-bottom mb-3 pb-3"
-              >
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/customer/customer12.jpg" alt="img" />
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fs-14 fw-medium mb-1">
-                      <a href="javascript:void(0);">Stan Gaunter</a>
-                    </h6>
-                    <div class="d-flex align-items-center item-list">
-                      <p class="d-inline-flex align-items-center">
-                        <i class="ti ti-map-pin me-1"></i>UAE
-                      </p>
-                      <p>22 Pedidos</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <h5>$6,985</h5>
-                </div>
-              </div>
-              <div
-                class="d-flex align-items-center justify-content-between border-bottom mb-3 pb-3"
-              >
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/customer/customer13.jpg" alt="img" />
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fs-14 fw-medium mb-1">
-                      <a href="javascript:void(0);">Richard Wilson</a>
-                    </h6>
-                    <div class="d-flex align-items-center item-list">
-                      <p class="d-inline-flex align-items-center">
-                        <i class="ti ti-map-pin me-1"></i>Germany
-                      </p>
-                      <p>14 Pedidos</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <h5>$5,366</h5>
-                </div>
-              </div>
-              <div
-                class="d-flex align-items-center justify-content-between border-bottom mb-3 pb-3"
-              >
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/customer/customer14.jpg" alt="img" />
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fs-14 fw-medium mb-1">
-                      <a href="javascript:void(0);">Mary Bronson</a>
-                    </h6>
-                    <div class="d-flex align-items-center item-list">
-                      <p class="d-inline-flex align-items-center">
-                        <i class="ti ti-map-pin me-1"></i>Belgium
-                      </p>
-                      <p>08 Pedidos</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <h5>$4,569</h5>
-                </div>
-              </div>
-              <div class="d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/customer/customer15.jpg" alt="img" />
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fs-14 fw-medium mb-1">
-                      <a href="javascript:void(0);">Annie Tremblay</a>
-                    </h6>
-                    <div class="d-flex align-items-center item-list">
-                      <p class="d-inline-flex align-items-center">
-                        <i class="ti ti-map-pin me-1"></i>Greenland
-                      </p>
-                      <p>14 Pedidos</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <h5>$3,5698</h5>
+                  <h5>${{ formatNumber(customer.total_spent) }}</h5>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <!-- /Top Customers -->
-
-        <!-- Top Categories -->
-        <div class="col-xxl-4 col-md-6 d-flex">
-          <div class="card flex-fill">
-            <div
-              class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3"
-            >
-              <div class="d-inline-flex align-items-center">
-                <span class="title-icon bg-soft-orange fs-16 me-2"
-                  ><i class="ti ti-users"></i
-                ></span>
-                <h5 class="card-title mb-0">Mejores Categorías</h5>
-              </div>
-              <div class="dropdown">
-                <a
-                  href="javascript:void(0);"
-                  class="dropdown-toggle btn btn-sm btn-white d-flex align-items-center"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <i class="ti ti-calendar me-1"></i>Semanal
-                </a>
-                <ul class="dropdown-menu p-3">
-                  <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Hoy</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Semanal</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Mensual</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div class="card-body">
-              <div
-                class="d-flex align-items-center justify-content-between flex-wrap gap-4 mb-4"
-              >
-                <div>
-                  <vue3-chart-js
-                    id="top-category"
-                    class="chartjs-chart"
-                    height="230"
-                    width="200"
-                    v-bind="{ ...topCategory }"
-                  ></vue3-chart-js>
-                </div>
-                <div>
-                  <div class="category-item category-primary">
-                    <p class="fs-13 mb-1">Electrónica</p>
-                    <h2 class="d-flex align-items-center">
-                      698<span class="fs-13 fw-normal text-default ms-1">Ventas</span>
-                    </h2>
-                  </div>
-                  <div class="category-item category-orange">
-                    <p class="fs-13 mb-1">Deportes</p>
-                    <h2 class="d-flex align-items-center">
-                      545<span class="fs-13 fw-normal text-default ms-1">Ventas</span>
-                    </h2>
-                  </div>
-                  <div class="category-item category-secondary">
-                    <p class="fs-13 mb-1">Estilo de Vida</p>
-                    <h2 class="d-flex align-items-center">
-                      456<span class="fs-13 fw-normal text-default ms-1">Ventas</span>
-                    </h2>
-                  </div>
-                </div>
-              </div>
-              <h6 class="mb-2">Estadísticas por Categoría</h6>
-              <div class="border br-8">
-                <div
-                  class="d-flex align-items-center justify-content-between border-bottom p-2"
-                >
-                  <p class="d-inline-flex align-items-center mb-0">
-                    <i class="ti ti-square-rounded-filled text-indigo fs-8 me-2"></i>Número Total de Categorías
-                  </p>
-                  <h5>698</h5>
-                </div>
-                <div class="d-flex align-items-center justify-content-between p-2">
-                  <p class="d-inline-flex align-items-center mb-0">
-                    <i class="ti ti-square-rounded-filled text-orange fs-8 me-2"></i>Número Total de Productos
-                  </p>
-                  <h5>7899</h5>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- /Top Categories -->
-
-        <!-- Order Statistics -->
-        <div class="col-xxl-4 col-md-12 d-flex">
-          <div class="card flex-fill">
-            <div
-              class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3"
-            >
-              <div class="d-inline-flex align-items-center">
-                <span class="title-icon bg-soft-indigo fs-16 me-2"
-                  ><i class="ti ti-package"></i
-                ></span>
-                <h5 class="card-title mb-0">Estadísticas de Pedidos</h5>
-              </div>
-              <div class="dropdown">
-                <a
-                  href="javascript:void(0);"
-                  class="dropdown-toggle btn btn-sm btn-white"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <i class="ti ti-calendar me-1"></i>Semanal
-                </a>
-                <ul class="dropdown-menu p-3">
-                  <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Hoy</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Semanal</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0);" class="dropdown-item">Mensual</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div class="card-body pb-0">
-              <div id="heat_chart">
-                <apexchart
-                  type="heatmap"
-                  height="340"
-                  :options="heatChart.sline"
-                  :series="heatChart.series"
-                ></apexchart>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- /Order Statistics -->
       </div>
+
     </div>
-    
+
    <div
       class="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3"
     >
@@ -1487,96 +467,615 @@
         <a href="javascript:void(0);" class="text-primary">Carlos Argeñal</a>
       </p>
     </div>
-    
+
   </div>
 </template>
 
 <script>
 import "daterangepicker/daterangepicker.css";
 import "daterangepicker/daterangepicker.js";
-import { ref } from "vue";
-import { onMounted } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import moment from "moment";
 import DateRangePicker from "daterangepicker";
-import Vue3ChartJs from "@j-t-mcc/vue3-chartjs";
-import {
-  salesDaychart,
-  customerChart,
-  salesStatistics,
-  heatChart,
-  topCategory,
-} from "./data";
+import { customerChart } from "./data";
+import DashboardService from "@/services/dashboard.service";
+
+// Configurar moment.js en español manualmente
+moment.updateLocale('en', {
+  months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+  monthsShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+});
 
 export default {
-  components: {
-    Vue3ChartJs,
-  },
   data() {
     return {
-      salesDaychart: salesDaychart,
       customerChart: customerChart,
-      salesStatistics: salesStatistics,
-      heatChart: heatChart,
-      topCategory: topCategory,
     };
   },
   setup() {
-    const counter1 = ref(0); // Current counter value
-    const target1 = 95000.45; // Target value
-    const duration = 20; // Animation duration in milliseconds
     const dateRangeInput = ref(null);
+    const selectedPeriod = ref('1A');
+    const chartKey = ref(0); // Key para forzar re-render del gráfico
+    const topProductsPeriod = ref('week');
+    const recentSalesPeriod = ref('week');
+    const customersPeriod = ref('week');
+    const showTopProductsDropdown = ref(false);
+    const showCustomersDropdown = ref(false);
 
-    // Move the function declaration outside of the onMounted callback
+    const dashboardStats = reactive({
+      sales: {},
+      sales_returns: {},
+      purchases: {},
+      purchase_returns: {}
+    });
+
+    const overallInfo = reactive({
+      suppliers: 0,
+      customers: 0,
+      sales: 0
+    });
+
+    const chartData = reactive({
+      sales: [],
+      purchases: []
+    });
+
+    const salesDaychart = reactive({
+      series: [{
+        name: 'Compras',
+        data: []
+      }, {
+        name: 'Ventas',
+        data: []
+      }],
+      sline: {
+        chart: {
+          height: 245,
+          type: 'bar',
+          toolbar: { show: false }
+        },
+        plotOptions: {
+          bar: {
+            horizontal: false,
+            columnWidth: '30%',
+            borderRadius: 4
+          }
+        },
+        dataLabels: { enabled: false },
+        stroke: {
+          show: true,
+          width: 2,
+          colors: ['transparent']
+        },
+        xaxis: {
+          categories: []
+        },
+        yaxis: {
+          title: { text: 'Monto (L)' },
+          labels: {
+            formatter: function (value) {
+              return 'L ' + new Intl.NumberFormat('es-HN', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(value);
+            }
+          }
+        },
+        fill: { opacity: 1 },
+        colors: ['#ffd4b3', '#ff9f43'],
+        tooltip: {
+          y: {
+            formatter: function (value) {
+              return 'L ' + new Intl.NumberFormat('es-HN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }).format(value);
+            }
+          }
+        }
+      }
+    });
+
+    const topProducts = ref([]);
+    const lowStockProducts = ref([]);
+    const recentSales = ref([]);
+    const topCustomers = ref([]);
+    let dateFrom = ref(null);
+    let dateTo = ref(null);
+
+    const customersOverview = reactive({
+      first_time: 0,
+      returning: 0,
+      first_time_percentage: 0,
+      returning_percentage: 0,
+      first_time_chart_percentage: 0,
+      returning_chart_percentage: 0
+    });
+
+    const customersDonutChart = reactive({
+      options: {
+        chart: {
+          type: 'donut',
+          height: 160,
+          toolbar: { show: false }
+        },
+        labels: ['Primera Vez', 'Recurrente'],
+        colors: ['#FF9F43', '#00CFE8'],
+        legend: {
+          show: false
+        },
+        plotOptions: {
+          pie: {
+            donut: {
+              size: '70%',
+              labels: {
+                show: false
+              }
+            }
+          }
+        },
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          width: 0
+        }
+      }
+    });
+
+    // Función para formatear números
+    const formatNumber = (value) => {
+      return new Intl.NumberFormat('es-CO', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }).format(value);
+    };
+
+    // Función para formatear fechas
+    const formatDate = (date) => {
+      return moment(date).format('DD MMM YYYY');
+    };
+
+    // Función para obtener imagen del producto
+    const getProductImage = (imageUrl) => {
+      if (imageUrl && imageUrl.trim() !== '') {
+        // Si la imagen es una URL completa (http/https)
+        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+          return imageUrl;
+        }
+        // Si es una ruta relativa del backend
+        return `http://localhost:3000${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+      }
+      // Imagen por defecto
+      return new URL('@/assets/img/products/product-01.jpg', import.meta.url).href;
+    };
+
+    // Calcular total de ventas del gráfico
+    const getTotalSales = () => {
+      if (!chartData.sales || chartData.sales.length === 0) return 0;
+      return chartData.sales.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+    };
+
+    // Calcular total de compras del gráfico
+    const getTotalPurchases = () => {
+      if (!chartData.purchases || chartData.purchases.length === 0) return 0;
+      return chartData.purchases.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+    };
+
+    // Cargar estadísticas
+    const loadDashboardStats = async () => {
+      try {
+        const params = {};
+        if (dateFrom.value) params.date_from = dateFrom.value;
+        if (dateTo.value) params.date_to = dateTo.value;
+
+        const response = await DashboardService.getStats(params);
+        if (response.success) {
+          Object.assign(dashboardStats, response.data);
+        }
+      } catch (error) {
+        console.error('Error al cargar estadísticas:', error);
+      }
+    };
+
+    // Cargar información general
+    const loadOverallInfo = async () => {
+      try {
+        const response = await DashboardService.getOverallInfo();
+        if (response.success) {
+          Object.assign(overallInfo, response.data);
+        }
+      } catch (error) {
+        console.error('Error al cargar información general:', error);
+      }
+    };
+
+    // Cargar datos del gráfico
+    const loadChartData = async (period = '1A') => {
+      try {
+        // Solo enviar el período, dejar que el backend calcule las fechas
+        // No enviamos date_from ni date_to para que el backend use las fechas del período
+        const params = {
+          period
+        };
+
+        const response = await DashboardService.getSalesAndPurchasesChart(params);
+        console.log('📊 Respuesta del gráfico:', response);
+
+        if (response.success) {
+          // Asegurar que sales y purchases sean arrays
+          const salesArray = Array.isArray(response.data.sales) ? response.data.sales : [];
+          const purchasesArray = Array.isArray(response.data.purchases) ? response.data.purchases : [];
+
+          console.log('📈 Sales array:', salesArray);
+          console.log('📦 Purchases array:', purchasesArray);
+          console.log('📊 Group by:', response.data.groupBy);
+
+          chartData.sales = salesArray;
+          chartData.purchases = purchasesArray;
+
+          // Crear claves únicas para cada punto de datos
+          let categories = [];
+          let salesMap = {};
+          let purchasesMap = {};
+
+          // Determinar cómo formatear las categorías según el período
+          const groupBy = response.data.groupBy;
+
+          if (groupBy === 'HOUR') {
+            // Por hora: "2 am", "3 am", etc.
+            salesArray.forEach(s => {
+              const key = `${s.hour}`;
+              const label = `${s.hour % 12 || 12} ${s.hour >= 12 ? 'pm' : 'am'}`;
+              if (!salesMap[key]) salesMap[key] = { label, amount: 0 };
+              salesMap[key].amount += parseFloat(s.amount || 0);
+            });
+
+            purchasesArray.forEach(p => {
+              const key = `${p.hour}`;
+              const label = `${p.hour % 12 || 12} ${p.hour >= 12 ? 'pm' : 'am'}`;
+              if (!purchasesMap[key]) purchasesMap[key] = { label, amount: 0 };
+              purchasesMap[key].amount += parseFloat(p.amount || 0);
+            });
+
+            // Generar todas las horas del día
+            for (let h = 0; h < 24; h++) {
+              const key = `${h}`;
+              const label = `${h % 12 || 12} ${h >= 12 ? 'pm' : 'am'}`;
+              categories.push({ key, label });
+            }
+          } else if (groupBy === 'MONTH') {
+            // Por mes: "Nov 2025", "Dic 2025"
+            salesArray.forEach(s => {
+              const key = `${s.year}-${String(s.month).padStart(2, '0')}`;
+              const label = moment(`${s.year}-${s.month}-01`).format('MMM YYYY');
+              salesMap[key] = { label, amount: parseFloat(s.amount || 0) };
+            });
+
+            purchasesArray.forEach(p => {
+              const key = `${p.year}-${String(p.month).padStart(2, '0')}`;
+              const label = moment(`${p.year}-${p.month}-01`).format('MMM YYYY');
+              purchasesMap[key] = { label, amount: parseFloat(p.amount || 0) };
+            });
+
+            // Generar todos los meses según el período
+            let numMonths = 12; // Por defecto 1A
+            if (period === '3M') numMonths = 3;
+            else if (period === '6M') numMonths = 6;
+
+            for (let i = numMonths - 1; i >= 0; i--) {
+              const date = moment().subtract(i, 'months');
+              const key = date.format('YYYY-MM');
+              const label = date.format('MMM YYYY');
+              categories.push({ key, label });
+            }
+          } else {
+            // Por día: Para semana usa nombres de días (Dom, Lun, etc.), para mes usa fechas (27 Nov)
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+            salesArray.forEach(s => {
+              const key = moment(s.date).format('YYYY-MM-DD');
+              let label;
+              if (period === '1S') {
+                const dayOfWeek = moment(s.date).day();
+                label = dayNames[dayOfWeek];
+              } else {
+                label = moment(s.date).format('DD MMM');
+              }
+              salesMap[key] = { label, amount: parseFloat(s.amount || 0) };
+            });
+
+            purchasesArray.forEach(p => {
+              const key = moment(p.date).format('YYYY-MM-DD');
+              let label;
+              if (period === '1S') {
+                const dayOfWeek = moment(p.date).day();
+                label = dayNames[dayOfWeek];
+              } else {
+                label = moment(p.date).format('DD MMM');
+              }
+              purchasesMap[key] = { label, amount: parseFloat(p.amount || 0) };
+            });
+
+            // Generar todos los días según el período
+            let numDays = 30; // Por defecto 1M
+            if (period === '1S') numDays = 7;
+
+            for (let i = numDays - 1; i >= 0; i--) {
+              const date = moment().subtract(i, 'days');
+              const key = date.format('YYYY-MM-DD');
+              let label;
+              if (period === '1S') {
+                const dayOfWeek = date.day();
+                label = dayNames[dayOfWeek];
+              } else {
+                label = date.format('DD MMM');
+              }
+              categories.push({ key, label });
+            }
+          }
+
+          console.log('📅 Categories:', categories);
+          console.log('📅 Categories labels:', categories.map(c => c.label));
+          console.log('🗓️  Fecha actual:', moment().format('YYYY-MM-DD'));
+          console.log('🗓️  Mes actual:', moment().format('MMM YYYY'));
+
+          // Actualizar gráfico - Crear nuevo objeto xaxis para forzar reactividad
+          salesDaychart.sline.xaxis = {
+            categories: categories.map(c => c.label)
+          };
+
+          salesDaychart.series = [{
+            name: 'Compras',
+            data: categories.map(cat => purchasesMap[cat.key]?.amount || 0)
+          }, {
+            name: 'Ventas',
+            data: categories.map(cat => salesMap[cat.key]?.amount || 0)
+          }];
+
+          // Incrementar key para forzar re-render del componente
+          chartKey.value++;
+
+          console.log('📊 Series data:', salesDaychart.series);
+          console.log('📊 XAxis categories:', salesDaychart.sline.xaxis.categories);
+        }
+      } catch (error) {
+        console.error('Error al cargar datos del gráfico:', error);
+      }
+    };
+
+    // Cambiar período del gráfico
+    const changePeriod = (period) => {
+      selectedPeriod.value = period;
+      localStorage.setItem('dashboard_period', period);
+      loadChartData(period);
+    };
+
+    // Cargar productos más vendidos
+    const loadTopProducts = async (period = 'today') => {
+      try {
+        const response = await DashboardService.getTopSellingProducts({ period, limit: 5 });
+        if (response.success) {
+          topProducts.value = response.data;
+        }
+      } catch (error) {
+        console.error('Error al cargar productos más vendidos:', error);
+      }
+    };
+
+    // Toggle dropdown de productos más vendidos
+    const toggleTopProductsDropdown = () => {
+      showTopProductsDropdown.value = !showTopProductsDropdown.value;
+    };
+
+    // Cambiar período de productos más vendidos
+    const changeTopProductsPeriod = (period) => {
+      topProductsPeriod.value = period;
+      localStorage.setItem('dashboard_top_products_period', period);
+      loadTopProducts(period);
+      showTopProductsDropdown.value = false; // Cerrar dropdown después de seleccionar
+    };
+
+    // Cargar productos con bajo stock
+    const loadLowStockProducts = async () => {
+      try {
+        const response = await DashboardService.getLowStockProducts({ limit: 5 });
+        if (response.success) {
+          lowStockProducts.value = response.data;
+        }
+      } catch (error) {
+        console.error('Error al cargar productos con bajo stock:', error);
+      }
+    };
+
+    // Cargar ventas recientes
+    const loadRecentSales = async (period = 'week') => {
+      try {
+        const response = await DashboardService.getRecentSales({ period, limit: 5 });
+        if (response.success) {
+          recentSales.value = response.data;
+        }
+      } catch (error) {
+        console.error('Error al cargar ventas recientes:', error);
+      }
+    };
+
+    // Cambiar período de ventas recientes
+    const changeRecentSalesPeriod = (period) => {
+      recentSalesPeriod.value = period;
+      localStorage.setItem('dashboard_recent_sales_period', period);
+      loadRecentSales(period);
+    };
+
+    // Cargar mejores clientes
+    const loadTopCustomers = async () => {
+      try {
+        const response = await DashboardService.getTopCustomers({ limit: 5 });
+        if (response.success) {
+          // Asegurar que sea un array
+          const customersData = Array.isArray(response.data) ? response.data : (response.data ? [response.data] : []);
+          // Filtrar valores null o undefined
+          topCustomers.value = customersData.filter(customer => customer !== null && customer !== undefined);
+        }
+      } catch (error) {
+        console.error('Error al cargar mejores clientes:', error);
+      }
+    };
+
+    // Cargar resumen de clientes
+    const loadCustomersOverview = async (period = 'week') => {
+      try {
+        const response = await DashboardService.getCustomersOverview({ period });
+        if (response.success && response.data) {
+          customersOverview.first_time = response.data.first_time || 0;
+          customersOverview.returning = response.data.returning || 0;
+          customersOverview.first_time_percentage = response.data.first_time_percentage || 0;
+          customersOverview.returning_percentage = response.data.returning_percentage || 0;
+          customersOverview.first_time_chart_percentage = response.data.first_time_chart_percentage || 0;
+          customersOverview.returning_chart_percentage = response.data.returning_chart_percentage || 0;
+        }
+      } catch (error) {
+        console.error('Error al cargar resumen de clientes:', error);
+      }
+    };
+
+    // Toggle dropdown de clientes
+    const toggleCustomersDropdown = () => {
+      showCustomersDropdown.value = !showCustomersDropdown.value;
+    };
+
+    // Cambiar período de resumen de clientes
+    const changeCustomersPeriod = (period) => {
+      customersPeriod.value = period;
+      localStorage.setItem('dashboard_customers_period', period);
+      loadCustomersOverview(period);
+      showCustomersDropdown.value = false;
+    };
+
+    // Configuración del date range picker
     function booking_range(start, end) {
-    return start.format("M/D/YYYY") + " - " + end.format("M/D/YYYY");
+      dateFrom.value = start.format('YYYY-MM-DD');
+      dateTo.value = end.format('YYYY-MM-DD');
+
+      // Guardar preferencias en localStorage
+      localStorage.setItem('dashboard_date_from', dateFrom.value);
+      localStorage.setItem('dashboard_date_to', dateTo.value);
+
+      // Recargar todos los datos del dashboard
+      loadDashboardStats();
+      loadChartData(selectedPeriod.value);
+      loadOverallInfo();
+      loadTopProducts(topProductsPeriod.value);
+      loadRecentSales(recentSalesPeriod.value);
+      loadTopCustomers();
+
+      return start.format('DD/MM/YYYY') + " - " + end.format('DD/MM/YYYY');
     }
 
-    const animateCounter = (target, counterRef) => {
-    let current = 0;
-    const step = target / (duration / 50); // Calculate the increment step
+    onMounted(async () => {
+      // Cargar preferencias guardadas o usar valores por defecto
+      const savedDateFrom = localStorage.getItem('dashboard_date_from');
+      const savedDateTo = localStorage.getItem('dashboard_date_to');
+      const savedPeriod = localStorage.getItem('dashboard_period') || '1M';
+      const savedTopProductsPeriod = localStorage.getItem('dashboard_top_products_period') || 'week';
+      const savedRecentSalesPeriod = localStorage.getItem('dashboard_recent_sales_period') || 'week';
+      const savedCustomersPeriod = localStorage.getItem('dashboard_customers_period') || 'week';
 
-    const interval = setInterval(() => {
-        current += step;
-        if (current >= target) {
-        current = target; // Ensure the counter stops at the target value
-        clearInterval(interval); // Stop the interval when the target is reached
-        }
-        counterRef.value = Math.floor(current); // Update the reactive counter value
-    }, 50); // Update every 50ms
-    };
-    onMounted(() => {
-      animateCounter(target1, counter1);
+      // Inicializar date range picker
       if (dateRangeInput.value) {
-        const start = moment().subtract(6, "days");
-        const end = moment();
+        // Por defecto: mes actual (inicio del mes hasta hoy)
+        const start = savedDateFrom ? moment(savedDateFrom) : moment().startOf("month");
+        const end = savedDateTo ? moment(savedDateTo) : moment();
 
         new DateRangePicker(
-        dateRangeInput.value,
-        {
-          startDate: start,
-          endDate: end,
-          ranges: {
+          dateRangeInput.value,
+          {
+            startDate: start,
+            endDate: end,
+            ranges: {
               "Hoy": [moment(), moment()],
               "Ayer": [moment().subtract(1, "days"), moment().subtract(1, "days")],
               "Últimos 7 Días": [moment().subtract(6, "days"), moment()],
               "Últimos 30 Días": [moment().subtract(29, "days"), moment()],
-              "Este Mes": [moment().startOf("month"), moment().endOf("month")],
+              "Este Mes": [moment().startOf("month"), moment()],
               "Mes Anterior": [
-              moment().subtract(1, "month").startOf("month"),
-              moment().subtract(1, "month").endOf("month"),
-            ],
+                moment().subtract(1, "month").startOf("month"),
+                moment().subtract(1, "month").endOf("month"),
+              ],
+            },
+            locale: {
+              format: "DD/MM/YYYY",
+              separator: " - ",
+              applyLabel: "Aplicar",
+              cancelLabel: "Cancelar",
+              fromLabel: "Desde",
+              toLabel: "Hasta",
+              customRangeLabel: "Rango Personalizado",
+              weekLabel: "S",
+              daysOfWeek: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+              monthNames: [
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+              ],
+              firstDay: 1
+            }
           },
-        },
-        booking_range
+          booking_range
         );
 
-        booking_range(start, end);
+        dateFrom.value = start.format('YYYY-MM-DD');
+        dateTo.value = end.format('YYYY-MM-DD');
       }
+
+      // Restaurar períodos guardados
+      selectedPeriod.value = savedPeriod;
+      topProductsPeriod.value = savedTopProductsPeriod;
+      recentSalesPeriod.value = savedRecentSalesPeriod;
+      customersPeriod.value = savedCustomersPeriod;
+
+      // Cargar todos los datos del dashboard
+      await Promise.all([
+        loadDashboardStats(),
+        loadOverallInfo(),
+        loadChartData(savedPeriod),
+        loadTopProducts(savedTopProductsPeriod),
+        loadLowStockProducts(),
+        loadRecentSales(savedRecentSalesPeriod),
+        loadTopCustomers(),
+        loadCustomersOverview(savedCustomersPeriod)
+      ]);
     });
 
     return {
-    counter1,
-    dateRangeInput,
+      dateRangeInput,
+      selectedPeriod,
+      chartKey,
+      topProductsPeriod,
+      recentSalesPeriod,
+      customersPeriod,
+      showTopProductsDropdown,
+      showCustomersDropdown,
+      dashboardStats,
+      overallInfo,
+      chartData,
+      salesDaychart,
+      topProducts,
+      lowStockProducts,
+      recentSales,
+      topCustomers,
+      customersOverview,
+      customersDonutChart,
+      formatNumber,
+      formatDate,
+      getProductImage,
+      getTotalSales,
+      getTotalPurchases,
+      changePeriod,
+      toggleTopProductsDropdown,
+      changeTopProductsPeriod,
+      changeRecentSalesPeriod,
+      toggleCustomersDropdown,
+      changeCustomersPeriod
     };
   },
 };

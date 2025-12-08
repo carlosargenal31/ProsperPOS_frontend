@@ -140,6 +140,7 @@ export default {
               '/inventory/brand-list': 'brands',
               '/inventory/units': 'products',
               '/inventory/barcode': 'products',
+              '/inventory/cargo-descargo': 'inventory',
               '/stock/manage-stocks': 'inventory',
               '/stock/stock-adjustment': 'inventory',
 
@@ -162,12 +163,12 @@ export default {
               '/sales/quotation-list': 'quotations',
               '/coupons': 'coupons',
               '/discount/discount-list': 'discounts',
-              '/pos/pos-5': 'sales',
+              '/pos-invoice': 'sales',
               '/shipments': 'shipments',
 
               // Compras
               '/purchases/purchase-list': 'purchases',
-              '/purchases/purchase-returns': 'purchases',
+              '/purchase-returns': 'purchases',
 
               // Recursos Humanos
               '/hrm/employees-grid': 'employees',

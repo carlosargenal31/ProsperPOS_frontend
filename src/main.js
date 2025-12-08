@@ -10,6 +10,8 @@ import "ant-design-vue/dist/reset.css";
 import { IconHome } from '@tabler/icons-vue';
 import FlagIcon from "vue-flag-icon";
 import VueEasyLightbox from "vue-easy-lightbox"
+import VueSweetalert2 from 'vue-sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 /********* Layout component**********/
 import Header from "@/views/layouts/layouts-header.vue";
@@ -354,5 +356,6 @@ app.component('IconHome', IconHome);
 app.use(VueApexCharts);
 app.use(FlagIcon);
 app.use(VueEasyLightbox);
+app.use(VueSweetalert2);
 app.use(Antd);
 app.use(router).mount('#app');

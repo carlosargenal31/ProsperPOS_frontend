@@ -18,10 +18,10 @@
       <div class="company-header">
         <h1 class="company-name">{{ billingSettings.company_name || 'Ceramicas Terrazos y Pulidos Universal' }}</h1>
         <div class="company-details">
-          <p><strong>Cedula:</strong> {{ billingSettings.rtn || '0106197700251' }}</p>
-          <p><strong>Sucursal:</strong> {{ billingSettings.branch_name || 'SUCURSAL PRINCIPAL' }}</p>
-          <p><strong>Teléfono:</strong> {{ billingSettings.phone || '+504 2440-0037' }} <strong>Email:</strong> {{ billingSettings.email || 'mauricio_argenal@hotmail.com' }}</p>
-          <p><strong>Dirección:</strong> {{ billingSettings.address || 'Casa Matriz, Barrio La Merced, Avenida 14 de Julio entre 15 y 16 calle frente a Repuestos del Atlántico, La Ceiba, Atlántida' }}</p>
+          <p><strong>Cedula:</strong> {{ billingSettings.company_rtn || '0106197700251' }}</p>
+          <p><strong>Sucursal:</strong> {{ billingSettings.commercial_name || 'SUCURSAL PRINCIPAL' }}</p>
+          <p><strong>Teléfono:</strong> {{ billingSettings.company_phone || '+504 2440-0037' }} <strong>Email:</strong> {{ billingSettings.company_email || 'mauricio_argenal@hotmail.com' }}</p>
+          <p><strong>Dirección:</strong> {{ billingSettings.company_address || 'Casa Matriz, Barrio La Merced, Avenida 14 de Julio entre 15 y 16 calle frente a Repuestos del Atlántico, La Ceiba, Atlántida' }}</p>
         </div>
       </div>
 

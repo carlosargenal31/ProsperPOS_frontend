@@ -220,6 +220,10 @@ const routes = [
       { path: "barcode", component: () => import('@/views/pages/inventory/pos-barcode.vue') },
       { path: "qrcode", component: () => import('@/views/pages/inventory/pos-qrcode.vue') },
       { path: "product-details", component: () => import('@/views/pages/inventory/product-details.vue') },
+      { path: "cargo-descargo", name: "cargo-descargo-list", component: () => import('@/views/pages/inventory/cargo-descargo-list.vue') },
+      { path: "cargo-descargo/create", name: "cargo-descargo-create", component: () => import('@/views/pages/inventory/cargo-descargo-form.vue') },
+      { path: "cargo-descargo/edit/:id", name: "cargo-descargo-edit", component: () => import('@/views/pages/inventory/cargo-descargo-form.vue') },
+      { path: "cargo-descargo/view/:id", name: "cargo-descargo-view", component: () => import('@/views/pages/inventory/cargo-descargo-list.vue') },
     ]
   },
   {
@@ -609,8 +613,11 @@ const routes = [
       { path: '', redirect: '/purchases/purchase-list' },
       { path: "purchase-list", component: () => import('@/views/pages/purchases/purchase-list.vue') },
       { path: "purchase-order-report", component: () => import('@/views/pages/purchases/purchase-order-report.vue') },
-      { path: "purchase-returns", component: () => import('@/views/pages/purchases/purchase-returns.vue') },
     ]
+  },
+  {
+    path: '/purchase-returns',
+    component: () => import('@/views/pages/purchases/purchase-returns.vue')
   },
   {
     path: '/sales',

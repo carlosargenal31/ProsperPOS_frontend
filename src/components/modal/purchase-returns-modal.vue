@@ -462,7 +462,7 @@ export default {
   },
   methods: {
     submitForm() {
-      this.$router.push("/purchases/purchase-returns");
+      this.$router.push("/purchase-returns");
     },
   },
 

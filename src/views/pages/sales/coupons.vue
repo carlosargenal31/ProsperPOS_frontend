@@ -6,18 +6,20 @@
       <div class="page-header">
         <div class="add-item d-flex">
           <div class="page-title">
-            <h4>Lista de Cupones</h4>
-            <h6>Administra tus cupones de descuento</h6>
+            <h4>Cupones</h4>
+            <h6>Administra los cupones del sistema</h6>
           </div>
         </div>
         <ul class="table-top-head">
           <li>
-            <a @click="loadCoupons" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
-              ><i class="ti ti-refresh"></i
-            ></a>
+            <a @click="loadCoupons" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar">
+              <i class="ti ti-refresh"></i>
+            </a>
           </li>
           <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Colapsar" id="collapse-header" @click="toggleHeader"><i class="ti ti-chevron-up"></i></a>
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Colapsar" id="collapse-header" @click="toggleHeader">
+              <i class="ti ti-chevron-up"></i>
+            </a>
           </li>
         </ul>
         <div class="page-btn">
@@ -27,8 +29,9 @@
             data-bs-toggle="modal"
             data-bs-target="#add-coupon"
             @click="openAddModal"
-            ><i class="ti ti-circle-plus me-1"></i>Agregar Cupón</a
           >
+            <i class="ti ti-circle-plus me-1"></i>Agregar Nuevo Cupón
+          </a>
         </div>
       </div>
 
@@ -55,52 +58,55 @@
                     Código <i :class="getSortIcon('codigo')"></i>
                   </th>
                   <th @click="sortBy('nombre')" style="cursor: pointer;">
-                    Nombre <i :class="getSortIcon('nombre')"></i>
-                  </th>
-                  <th @click="sortBy('aplicar_a')" style="cursor: pointer;">
-                    Oferta <i :class="getSortIcon('aplicar_a')"></i>
+                    Cupón <i :class="getSortIcon('nombre')"></i>
                   </th>
                   <th @click="sortBy('tipo_descuento')" style="cursor: pointer;">
-                    Tipo <i :class="getSortIcon('tipo_descuento')"></i>
+                    Porcentaje <i :class="getSortIcon('tipo_descuento')"></i>
                   </th>
                   <th @click="sortBy('valor_descuento')" style="cursor: pointer;">
-                    Valor <i :class="getSortIcon('valor_descuento')"></i>
+                    Monto <i :class="getSortIcon('valor_descuento')"></i>
                   </th>
-                  <th @click="sortBy('fecha_desde')" style="cursor: pointer;">
-                    Fecha Desde <i :class="getSortIcon('fecha_desde')"></i>
+                  <th @click="sortBy('agencia_nombre')" style="cursor: pointer;">
+                    Agencia <i :class="getSortIcon('agencia_nombre')"></i>
                   </th>
-                  <th @click="sortBy('fecha_hasta')" style="cursor: pointer;">
-                    Fecha Hasta <i :class="getSortIcon('fecha_hasta')"></i>
-                  </th>
-                  <th @click="sortBy('suspendido')" style="cursor: pointer;">
-                    Estado <i :class="getSortIcon('suspendido')"></i>
+                  <th @click="sortBy('is_active')" style="cursor: pointer;">
+                    Estatus <i :class="getSortIcon('is_active')"></i>
                   </th>
                   <th class="no-sort">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="sortedCoupons.length === 0">
-                  <td colspan="9" class="text-center">No hay cupones registrados</td>
+                  <td colspan="7" class="text-center">No hay cupones registrados</td>
                 </tr>
                 <tr v-for="coupon in sortedCoupons" :key="coupon.id">
                   <td>{{ coupon.codigo }}</td>
-                  <td>{{ coupon.nombre }}</td>
                   <td>
-                    <span class="badge bg-info">{{ formatAplicarA(coupon) }}</span>
+                    <strong>{{ coupon.nombre }}</strong><br>
+                    <small class="text-muted" v-if="coupon.tipo_aplicacion === 'multiple'">
+                      <i class="ti ti-package"></i> {{ coupon.items ? coupon.items.length : 0 }} productos incluidos
+                    </small>
+                    <small class="text-muted" v-else>
+                      Categoría: {{ coupon.categoria_nombre || '-' }}<br>
+                      Subcategoría: {{ coupon.subcategoria_nombre || '-' }}
+                    </small>
                   </td>
                   <td>
-                    <span :class="coupon.tipo_descuento === 'porcentaje' ? 'badge bg-warning' : 'badge bg-success'">
-                      {{ coupon.tipo_descuento === 'porcentaje' ? 'Porcentaje' : 'Monto Fijo' }}
+                    <span v-if="coupon.tipo_descuento === 'porcentaje'">
+                      {{ formatNumber(coupon.valor_descuento) }}%
                     </span>
+                    <span v-else>0.00</span>
                   </td>
                   <td>
-                    {{ coupon.tipo_descuento === 'porcentaje' ? `%${coupon.valor_descuento}` : `L ${formatCurrency(coupon.valor_descuento)}` }}
+                    <span v-if="coupon.tipo_descuento === 'monto'">
+                      {{ formatMoney(coupon.valor_descuento) }}
+                    </span>
+                    <span v-else>{{ formatMoney(0) }}</span>
                   </td>
-                  <td>{{ formatDate(coupon.fecha_desde) }}</td>
-                  <td>{{ formatDate(coupon.fecha_hasta) }}</td>
+                  <td>{{ coupon.agencia_nombre || 'AGENCIA PRINCIPAL' }}</td>
                   <td>
-                    <span :class="!coupon.suspendido ? 'badge bg-success' : 'badge bg-danger'">
-                      {{ !coupon.suspendido ? 'Activo' : 'Suspendido' }}
+                    <span :class="getStatusClass(coupon)">
+                      {{ getStatusText(coupon) }}
                     </span>
                   </td>
                   <td class="action-table-data justify-content-end">
@@ -108,9 +114,18 @@
                       <a
                         class="me-2 p-2"
                         href="#"
+                        @click.prevent="openViewModal(coupon)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#view-coupon"
+                      >
+                        <i data-feather="eye" class="feather-eye"></i>
+                      </a>
+                      <a
+                        class="me-2 p-2"
+                        href="#"
                         @click.prevent="openEditModal(coupon)"
                         data-bs-toggle="modal"
-                        data-bs-target="#edit-coupon"
+                        data-bs-target="#add-coupon"
                       >
                         <i data-feather="edit" class="feather-edit"></i>
                       </a>
@@ -119,7 +134,7 @@
                         href="#"
                         @click.prevent="openDeleteModal(coupon)"
                         data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
+                        data-bs-target="#delete-coupon-modal"
                       >
                         <i data-feather="trash-2" class="feather-trash-2"></i>
                       </a>
@@ -135,7 +150,6 @@
   </div>
   <coupon-modal
     :coupon="selectedCoupon"
-    :is-edit="isEditMode"
     @coupon-saved="onCouponSaved"
     @coupon-deleted="onCouponDeleted"
   ></coupon-modal>
@@ -144,8 +158,12 @@
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import CouponModal from '@/components/modal/coupon-modal.vue';
 
 export default {
+  components: {
+    CouponModal
+  },
   data() {
     return {
       coupons: [],
@@ -153,7 +171,7 @@ export default {
       isEditMode: false,
       loading: false,
       error: null,
-      sortColumn: 'codigo',
+      sortColumn: 'id',
       sortDirection: 'asc'
     };
   },
@@ -220,6 +238,10 @@ export default {
       this.isEditMode = false;
     },
 
+    openViewModal(coupon) {
+      this.selectedCoupon = { ...coupon };
+    },
+
     openEditModal(coupon) {
       this.selectedCoupon = { ...coupon };
       this.isEditMode = true;
@@ -237,34 +259,53 @@ export default {
       this.loadCoupons();
     },
 
-    formatAplicarA(coupon) {
-      switch (coupon.aplicar_a) {
-        case 'grupo':
-          return coupon.grupo_nombre || 'Grupo';
-        case 'subgrupo':
-          return coupon.subgrupo_nombre || 'Subgrupo';
-        case 'articulo':
-          return coupon.articulo_nombre || 'Artículo';
-        case 'multiples_articulos':
-          return 'Múltiples Artículos';
-        default:
-          return '-';
+    getStatusClass(coupon) {
+      if (coupon.suspendida) return 'badge bg-danger';
+      if (!coupon.is_active) return 'badge bg-warning';
+
+      // Verificar fechas
+      if (coupon.limitar_fecha) {
+        const now = new Date();
+        const desde = new Date(coupon.fecha_desde);
+        const hasta = new Date(coupon.fecha_hasta);
+
+        if (now < desde || now > hasta) {
+          return 'badge bg-secondary';
+        }
       }
+
+      return 'badge bg-success';
     },
 
-    formatDate(date) {
-      if (!date) return '-';
-      return new Date(date).toLocaleDateString('es-HN');
+    getStatusText(coupon) {
+      if (coupon.suspendida) return 'SUSPENDIDO';
+      if (!coupon.is_active) return 'INACTIVO';
+
+      // Verificar fechas
+      if (coupon.limitar_fecha) {
+        const now = new Date();
+        const desde = new Date(coupon.fecha_desde);
+        const hasta = new Date(coupon.fecha_hasta);
+
+        if (now < desde) return 'PROGRAMADO';
+        if (now > hasta) return 'EXPIRADO';
+      }
+
+      return 'ACTIVO';
     },
 
-    formatCurrency(value) {
-      return parseFloat(value).toFixed(2);
+    formatNumber(value) {
+      return parseFloat(value || 0).toFixed(2);
+    },
+
+    formatMoney(value) {
+      return `L ${parseFloat(value || 0).toFixed(2)}`;
     },
 
     toggleHeader() {
       document.getElementById("collapse-header").classList.toggle("active");
       document.body.classList.toggle("header-collapse");
-    },
-  },
+    }
+  }
 };
 </script>

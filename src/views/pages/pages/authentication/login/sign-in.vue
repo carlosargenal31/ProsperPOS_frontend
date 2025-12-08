@@ -242,6 +242,7 @@ export default {
           const { token, user } = response.data.data;
 
           // Guardar token y datos del usuario
+          localStorage.setItem('accessToken', token);
           localStorage.setItem('token', token);
           localStorage.setItem('user', JSON.stringify(user));
           localStorage.setItem('store_id', user.store_id);

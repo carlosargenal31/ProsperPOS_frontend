@@ -89,7 +89,7 @@
         "hasSubRoute": true,
         "showSubRoute": false,
         "subRoutes": [
-          { "tittle": "POS Facturación", "route": "/pos/pos-5" },
+          { "tittle": "POS Facturación", "route": "/pos-invoice" },
           { "tittle": "Devoluciones", "route": "/sales/sales-returns" },
           { "tittle": "Guias de Remision", "route": "/shipments" },
           { "tittle": "En Linea", "route": "/sales/online-orders" },
@@ -171,7 +171,7 @@
     {
       "tittle": "Devolución Compras",
       "icon": "ti ti-file-upload",
-      "route": "/purchases/purchase-returns",
+      "route": "/purchase-returns",
       "hasSubRoute": false,
       "showSubRoute": false
     },

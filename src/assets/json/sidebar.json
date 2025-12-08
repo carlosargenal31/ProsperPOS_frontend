@@ -81,7 +81,7 @@
           },
           {
             "menuValue": "Estado Cuenta Ventas",
-            "route": "/sales-report/best-sellers",
+            "route": "/finance/account-statement",
             "hasSubRoute": false,
             "showSubRoute": false
           },
@@ -155,8 +155,8 @@
         "subMenus": [
           {
             "menuValue": "Manejo de Inventario",
-            "route": "/stock/manage-stocks",
-            "active_link": "/stock/manage-stocks"
+            "route": "/inventory/cargo-descargo",
+            "active_link": "/inventory/cargo-descargo"
           },
           {
             "menuValue": "Ajuste de Existencias",
@@ -210,8 +210,8 @@
       {
         "menuValue": "Devolución Compras",
         "icon": "ti ti-file-upload",
-        "route": "/purchases/purchase-returns",
-        "active_link" : "/purchases/purchase-returns",
+        "route": "/purchase-returns",
+        "active_link" : "/purchase-returns",
         "hasSubRoute": false,
         "showSubRoute": false
       },
