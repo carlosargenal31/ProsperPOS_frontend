@@ -292,12 +292,6 @@
       "showSubRoute": false
     },
     {
-      "tittle": "Reporte de Clientes",
-      "route": "/customer-report/customer-report",
-      "hasSubRoute": false,
-      "showSubRoute": false
-    },
-    {
       "tittle": "Pérdidas y ganancias",
       "route": "/reports/profit-and-loss",
       "hasSubRoute": false,

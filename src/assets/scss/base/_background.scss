@@ -235,6 +235,10 @@ $value in variables.$theme-colors {
     background-color: variables.$indigo-transparent;
     color: variables.$indigo;
 }
+.bg-soft-purple {
+    background-color: variables.$purple-transparent;
+    color: variables.$purple;
+}
 .bg-light {
   color: variables.$text-color;
 }
@@ -322,6 +326,16 @@ $value in variables.$theme-colors {
   background-color: variables.$white;
   border: 1px solid variables.$light !important;
   color: variables.$black !important;
+}
+.bg-outline-purple {
+  background-color: variables.$white;
+  border: 1px solid variables.$purple;
+  color: variables.$purple;
+}
+.bg-outline-orange {
+  background-color: variables.$white;
+  border: 1px solid variables.$orange;
+  color: variables.$orange;
 }
 .bg-primary-transparent {
     background-color: rgba(variables.$primary, 0.1) !important;

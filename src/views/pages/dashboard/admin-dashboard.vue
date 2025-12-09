@@ -311,142 +311,75 @@
           </div>
         </div>
 
-        <!-- Low Stock Products - En desarrollo
+        <!-- Top Customers -->
         <div class="col-xxl-4 col-md-6 d-flex">
           <div class="card flex-fill">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
               <div class="d-inline-flex align-items-center">
-                <span class="title-icon bg-soft-danger fs-16 me-2"><i class="ti ti-alert-triangle"></i></span>
-                <h5 class="card-title mb-0">Productos con Bajo Stock</h5>
+                <span class="title-icon bg-soft-orange fs-16 me-2"><i class="ti ti-users"></i></span>
+                <h5 class="card-title mb-0">Mejores Clientes</h5>
               </div>
-              <router-link to="/inventory/low-stocks" class="fs-13 fw-medium text-decoration-underline">Ver Todo</router-link>
+              <router-link to="/finance/account-statement" class="fs-13 fw-medium text-decoration-underline">Ver Todo</router-link>
             </div>
             <div class="card-body">
-              <div v-if="lowStockProducts.length === 0" class="text-center py-4">
-                <p class="text-muted">No hay productos con bajo stock</p>
+              <div v-if="topCustomers.length === 0" class="text-center py-4">
+                <p class="text-muted">No hay datos disponibles</p>
               </div>
-              <div v-else v-for="product in lowStockProducts" :key="product.id" class="d-flex align-items-center justify-content-between mb-4">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img :src="product.image || '@/assets/img/products/product-06.jpg'" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">{{ product.name }}</a></h6>
-                    <p class="fs-13">ID : #{{ product.code }}</p>
-                  </div>
+              <div v-else v-for="(customer, index) in topCustomers" :key="customer.id" class="d-flex align-items-center justify-content-between" :class="{ 'border-bottom mb-3 pb-3': index < topCustomers.length - 1 }">
+                <div>
+                  <h6 class="fs-14 fw-medium mb-1">{{ customer.name }}</h6>
+                  <p class="text-muted fs-13 mb-0">{{ customer.total_invoices }} Facturas</p>
                 </div>
                 <div class="text-end">
-                  <p class="fs-13 mb-1">En Stock</p>
-                  <h6 class="text-orange fw-medium">{{ product.current_stock }}</h6>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        -->
-
-        <!-- Recent Sales -->
-        <div class="col-xxl-4 col-md-12 d-flex">
-          <div class="card flex-fill">
-            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
-              <div class="d-inline-flex align-items-center">
-                <span class="title-icon bg-soft-pink fs-16 me-2"><i class="ti ti-box"></i></span>
-                <h5 class="card-title mb-0">Ventas Recientes</h5>
-              </div>
-              <div class="dropdown">
-                <a href="javascript:void(0);" class="dropdown-toggle btn btn-sm btn-white"  data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="ti ti-calendar me-1"></i>{{ recentSalesPeriod === 'today' ? 'Hoy' : recentSalesPeriod === 'week' ? 'Semanal' : 'Mensual' }}
-                </a>
-                <ul class="dropdown-menu p-3">
-                  <li>
-                    <a href="javascript:void(0);" class="dropdown-item" @click="changeRecentSalesPeriod('today')">Hoy</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0);" class="dropdown-item" @click="changeRecentSalesPeriod('week')">Semanal</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0);" class="dropdown-item" @click="changeRecentSalesPeriod('month')">Mensual</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div class="card-body">
-              <div v-if="recentSales.length === 0" class="text-center py-4">
-                <p class="text-muted">No hay ventas recientes</p>
-              </div>
-              <div v-else v-for="(sale, index) in recentSales" :key="sale.id" class="d-flex align-items-center justify-content-between" :class="{ 'mb-4': index < recentSales.length - 1, 'mb-0': index === recentSales.length - 1 }">
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/products/product-11.jpg" alt="img">
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fw-bold mb-1"><a href="javascript:void(0);">{{ sale.products || 'Producto' }}</a></h6>
-                    <div class="d-flex align-items-center item-list">
-                      <p>{{ sale.customer_first_name }} {{ sale.customer_last_name }}</p>
-                      <p class="text-gray-9">${{ formatNumber(sale.total) }}</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <p class="fs-13 mb-1">{{ formatDate(sale.created_at) }}</p>
-                  <span class="badge badge-success badge-xs d-inline-flex align-items-center">
-                    <i class="ti ti-circle-filled fs-5 me-1"></i>{{ sale.status }}
+                  <h5>L{{ formatNumber(customer.total_spent) }}</h5>
+                  <span class="badge bg-outline-orange badge-xs">
+                    <i class="ti ti-arrow-up-left me-1"></i>Top {{ index + 1 }}
                   </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Top Customers -->
-      <div class="row">
-        <div class="col-xxl-4 col-md-6 d-flex">
+        <!-- Top Categories -->
+        <div class="col-xxl-4 col-md-12 d-flex">
           <div class="card flex-fill">
-            <div
-              class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3"
-            >
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
               <div class="d-inline-flex align-items-center">
-                <span class="title-icon bg-soft-orange fs-16 me-2"
-                  ><i class="ti ti-users"></i
-                ></span>
-                <h5 class="card-title mb-0">Mejores Clientes</h5>
+                <span class="title-icon bg-soft-purple fs-16 me-2"><i class="ti ti-category"></i></span>
+                <h5 class="card-title mb-0">Categorías Más Vendidas</h5>
               </div>
-              <router-link
-                to="/ecommerce/customers"
-                class="fs-13 fw-medium text-decoration-underline"
-                >Ver Todo</router-link
-              >
+              <div class="dropdown">
+                <a href="javascript:void(0);" class="dropdown-toggle btn btn-sm btn-white" @click="toggleTopCategoriesDropdown" :aria-expanded="showTopCategoriesDropdown">
+                  <i class="ti ti-calendar me-1"></i>{{ topCategoriesPeriod === 'today' ? 'Hoy' : topCategoriesPeriod === 'week' ? 'Semanal' : 'Mensual' }}
+                </a>
+                <ul class="dropdown-menu p-3" :class="{ 'show': showTopCategoriesDropdown }">
+                  <li>
+                    <a href="javascript:void(0);" class="dropdown-item" @click="changeTopCategoriesPeriod('today')">Hoy</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0);" class="dropdown-item" @click="changeTopCategoriesPeriod('week')">Semanal</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0);" class="dropdown-item" @click="changeTopCategoriesPeriod('month')">Mensual</a>
+                  </li>
+                </ul>
+              </div>
             </div>
             <div class="card-body">
-              <div v-if="topCustomers.length === 0" class="text-center py-4">
+              <div v-if="topCategories.length === 0" class="text-center py-4">
                 <p class="text-muted">No hay datos disponibles</p>
               </div>
-              <div
-                v-else
-                v-for="(customer, index) in topCustomers"
-                :key="customer.id"
-                class="d-flex align-items-center justify-content-between"
-                :class="{ 'border-bottom mb-3 pb-3': index < topCustomers.length - 1 }"
-              >
-                <div class="d-flex align-items-center">
-                  <a href="javascript:void(0);" class="avatar avatar-lg">
-                    <img src="@/assets/img/customer/customer11.jpg" alt="img" />
-                  </a>
-                  <div class="ms-2">
-                    <h6 class="fs-14 fw-medium mb-1">
-                      <a href="javascript:void(0);">{{ customer.first_name }} {{ customer.last_name }}</a>
-                    </h6>
-                    <div class="d-flex align-items-center item-list">
-                      <p class="d-inline-flex align-items-center">
-                        <i class="ti ti-map-pin me-1"></i>{{ customer.country || 'N/A' }}
-                      </p>
-                      <p>{{ customer.total_orders }} Pedidos</p>
-                    </div>
-                  </div>
+              <div v-else v-for="(category, index) in topCategories" :key="category.id" class="d-flex align-items-center justify-content-between" :class="{ 'border-bottom mb-3 pb-3': index < topCategories.length - 1 }">
+                <div>
+                  <h6 class="fs-14 fw-medium mb-1">{{ category.name }}</h6>
+                  <p class="text-muted fs-13 mb-0">{{ category.total_sold }} Productos vendidos</p>
                 </div>
                 <div class="text-end">
-                  <h5>${{ formatNumber(customer.total_spent) }}</h5>
+                  <h5>L{{ formatNumber(category.total_revenue) }}</h5>
+                  <span class="badge bg-outline-purple badge-xs">
+                    <i class="ti ti-arrow-up-left me-1"></i>Top {{ index + 1 }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -497,9 +430,10 @@ export default {
     const selectedPeriod = ref('1A');
     const chartKey = ref(0); // Key para forzar re-render del gráfico
     const topProductsPeriod = ref('week');
-    const recentSalesPeriod = ref('week');
+    const topCategoriesPeriod = ref('week');
     const customersPeriod = ref('week');
     const showTopProductsDropdown = ref(false);
+    const showTopCategoriesDropdown = ref(false);
     const showCustomersDropdown = ref(false);
 
     const dashboardStats = reactive({
@@ -578,7 +512,7 @@ export default {
 
     const topProducts = ref([]);
     const lowStockProducts = ref([]);
-    const recentSales = ref([]);
+    const topCategories = ref([]);
     const topCustomers = ref([]);
     let dateFrom = ref(null);
     let dateTo = ref(null);
@@ -876,6 +810,31 @@ export default {
       showTopProductsDropdown.value = false; // Cerrar dropdown después de seleccionar
     };
 
+    // Cargar categorías más vendidas
+    const loadTopCategories = async (period = 'week') => {
+      try {
+        const response = await DashboardService.getTopCategories({ period, limit: 5 });
+        if (response.success) {
+          topCategories.value = Array.isArray(response.data) ? response.data : [];
+        }
+      } catch (error) {
+        console.error('Error al cargar categorías más vendidas:', error);
+      }
+    };
+
+    // Toggle dropdown de categorías
+    const toggleTopCategoriesDropdown = () => {
+      showTopCategoriesDropdown.value = !showTopCategoriesDropdown.value;
+    };
+
+    // Cambiar período de categorías
+    const changeTopCategoriesPeriod = (period) => {
+      topCategoriesPeriod.value = period;
+      localStorage.setItem('dashboard_top_categories_period', period);
+      loadTopCategories(period);
+      showTopCategoriesDropdown.value = false;
+    };
+
     // Cargar productos con bajo stock
     const loadLowStockProducts = async () => {
       try {
@@ -888,29 +847,15 @@ export default {
       }
     };
 
-    // Cargar ventas recientes
-    const loadRecentSales = async (period = 'week') => {
-      try {
-        const response = await DashboardService.getRecentSales({ period, limit: 5 });
-        if (response.success) {
-          recentSales.value = response.data;
-        }
-      } catch (error) {
-        console.error('Error al cargar ventas recientes:', error);
-      }
-    };
-
-    // Cambiar período de ventas recientes
-    const changeRecentSalesPeriod = (period) => {
-      recentSalesPeriod.value = period;
-      localStorage.setItem('dashboard_recent_sales_period', period);
-      loadRecentSales(period);
-    };
-
     // Cargar mejores clientes
     const loadTopCustomers = async () => {
       try {
-        const response = await DashboardService.getTopCustomers({ limit: 5 });
+        const params = {
+          limit: 5,
+          date_from: dateFrom.value,
+          date_to: dateTo.value
+        };
+        const response = await DashboardService.getTopCustomers(params);
         if (response.success) {
           // Asegurar que sea un array
           const customersData = Array.isArray(response.data) ? response.data : (response.data ? [response.data] : []);
@@ -966,7 +911,6 @@ export default {
       loadChartData(selectedPeriod.value);
       loadOverallInfo();
       loadTopProducts(topProductsPeriod.value);
-      loadRecentSales(recentSalesPeriod.value);
       loadTopCustomers();
 
       return start.format('DD/MM/YYYY') + " - " + end.format('DD/MM/YYYY');
@@ -978,15 +922,16 @@ export default {
       const savedDateTo = localStorage.getItem('dashboard_date_to');
       const savedPeriod = localStorage.getItem('dashboard_period') || '1M';
       const savedTopProductsPeriod = localStorage.getItem('dashboard_top_products_period') || 'week';
-      const savedRecentSalesPeriod = localStorage.getItem('dashboard_recent_sales_period') || 'week';
       const savedCustomersPeriod = localStorage.getItem('dashboard_customers_period') || 'week';
+
+      // Inicializar fechas por defecto
+      const start = savedDateFrom ? moment(savedDateFrom) : moment().startOf("month");
+      const end = savedDateTo ? moment(savedDateTo) : moment();
+      dateFrom.value = start.format('YYYY-MM-DD');
+      dateTo.value = end.format('YYYY-MM-DD');
 
       // Inicializar date range picker
       if (dateRangeInput.value) {
-        // Por defecto: mes actual (inicio del mes hasta hoy)
-        const start = savedDateFrom ? moment(savedDateFrom) : moment().startOf("month");
-        const end = savedDateTo ? moment(savedDateTo) : moment();
-
         new DateRangePicker(
           dateRangeInput.value,
           {
@@ -1022,15 +967,13 @@ export default {
           },
           booking_range
         );
-
-        dateFrom.value = start.format('YYYY-MM-DD');
-        dateTo.value = end.format('YYYY-MM-DD');
       }
 
       // Restaurar períodos guardados
       selectedPeriod.value = savedPeriod;
       topProductsPeriod.value = savedTopProductsPeriod;
-      recentSalesPeriod.value = savedRecentSalesPeriod;
+      const savedTopCategoriesPeriod = localStorage.getItem('dashboard_top_categories_period') || 'week';
+      topCategoriesPeriod.value = savedTopCategoriesPeriod;
       customersPeriod.value = savedCustomersPeriod;
 
       // Cargar todos los datos del dashboard
@@ -1040,7 +983,7 @@ export default {
         loadChartData(savedPeriod),
         loadTopProducts(savedTopProductsPeriod),
         loadLowStockProducts(),
-        loadRecentSales(savedRecentSalesPeriod),
+        loadTopCategories(savedTopCategoriesPeriod),
         loadTopCustomers(),
         loadCustomersOverview(savedCustomersPeriod)
       ]);
@@ -1051,9 +994,10 @@ export default {
       selectedPeriod,
       chartKey,
       topProductsPeriod,
-      recentSalesPeriod,
+      topCategoriesPeriod,
       customersPeriod,
       showTopProductsDropdown,
+      showTopCategoriesDropdown,
       showCustomersDropdown,
       dashboardStats,
       overallInfo,
@@ -1061,7 +1005,7 @@ export default {
       salesDaychart,
       topProducts,
       lowStockProducts,
-      recentSales,
+      topCategories,
       topCustomers,
       customersOverview,
       customersDonutChart,
@@ -1073,7 +1017,8 @@ export default {
       changePeriod,
       toggleTopProductsDropdown,
       changeTopProductsPeriod,
-      changeRecentSalesPeriod,
+      toggleTopCategoriesDropdown,
+      changeTopCategoriesPeriod,
       toggleCustomersDropdown,
       changeCustomersPeriod
     };

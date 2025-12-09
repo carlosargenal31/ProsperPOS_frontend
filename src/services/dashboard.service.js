@@ -133,6 +133,19 @@ const DashboardService = {
       console.error('Error al obtener transacciones recientes:', error);
       throw error;
     }
+  },
+
+  /**
+   * Obtener categorías más vendidas
+   */
+  async getTopCategories(params = { limit: 5, period: 'week' }) {
+    try {
+      const response = await api.get('/dashboard/top-categories', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener categorías más vendidas:', error);
+      throw error;
+    }
   }
 };
 

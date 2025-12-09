@@ -313,13 +313,19 @@ export default {
     PurchaseDetailsModal
   },
   data() {
+    // Calculate dates inline to avoid calling methods before they're initialized
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const dateFrom = firstDay.toISOString().split('T')[0];
+    const dateTo = now.toISOString().split('T')[0];
+
     return {
       purchases: [],
       loading: false,
       filters: {
         search: '',
-        date_from: '',
-        date_to: '',
+        date_from: dateFrom,
+        date_to: dateTo,
         payment_status: '',
         page: 1,
         limit: 50
@@ -372,6 +378,17 @@ export default {
     this.loadStatistics();
   },
   methods: {
+    getFirstDayOfMonth() {
+      const now = new Date();
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      return firstDay.toISOString().split('T')[0];
+    },
+
+    getCurrentDate() {
+      const now = new Date();
+      return now.toISOString().split('T')[0];
+    },
+
     async loadPurchases() {
       this.loading = true;
       try {
@@ -430,9 +447,20 @@ export default {
       }
     },
 
-    viewPurchase(purchase) {
-      this.selectedPurchase = purchase;
-      this.showDetailsModal = true;
+    async viewPurchase(purchase) {
+      try {
+        // Obtener los detalles completos de la compra desde el backend
+        const response = await axios.get(`/api/purchases/${purchase.id}`);
+        this.selectedPurchase = response.data.data;
+        this.showDetailsModal = true;
+      } catch (error) {
+        console.error('Error loading purchase details:', error);
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al cargar los detalles de la compra'
+        });
+      }
     },
 
     editPurchase(purchase) {

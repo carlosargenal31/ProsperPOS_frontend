@@ -47,6 +47,10 @@
                       </span>
                     </td>
                   </tr>
+                  <tr>
+                    <td class="fw-semibold">Creado por:</td>
+                    <td>{{ purchase.created_by_name || 'Sistema' }}</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -98,26 +102,48 @@
           <!-- Totals -->
           <div class="row">
             <div class="col-md-6 offset-md-6">
-              <table class="table table-sm">
-                <tbody>
-                  <tr>
-                    <td class="fw-semibold text-end">Subtotal:</td>
-                    <td class="text-end">L {{ formatCurrency(purchase.net_amount) }}</td>
-                  </tr>
-                  <tr>
-                    <td class="fw-semibold text-end">ISV (15%):</td>
-                    <td class="text-end">L {{ formatCurrency(purchase.tax_amount) }}</td>
-                  </tr>
-                  <tr v-if="purchase.discount_amount > 0">
-                    <td class="fw-semibold text-end">Descuento:</td>
-                    <td class="text-end text-danger">-L {{ formatCurrency(purchase.discount_amount) }}</td>
-                  </tr>
-                  <tr class="table-active">
-                    <td class="fw-bold text-end fs-16">TOTAL:</td>
-                    <td class="fw-bold text-end fs-16">L {{ formatCurrency(purchase.total_amount) }}</td>
-                  </tr>
-                </tbody>
-              </table>
+              <div class="card border">
+                <div class="card-body">
+                  <h6 class="fw-bold mb-3">Resumen de Totales</h6>
+                  <table class="table table-sm mb-0">
+                    <tbody>
+                      <tr>
+                        <td class="fw-semibold text-end" style="width: 50%;">Subtotal:</td>
+                        <td class="text-end">L {{ formatCurrency(purchase.net_amount) }}</td>
+                      </tr>
+                      <tr>
+                        <td class="fw-semibold text-end">ISV (15%):</td>
+                        <td class="text-end">L {{ formatCurrency(purchase.tax_amount) }}</td>
+                      </tr>
+                      <tr class="border-top">
+                        <td class="fw-semibold text-end">Descuento:</td>
+                        <td class="text-end" :class="purchase.discount_amount > 0 ? 'text-danger fw-bold' : 'text-muted'">
+                          <span v-if="purchase.discount_amount > 0">-L {{ formatCurrency(purchase.discount_amount) }}</span>
+                          <span v-else>L 0.00</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="fw-semibold text-end">Recargo:</td>
+                        <td class="text-end" :class="purchase.surcharge_amount > 0 ? 'text-success fw-bold' : 'text-muted'">
+                          <span v-if="purchase.surcharge_amount > 0">+L {{ formatCurrency(purchase.surcharge_amount) }}</span>
+                          <span v-else>L 0.00</span>
+                        </td>
+                      </tr>
+                      <tr class="table-active border-top border-2">
+                        <td class="fw-bold text-end fs-16">TOTAL A PAGAR:</td>
+                        <td class="fw-bold text-end fs-16 text-primary">L {{ formatCurrency(purchase.total_amount) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div class="mt-3 p-2 bg-light rounded" v-if="purchase.discount_amount > 0 || purchase.surcharge_amount > 0">
+                    <small class="text-muted d-block">
+                      <i class="ti ti-info-circle me-1"></i>
+                      <span v-if="purchase.discount_amount > 0">Se aplicó un descuento de L {{ formatCurrency(purchase.discount_amount) }}. </span>
+                      <span v-if="purchase.surcharge_amount > 0">Se aplicó un recargo de L {{ formatCurrency(purchase.surcharge_amount) }}.</span>
+                    </small>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

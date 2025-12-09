@@ -69,7 +69,7 @@
         "subMenus": [
           {
             "menuValue": "Reimpresiones",
-            "route": "/reports/invoice-report",
+            "route": "/sales/reprint",
             "hasSubRoute": false,
             "showSubRoute": false
           },
@@ -93,7 +93,7 @@
           },
           {
             "menuValue": "Libro de Ventas",
-            "route": "/sales-report/sales-report",
+            "route": "/reports/sales-book",
             "hasSubRoute": false,
             "showSubRoute": false
           }
@@ -236,7 +236,7 @@
           },
           {
             "menuValue": "Libro de Compras",
-            "route": "/reports/purchase-report",
+            "route": "/reports/purchase-book",
             "hasSubRoute": false,
             "showSubRoute": false
           }
@@ -362,14 +362,6 @@
         "icon": "ti ti-user-star",
         "route": "/supplier-report/supplier-report",
         "active_link" : "/supplier-report/supplier-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Reporte de Clientes",
-        "icon": "ti ti-report",
-        "route": "/customer-report/customer-report",
-        "active_link" : "/customer-report/customer-report",
         "hasSubRoute": false,
         "showSubRoute": false
       },

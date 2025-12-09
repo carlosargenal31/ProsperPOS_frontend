@@ -203,12 +203,34 @@
 
               <div class="col-md-4">
                 <div class="mb-3">
-                  <label class="form-label">Total <span class="text-danger">*</span></label>
+                  <label class="form-label">Descuento</label>
                   <div class="input-group">
                     <span class="input-group-text">L</span>
-                    <input type="number" step="0.01" class="form-control" v-model.number="formData.total_amount" @input="calculateFromTotal" required>
+                    <input type="number" step="0.01" class="form-control" v-model.number="formData.discount_amount" @input="calculateTotal">
                   </div>
-                  <small class="text-muted">Editable manualmente</small>
+                  <small class="text-muted">Se resta del subtotal</small>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="form-label">Recargo</label>
+                  <div class="input-group">
+                    <span class="input-group-text">L</span>
+                    <input type="number" step="0.01" class="form-control" v-model.number="formData.surcharge_amount" @input="calculateTotal">
+                  </div>
+                  <small class="text-muted">Se suma al subtotal</small>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Total <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-success text-white">L</span>
+                    <input type="number" step="0.01" class="form-control fw-bold" v-model.number="formData.total_amount" @input="calculateFromTotal" required>
+                  </div>
+                  <small class="text-muted">Subtotal + ISV + Recargo - Descuento</small>
                 </div>
               </div>
 
@@ -347,6 +369,7 @@ export default {
         net_amount: 0,
         tax_amount: 0,
         discount_amount: 0,
+        surcharge_amount: 0,
         total_amount: 0,
         notes: '',
         document_type: 'FACTURA',
@@ -694,7 +717,9 @@ export default {
       const net = parseFloat(this.formData.net_amount) || 0;
       const tax = parseFloat(this.formData.tax_amount) || 0;
       const discount = parseFloat(this.formData.discount_amount) || 0;
-      this.formData.total_amount = net + tax - discount;
+      const surcharge = parseFloat(this.formData.surcharge_amount) || 0;
+      // Total = Subtotal + ISV + Recargo - Descuento
+      this.formData.total_amount = parseFloat((net + tax + surcharge - discount).toFixed(2));
     },
 
     calculateFromTotal() {
@@ -747,9 +772,14 @@ export default {
       try {
         this.saving = true;
 
+        // Get user ID from localStorage
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const userId = user.id || user.userId || null;
+
         const data = {
           ...this.formData,
           supplier_id: this.selectedSupplierId || null,
+          created_by: userId,
           items: this.items.filter(item => item.product_name && item.quantity > 0)
         };
 
@@ -784,6 +814,7 @@ export default {
           net_amount: parseFloat(this.purchase.net_amount) || 0,
           tax_amount: parseFloat(this.purchase.tax_amount) || 0,
           discount_amount: parseFloat(this.purchase.discount_amount) || 0,
+          surcharge_amount: parseFloat(this.purchase.surcharge_amount) || 0,
           total_amount: parseFloat(this.purchase.total_amount) || 0,
           notes: this.purchase.notes || '',
           document_type: this.purchase.document_type || 'FACTURA',
@@ -820,6 +851,7 @@ export default {
         net_amount: 0,
         tax_amount: 0,
         discount_amount: 0,
+        surcharge_amount: 0,
         total_amount: 0,
         notes: '',
         document_type: 'FACTURA',

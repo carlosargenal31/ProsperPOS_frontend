@@ -332,6 +332,8 @@ const routes = [
       { path: "annual-report", component: () => import('@/views/pages/reports/annual-report.vue') },
       { path: "sales-tax", component: () => import('@/views/pages/reports/tax-report/salestax-report.vue') },
       { path: "profit-and-loss", component: () => import('@/views/pages/reports/profit-and-loss.vue') },
+      { path: "sales-book", component: () => import('@/views/pages/reports/sales-book.vue') },
+      { path: "purchase-book", component: () => import('@/views/pages/reports/purchase-book.vue') },
     ]
   },
   {
@@ -631,6 +633,7 @@ const routes = [
       { path: "invoice-details", component: () => import('@/views/pages/sales/invoice-details.vue') },
       { path: "sales-returns", component: () => import('@/views/pages/sales/sales-returns.vue') },
       { path: "quotation-list", component: () => import('@/views/pages/sales/quotation-list.vue') },
+      { path: "reprint", component: () => import('@/views/pages/sales/reprint.vue') },
     ]
   },
   {

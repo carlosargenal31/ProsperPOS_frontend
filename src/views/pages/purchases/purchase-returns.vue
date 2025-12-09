@@ -649,7 +649,7 @@
             </div>
           </div>
 
-          </div>
+        </div>
         </div>
 
         <!-- Botones de Acción -->
@@ -1010,7 +1010,97 @@ export default {
     },
 
     printReturn() {
-      window.print();
+      const reportHTML = this.generateProfessionalReport();
+      const printWindow = window.open('', '_blank');
+      const scriptTag = 'script';
+      let htmlContent = '<!DOCTYPE html><html><head><title>Imprimir Documento</title>';
+      htmlContent += '<style>body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }';
+      htmlContent += '@media print { body { margin: 0; padding: 10mm; } }</style></head><body>';
+      htmlContent += reportHTML;
+      htmlContent += '<' + scriptTag + '>window.onload = function() { window.print(); ';
+      htmlContent += 'window.onafterprint = function() { window.close(); }; };</' + scriptTag + '>';
+      htmlContent += '</body></html>';
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+    },
+
+    generateProfessionalReport() {
+      const docType = this.currentDocument === 'return' ? 'DEVOLUCIÓN DE COMPRA' : 'NOTA DE CRÉDITO DEL PROVEEDOR';
+      const ret = this.selectedReturnDetails;
+      const parts = [];
+
+      parts.push('<div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">');
+      parts.push('<div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 15px;">');
+      parts.push('<h1 style="margin: 0; font-size: 24px; color: #333;">' + (this.companyInfo.company_name || 'PROSPERPOS') + '</h1>');
+      parts.push('<p style="margin: 5px 0; font-size: 12px; color: #666;">' + (this.companyInfo.direccion || 'Sin dirección') + '</p>');
+      parts.push('<p style="margin: 5px 0; font-size: 12px; color: #666;">Tel: ' + (this.companyInfo.telefono || 'N/A') + ' | RTN: ' + (this.companyInfo.rtn || '00000000000000') + '</p>');
+      parts.push('</div>');
+
+      parts.push('<div style="text-align: center; margin-bottom: 25px;">');
+      parts.push('<h2 style="margin: 0; font-size: 20px; color: #d9534f; font-weight: bold;">' + docType + '</h2>');
+
+      if (this.currentDocument === 'return') {
+        parts.push('<p style="margin: 5px 0; font-size: 14px;"><strong>Correlativo:</strong> ' + (ret?.correlative || 'N/A') + '</p>');
+        parts.push('<p style="margin: 5px 0; font-size: 14px;"><strong>Fecha Devolución:</strong> ' + this.formatDate(ret?.emission_date) + '</p>');
+      } else {
+        parts.push('<p style="margin: 5px 0; font-size: 14px;"><strong>Número NC:</strong> ' + (ret?.credit_note_number || 'PENDIENTE') + '</p>');
+        parts.push('<p style="margin: 5px 0; font-size: 14px;"><strong>Fecha NC:</strong> ' + (ret?.credit_note_date ? this.formatDate(ret?.credit_note_date) : 'N/A') + '</p>');
+      }
+
+      parts.push('<p style="margin: 5px 0; font-size: 14px;"><strong>Compra Original:</strong> ' + (ret?.purchase_number || 'N/A') + '</p>');
+      if (this.currentDocument === 'return') {
+        parts.push('<p style="margin: 5px 0; font-size: 14px;"><strong>Tipo:</strong> ' + (ret?.return_type === 'total' ? 'TOTAL' : 'PARCIAL') + '</p>');
+      }
+      parts.push('</div>');
+
+      parts.push('<div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">');
+      parts.push('<h3 style="margin: 0 0 10px 0; font-size: 16px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">PROVEEDOR</h3>');
+      parts.push('<table style="width: 100%; font-size: 13px;">');
+      parts.push('<tr><td style="padding: 4px 0;"><strong>Nombre:</strong></td><td style="padding: 4px 0;">' + (ret?.supplier_name || 'N/A') + '</td></tr>');
+      parts.push('<tr><td style="padding: 4px 0;"><strong>RTN:</strong></td><td style="padding: 4px 0;">' + (ret?.supplier_rtn || '00000000000000') + '</td></tr>');
+      parts.push('</table></div>');
+
+      parts.push('<div style="margin-bottom: 20px;">');
+      parts.push('<h3 style="margin: 0 0 10px 0; font-size: 16px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">DETALLE DE IMPORTES</h3>');
+      parts.push('<table style="width: 100%; border-collapse: collapse; font-size: 13px;">');
+      parts.push('<tr style="background-color: #f8f9fa;">');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd; width: 50%;"><strong>Importe Exonerado:</strong></td>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L 0.00</td>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd; width: 50%;"><strong>Gravado 15%:</strong></td>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L ' + this.formatCurrency(ret?.subtotal) + '</td>');
+      parts.push('</tr><tr>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd;"><strong>Importe Exento:</strong></td>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L 0.00</td>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd;"><strong>I.S.V 15%:</strong></td>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L ' + this.formatCurrency(ret?.tax) + '</td>');
+      parts.push('</tr><tr style="background-color: #f8f9fa;">');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd;"><strong>Gravado 18%:</strong></td>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L 0.00</td>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd;"><strong>RECARGOS:</strong></td>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L 0.00</td>');
+      parts.push('</tr><tr>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd;"><strong>I.S.V 18%:</strong></td>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L 0.00</td>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd;"><strong>DESC. Y REBAJAS:</strong></td>');
+      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L 0.00</td>');
+      parts.push('</tr></table></div>');
+
+      parts.push('<div style="background-color: #dc3545; color: white; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px;">');
+      parts.push('<h2 style="margin: 0; font-size: 24px; font-weight: bold;">TOTAL A DEVOLVER: L ' + this.formatCurrency(ret?.total) + '</h2>');
+      parts.push('</div>');
+
+      if (ret?.notes || ret?.credit_note_notes) {
+        parts.push('<div style="margin-bottom: 20px;">');
+        parts.push('<h3 style="margin: 0 0 10px 0; font-size: 16px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">OBSERVACIONES</h3>');
+        parts.push('<p style="font-size: 13px; padding: 10px; background-color: #f8f9fa; border-radius: 5px; margin: 0;">' + (ret?.notes || ret?.credit_note_notes) + '</p>');
+        parts.push('</div>');
+      }
+
+      parts.push('<div style="text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 11px; color: #666;">');
+      parts.push('<p style="margin: 0;">Documento generado por ProsperPOS - ' + new Date().toLocaleDateString('es-HN') + '</p>');
+      parts.push('</div></div>');
+
+      return parts.join('');
     },
 
     async exportCurrentDocument(format) {
@@ -1026,18 +1116,31 @@ export default {
 
       if (format === 'image') {
         try {
-          const canvas = await html2canvas(element, {
+          const reportHTML = this.generateProfessionalReport();
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = reportHTML;
+          tempDiv.style.position = 'absolute';
+          tempDiv.style.left = '-9999px';
+          tempDiv.style.width = '800px';
+          tempDiv.style.backgroundColor = '#ffffff';
+          tempDiv.style.padding = '20px';
+          document.body.appendChild(tempDiv);
+
+          const canvas = await html2canvas(tempDiv, {
             scale: 2,
             useCORS: true,
-            logging: false
+            logging: false,
+            backgroundColor: '#ffffff'
           });
+
+          document.body.removeChild(tempDiv);
 
           canvas.toBlob((blob) => {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             const fileName = this.currentDocument === 'return'
-              ? `devolucion_${this.selectedReturnDetails?.correlative}.png`
-              : `nota_credito_${this.selectedReturnDetails?.credit_note_number || 'pendiente'}.png`;
+              ? 'devolucion_' + this.selectedReturnDetails?.correlative + '.png'
+              : 'nota_credito_' + (this.selectedReturnDetails?.credit_note_number || 'pendiente') + '.png';
             link.download = fileName;
             link.href = url;
             link.click();
@@ -1049,21 +1152,48 @@ export default {
         }
       } else if (format === 'pdf') {
         try {
-          const canvas = await html2canvas(element, {
+          const reportHTML = this.generateProfessionalReport();
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = reportHTML;
+          tempDiv.style.position = 'absolute';
+          tempDiv.style.left = '-9999px';
+          tempDiv.style.width = '800px';
+          tempDiv.style.backgroundColor = '#ffffff';
+          tempDiv.style.padding = '20px';
+          document.body.appendChild(tempDiv);
+
+          const canvas = await html2canvas(tempDiv, {
             scale: 2,
             useCORS: true,
-            logging: false
+            logging: false,
+            backgroundColor: '#ffffff'
           });
+
+          document.body.removeChild(tempDiv);
 
           const imgData = canvas.toDataURL('image/png');
           const pdf = new jsPDF('p', 'mm', 'letter');
-          const imgWidth = 210;
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+          const imgWidth = pdfWidth - 20;
           const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+          let heightLeft = imgHeight;
+          let position = 10;
+
+          pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+          heightLeft -= pdfHeight;
+
+          while (heightLeft > 0) {
+            position = heightLeft - imgHeight + 10;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= pdfHeight;
+          }
+
           const fileName = this.currentDocument === 'return'
-            ? `devolucion_${this.selectedReturnDetails?.correlative}.pdf`
-            : `nota_credito_${this.selectedReturnDetails?.credit_note_number || 'pendiente'}.pdf`;
+            ? 'devolucion_' + this.selectedReturnDetails?.correlative + '.pdf'
+            : 'nota_credito_' + (this.selectedReturnDetails?.credit_note_number || 'pendiente') + '.pdf';
           pdf.save(fileName);
         } catch (error) {
           console.error('Error al generar PDF:', error);
