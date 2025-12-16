@@ -6,6 +6,11 @@
       <div class="table-tab">
         <ul class="nav nav-pills">
           <li class="nav-item">
+            <router-link class="nav-link" to="/supplier-report/purchases-by-supplier"
+              >Reporte de Proveedores</router-link
+            >
+          </li>
+          <li class="nav-item">
             <router-link class="nav-link" to="/supplier-report/supplier-report"
               >Supplier Report</router-link
             >

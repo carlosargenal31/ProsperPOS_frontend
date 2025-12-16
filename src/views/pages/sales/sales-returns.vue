@@ -713,6 +713,7 @@ import axios from 'axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
+import { LOGO_BASE64 } from '@/assets/img/logo.js';
 
 export default {
   data() {
@@ -1062,6 +1063,7 @@ export default {
             credit_note_number: returnData.credit_note_number,
             invoice_number: this.selectedInvoice.invoice_number,
             customer_name: this.selectedInvoice.customer_name,
+            customer_rtn: this.selectedInvoice.customer_rtn || '00000000000000',
             emission_date: this.returnForm.emission_date,
             notes: this.returnForm.notes,
             items: this.returnItems.filter(item => item.return_quantity > 0),
@@ -1246,14 +1248,9 @@ export default {
       }
     },
     getCreditNoteNumber() {
-      // Usar el número de nota de crédito del backend
-      if (this.processedReturn.credit_note_number) {
-        return this.processedReturn.credit_note_number;
-      }
-      // Fallback a resoluciones
-      if (this.creditResolutions.length > 0) {
-        const res = this.creditResolutions[0];
-        return `${res.prefijo_control || ''}${res.nro_actual_control || ''}${res.sufijo_control || ''}`;
+      // Retornar el correlativo interno NC-000001, NC-000002, etc.
+      if (this.processedReturn.credit_note_correlative) {
+        return this.processedReturn.credit_note_correlative;
       }
       return 'N/A';
     },
@@ -1434,106 +1431,310 @@ export default {
     },
     buildDocumentHTML() {
       const docTitle = this.currentDocument === 'credit_note' ? 'NOTA DE CRÉDITO' : 'DEVOLUCIÓN';
-      const docTitleColor = this.currentDocument === 'credit_note' ? '#cc0000' : '#0066cc';
+      const docColor = '#FF9800'; // Color naranja uniforme
 
-      // Construir filas de items
+      // Construir filas de la tabla
       let tableRows = '';
-      this.processedReturn.items.forEach(item => {
-        const total = this.calculateItemTotal(item);
+      let subtotal = 0;
+      let totalDiscount = 0;
+      let totalTax = 0;
+
+      this.processedReturn.items.forEach((item, index) => {
+        const qty = parseFloat(item.return_quantity) || 0;
+        const price = parseFloat(item.unit_price) || 0;
+        const discountValue = parseFloat(item.discount_value) || 0;
+        const taxRate = parseFloat(item.tax_rate) || 0;
+
+        const itemSubtotal = qty * price;
+        const itemDiscount = itemSubtotal * (discountValue / 100);
+        const itemAfterDiscount = itemSubtotal - itemDiscount;
+        const itemTax = itemAfterDiscount * (taxRate / 100);
+        const itemTotal = itemAfterDiscount + itemTax;
+
+        subtotal += itemSubtotal;
+        totalDiscount += itemDiscount;
+        totalTax += itemTax;
+
         tableRows += `
           <tr>
-            <td>${item.product_code || item.codigo || 'N/A'}</td>
-            <td>${item.product_name}</td>
-            <td style="text-align: right;">${this.formatCurrency(item.return_quantity)}</td>
-            <td style="text-align: right;">${this.formatCurrency(item.unit_price)}</td>
-            <td style="text-align: right;">${this.formatCurrency(item.discount_value || 0)}</td>
-            <td style="text-align: right;">${this.formatCurrency(item.tax_rate || 0)}</td>
-            <td style="text-align: right;">${this.formatCurrency(total)}</td>
+            <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${String(index + 1).padStart(2, '0')}</td>
+            <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_code || item.codigo || 'N/A'}</td>
+            <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_name}</td>
+            <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${this.formatCurrency(qty)}</td>
+            <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-size: 10px;">L ${this.formatCurrency(price)}</td>
+            <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 10px;">L ${this.formatCurrency(itemTotal)}</td>
           </tr>
         `;
       });
+
+      const grandTotal = this.processedReturn.totals.total || (subtotal - totalDiscount + totalTax);
 
       const html = `
         <!DOCTYPE html>
         <html>
         <head>
-          <title>${docTitle} - ${this.formatDate(this.processedReturn.emission_date)}</title>
+          <meta charset="UTF-8">
+          <title>${docTitle} - ${this.currentDocument === 'credit_note' ? this.getCreditNoteNumber() : this.processedReturn.return_correlative}</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-            .company-info { color: #0066cc; font-size: 12px; }
-            .company-info strong { font-size: 14px; color: black; }
-            .doc-title { color: ${docTitleColor}; font-weight: bold; margin: 20px 0 10px 0; text-align: center; font-size: 18px; }
-            .info-section { display: flex; border: 1px solid #ccc; margin-bottom: 10px; }
-            .info-section div { padding: 5px 10px; border-right: 1px solid #ccc; }
-            .info-section div:last-child { border-right: none; }
-            table { width: 100%; border-collapse: collapse; }
-            th { background: #f0f0f0; padding: 8px; text-align: left; border: 1px solid #ccc; }
-            td { padding: 8px; border: 1px solid #ccc; }
-            tfoot td { background: #f0f0f0; font-weight: bold; }
-            @media print { body { margin: 0; } @page { size: letter; margin: 10mm; } }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              color: #333;
+              background: #fff;
+              padding: 0;
+              margin: 0;
+            }
+            .invoice-container {
+              max-width: 850px;
+              margin: 0 auto;
+              background: white;
+              padding: 40px;
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin-bottom: 25px;
+              padding-bottom: 15px;
+              border-bottom: 3px solid ${docColor};
+            }
+            .company-logo { flex: 1; }
+            .company-name {
+              font-size: 26px;
+              font-weight: 700;
+              color: ${docColor};
+              margin-bottom: 6px;
+              letter-spacing: -0.5px;
+            }
+            .company-details {
+              font-size: 11px;
+              color: #000;
+              line-height: 1.5;
+            }
+            .invoice-header {
+              text-align: right;
+              background: ${docColor};
+              color: white;
+              padding: 15px 18px;
+              border-radius: 6px;
+              min-width: 280px;
+            }
+            .invoice-title {
+              font-size: 20px;
+              font-weight: 700;
+              margin-bottom: 8px;
+            }
+            .invoice-meta {
+              font-size: 11px;
+              line-height: 1.5;
+              text-align: right;
+            }
+            .invoice-meta strong { font-weight: 600; }
+            .products-table {
+              width: 100%;
+              margin-bottom: 20px;
+              border-collapse: collapse;
+              background: white;
+            }
+            .products-table thead { background: ${docColor}; }
+            .products-table thead th {
+              padding: 8px 6px;
+              text-align: left;
+              font-size: 10px;
+              font-weight: 600;
+              color: white;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .products-table thead th:first-child { text-align: center; }
+            .products-table thead th:nth-child(4),
+            .products-table thead th:nth-child(5),
+            .products-table thead th:nth-child(6) { text-align: right; }
+            .products-table tbody tr:hover { background: #fffbf0; }
+            .totals-section {
+              display: flex;
+              justify-content: space-between;
+              margin-top: 20px;
+              gap: 20px;
+            }
+            .totals-left {
+              flex: 1;
+              font-size: 12px;
+              color: #000;
+              padding: 10px;
+              border: 1px solid #e0e0e0;
+              border-radius: 4px;
+              display: flex;
+              flex-direction: column;
+            }
+            .totals-box {
+              min-width: 350px;
+              border: 1px solid #e0e0e0;
+              border-radius: 4px;
+            }
+            .total-row {
+              display: flex;
+              justify-content: space-between;
+              padding: 8px 15px;
+              font-size: 11px;
+              border-bottom: 1px solid #e0e0e0;
+            }
+            .total-row:last-child { border-bottom: none; }
+            .total-row.grand-total {
+              background: #f8f9fa;
+              font-size: 13px;
+              font-weight: 700;
+              border-top: 2px solid ${docColor};
+            }
+            .total-row .label {
+              font-weight: 400;
+              color: #000;
+            }
+            .total-row .value {
+              font-weight: 600;
+              color: #000;
+            }
+            @media print {
+              body {
+                margin: 0;
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              .invoice-container {
+                padding: 20px;
+                max-width: 100%;
+              }
+              .header, .products-table, .totals-section {
+                page-break-inside: avoid;
+              }
+              .invoice-header, .products-table thead {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                background: #FF9800 !important;
+                color: white !important;
+              }
+              @page {
+                size: letter;
+                margin: 15mm;
+              }
+            }
+            @page {
+              size: letter;
+              margin: 15mm;
+            }
           </style>
         </head>
         <body>
-          <div class="header">
-            <div class="company-info">
-              <strong>${this.companyInfo.company_name || 'EMPRESA'}</strong><br>
-              <strong>Cedula:</strong> ${this.companyInfo.cedula || 'N/A'}<br>
-              <strong>Sucursal:</strong> SUCURSAL PRINCIPAL<br>
-              <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'} <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}<br>
-              <strong>Direccion:</strong> ${this.companyInfo.direccion || 'N/A'}
+          <div class="invoice-container">
+            <div class="header">
+              <div class="company-logo">
+                <img src="${LOGO_BASE64}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">
+                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.company_name || 'PROSPERPOS'}</div>
+                <div class="company-details">
+                  <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                  <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
+                  <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}<br>
+                  <strong>Teléfono Móvil:</strong> +504 9875-2725<br>
+                  <strong>Email:</strong> ${this.companyInfo.email || 'info@prosperpos.com'}
+                </div>
+              </div>
+              <div style="flex: 1; margin-left: 20px;">
+                <div style="font-size: 11px; color: #333;">
+                  <strong>Cliente:</strong> ${this.processedReturn.customer_name || 'CONSUMIDOR FINAL'}<br>
+                  <strong>RTN:</strong> ${this.processedReturn.customer_rtn || '00000000000000'}
+                </div>
+              </div>
+              <div class="invoice-header">
+                <div class="invoice-title">${docTitle}: ${this.currentDocument === 'credit_note' ? this.getCreditNoteNumber() : this.processedReturn.return_correlative}</div>
+                <div class="invoice-meta">
+                  <strong>#Control Interno:</strong> ${(() => {
+                    const num = this.currentDocument === 'credit_note' ? this.getCreditNoteNumber() : (this.processedReturn.return_correlative || '0');
+                    const numStr = String(num);
+                    return /^[0-9]+$/.test(numStr) ? numStr.padStart(10, '0') : numStr;
+                  })()}<br>
+                  <strong>Doc/Devuelto:</strong> ${this.processedReturn.invoice_number || 'N/A'}<br>
+                  <strong>Sucursal:</strong> Agencia Principal<br>
+                  <strong>Emisión:</strong> ${this.formatDate(this.processedReturn.emission_date)}<br>
+                  <strong>Condiciones de la Transacción:</strong> Contado<br>
+                  <strong>Entrega:</strong> ${this.formatDate(this.processedReturn.emission_date)}<br>
+                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong><br>
+                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong><br>
+                  <strong>No. Identificativo del Registro SAG:</strong>
+                </div>
+              </div>
+            </div>
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>NO.</th>
+                  <th>CÓDIGO</th>
+                  <th>DESCRIPCIÓN</th>
+                  <th>CANTIDAD</th>
+                  <th>PRECIO</th>
+                  <th>TOTAL</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
+            <div class="totals-section">
+              <div class="totals-left">
+                <div style="margin-bottom: 15px;">
+                  <strong>TOTAL:</strong> ${this.numberToWords(grandTotal).toUpperCase()} LEMPIRAS ${String(Math.floor((grandTotal % 1) * 100)).padStart(2, '0')}/100
+                </div>
+                <div style="margin-top: auto; padding-top: 40px; text-align: center;">
+                  <div style="border-top: 2px solid #000; width: 250px; margin: 0 auto 10px;"></div>
+                  <div style="margin-bottom: 8px;"><strong>Original Cliente</strong></div>
+                  <div><strong>Copia Obligado Tributario Emisor</strong></div>
+                </div>
+                ${this.processedReturn.notes ? `
+                <div style="margin-top: 30px; text-align: left; font-size: 12px;">
+                  <strong>Notas:</strong> ${this.processedReturn.notes}
+                </div>
+                ` : ''}
+              </div>
+              <div class="totals-box">
+                <div class="total-row">
+                  <span class="label">Importe Exonerado:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Importe Exento:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Gravado 15%</span>
+                  <span class="value">L ${this.formatCurrency(subtotal - totalDiscount)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Gravado 18%</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">I.S.V 15 15%:</span>
+                  <span class="value">L ${this.formatCurrency(totalTax)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">I.S.V 18 18%:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">RECARGOS:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">DESCUENTOS Y REBAJAS OTORGADOS:</span>
+                  <span class="value">L ${this.formatCurrency(totalDiscount)}</span>
+                </div>
+                <div class="total-row grand-total">
+                  <span class="label"><strong>TOTAL:</strong></span>
+                  <span class="value"><strong>L ${this.formatCurrency(grandTotal)}</strong></span>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div class="doc-title">${docTitle}</div>
-
-          <div class="info-section">
-            <div><strong>${this.currentDocument === 'credit_note' ? 'Nro. Nota Crédito:' : 'DEVOLUCIÓN:'}</strong> ${this.currentDocument === 'credit_note' ? (this.processedReturn.credit_note_number || this.processedReturn.credit_note_correlative || 'N/A') : this.processedReturn.return_correlative}</div>
-            <div><strong>Factura:</strong> ${this.processedReturn.invoice_number}</div>
-            <div><strong>Fecha:</strong> ${this.formatDate(this.processedReturn.emission_date)}</div>
-          </div>
-
-          <div style="margin-bottom: 15px; font-size: 12px;">
-            <strong>Cliente:</strong> ${this.processedReturn.customer_name}<br>
-            <strong>RTN:</strong> ${this.processedReturn.customer_rtn || '00000000000000'}
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Producto</th>
-                <th style="text-align: right;">Cant.</th>
-                <th style="text-align: right;">Precio</th>
-                <th style="text-align: right;">Desc</th>
-                <th style="text-align: right;">ISV</th>
-                <th style="text-align: right;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tableRows}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="6" style="text-align: right;">SUBTOTAL</td>
-                <td style="text-align: right;">${this.formatCurrency(this.processedReturn.totals.subtotal)}</td>
-              </tr>
-              <tr>
-                <td colspan="6" style="text-align: right;">DESCUENTO</td>
-                <td style="text-align: right;">${this.formatCurrency(this.processedReturn.totals.discount)}</td>
-              </tr>
-              <tr>
-                <td colspan="6" style="text-align: right;">ISV 15%</td>
-                <td style="text-align: right;">${this.formatCurrency(this.processedReturn.totals.tax)}</td>
-              </tr>
-              <tr>
-                <td colspan="6" style="text-align: right;"><strong>TOTAL</strong></td>
-                <td style="text-align: right;"><strong>${this.formatCurrency(this.processedReturn.totals.total)}</strong></td>
-              </tr>
-            </tfoot>
-          </table>
-
-          ${this.processedReturn.notes ? `<div style="margin-top: 15px; font-size: 11px;"><strong>Notas:</strong> ${this.processedReturn.notes}</div>` : ''}
         </body>
         </html>
       `;

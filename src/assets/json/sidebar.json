@@ -68,7 +68,7 @@
         "showSubRoute": false,
         "subMenus": [
           {
-            "menuValue": "Reimpresiones",
+            "menuValue": "Reimpresiones Ventas",
             "route": "/sales/reprint",
             "hasSubRoute": false,
             "showSubRoute": false
@@ -179,6 +179,12 @@
             "showSubRoute": false
           },
           {
+            "menuValue": "Lista de Inventario Físico",
+            "route": "/reports/physical-inventory",
+            "hasSubRoute": false,
+            "showSubRoute": false
+          },
+          {
             "menuValue": "Historial de Existencias",
             "route": "/inventory-report/stock-history",
             "hasSubRoute": false,
@@ -186,7 +192,7 @@
           },
           {
             "menuValue": "Productos Vendidos",
-            "route": "/inventory-report/sold-stock",
+            "route": "/reports/sold-items",
             "hasSubRoute": false,
             "showSubRoute": false
           }
@@ -223,14 +229,14 @@
         "showSubRoute": false,
         "subMenus": [
           {
-            "menuValue": "Reimpresiones",
-            "route": "/reports/purchase-report",
+            "menuValue": "Reimpresiones Compras",
+            "route": "/purchases/purchase-reprint",
             "hasSubRoute": false,
             "showSubRoute": false
           },
           {
             "menuValue": "Estado Cuenta Compras",
-            "route": "/reports/purchase-report",
+            "route": "/finance/purchase-statement",
             "hasSubRoute": false,
             "showSubRoute": false
           },
@@ -360,8 +366,8 @@
       {
         "menuValue": "Reporte de Proveedores",
         "icon": "ti ti-user-star",
-        "route": "/supplier-report/supplier-report",
-        "active_link" : "/supplier-report/supplier-report",
+        "route": "/supplier-report/purchases-by-supplier",
+        "active_link" : "/supplier-report/purchases-by-supplier",
         "hasSubRoute": false,
         "showSubRoute": false
       },
@@ -370,14 +376,6 @@
         "icon": "ti ti-chart-donut",
         "route": "/reports/profit-and-loss",
         "active_link": "/reports/profit-and-loss",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Reporte Anual",
-        "icon": "ti ti-report-search",
-        "route": "/reports/annual-report",
-        "active_link": "/reports/annual-report",
         "hasSubRoute": false,
         "showSubRoute": false
       }

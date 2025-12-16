@@ -441,6 +441,42 @@ export const unitService = {
 };
 
 // ===================================================================
+// SERVICIO DE REPORTES DE PROVEEDORES
+// ===================================================================
+
+export const supplierReportService = {
+  async getPurchasesBySupplier(params = {}) {
+    const response = await apiClient.get('/supplier-reports/purchases-by-supplier', { params });
+    return response.data;
+  },
+
+  async getSupplierDetail(supplierName, params = {}) {
+    const response = await apiClient.get(`/supplier-reports/supplier-detail/${encodeURIComponent(supplierName)}`, { params });
+    return response.data;
+  },
+
+  async getSuppliersList() {
+    const response = await apiClient.get('/supplier-reports/suppliers-list');
+    return response.data;
+  },
+
+  async getTopSuppliers(params = {}) {
+    const response = await apiClient.get('/supplier-reports/top-suppliers', { params });
+    return response.data;
+  },
+
+  async getPurchasesByPeriod(params = {}) {
+    const response = await apiClient.get('/supplier-reports/purchases-by-period', { params });
+    return response.data;
+  },
+
+  async getCompanyInfo() {
+    const response = await apiClient.get('/supplier-reports/company-info');
+    return response.data;
+  }
+};
+
+// ===================================================================
 // EXPORTAR API CLIENT
 // ===================================================================
 

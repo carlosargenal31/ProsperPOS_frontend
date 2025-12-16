@@ -685,7 +685,7 @@ export default {
 
 .action-table-data a {
   display: inline-flex;
-  align-items-center;
+  align-items: center;
   justify-content: center;
   transition: all 0.2s;
 }

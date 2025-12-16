@@ -6,8 +6,8 @@
       <div class="page-header">
         <div class="add-item d-flex">
           <div class="page-title">
-            <h4>Ventas Por Vendedor</h4>
-            <h6>Reporte de ventas agrupado por vendedor</h6>
+            <h4>Reporte de Proveedores</h4>
+            <h6>Reporte de compras agrupado por proveedor</h6>
           </div>
         </div>
         <ul class="table-top-head">
@@ -23,36 +23,25 @@
       <div class="card border-0">
         <div class="card-body pb-1">
           <div class="row align-items-end">
-            <div class="col-md-3">
+            <div class="col-md-4">
               <div class="mb-3">
                 <label class="form-label">Fecha Desde</label>
                 <input type="date" class="form-control" v-model="filters.date_from" />
               </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
               <div class="mb-3">
                 <label class="form-label">Fecha Hasta</label>
                 <input type="date" class="form-control" v-model="filters.date_to" />
               </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
               <div class="mb-3">
-                <label class="form-label">Vendedor</label>
-                <select class="form-select" v-model="filters.seller_id">
+                <label class="form-label">Proveedor</label>
+                <select class="form-select" v-model="filters.supplier_id">
                   <option value="all">Todos</option>
-                  <option v-for="user in users" :key="user.id" :value="user.id">
-                    {{ user.first_name }} {{ user.last_name }}
-                  </option>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="mb-3">
-                <label class="form-label">Sucursal</label>
-                <select class="form-select" v-model="filters.branch_id">
-                  <option value="all">Todos</option>
-                  <option v-for="branch in branches" :key="branch.id" :value="branch.id">
-                    {{ branch.nombre }}
+                  <option v-for="supplier in suppliers" :key="supplier.supplier_name" :value="supplier.supplier_name">
+                    {{ supplier.supplier_name }}
                   </option>
                 </select>
               </div>
@@ -83,32 +72,32 @@
             <table class="table table-bordered">
               <thead class="table-light">
                 <tr>
-                  <th>Vendedor</th>
+                  <th>Proveedor</th>
                   <th class="text-end">Neto</th>
                   <th class="text-end">Total+ISV</th>
                   <th class="text-end">Devuelto</th>
-                  <th class="text-end">Cobrado</th>
-                  <th class="text-end">Cant.Facturas</th>
+                  <th class="text-end">Descuentos</th>
+                  <th class="text-end">Cant.Compras</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="seller in reportData.sellers" :key="seller.seller_id">
-                  <td class="text-primary fw-bold">{{ seller.seller_name }}</td>
-                  <td class="text-end">{{ formatCurrency(seller.neto) }}</td>
-                  <td class="text-end">{{ formatCurrency(seller.total_con_isv) }}</td>
-                  <td class="text-end">{{ formatCurrency(seller.devuelto) }}</td>
-                  <td class="text-end">{{ formatCurrency(seller.cobrado) }}</td>
-                  <td class="text-end">{{ seller.total_invoices }}</td>
+                <tr v-for="supplier in reportData.suppliers" :key="supplier.supplier_name">
+                  <td class="text-primary fw-bold">{{ supplier.supplier_name }}</td>
+                  <td class="text-end">{{ formatCurrency(supplier.total_neto) }}</td>
+                  <td class="text-end">{{ formatCurrency(supplier.total_con_isv) }}</td>
+                  <td class="text-end">{{ formatCurrency(supplier.devuelto) }}</td>
+                  <td class="text-end">{{ formatCurrency(supplier.total_descuento) }}</td>
+                  <td class="text-end">{{ supplier.total_purchases }}</td>
                 </tr>
               </tbody>
               <tfoot class="table-light fw-bold">
                 <tr>
                   <td class="text-end">TOTALES</td>
-                  <td class="text-end">{{ formatCurrency(reportData.totals.neto) }}</td>
+                  <td class="text-end">{{ formatCurrency(reportData.totals.total_neto) }}</td>
                   <td class="text-end">{{ formatCurrency(reportData.totals.total_con_isv) }}</td>
                   <td class="text-end">{{ formatCurrency(reportData.totals.devuelto) }}</td>
-                  <td class="text-end">{{ formatCurrency(reportData.totals.cobrado) }}</td>
-                  <td class="text-end">{{ reportData.totals.total_invoices }}</td>
+                  <td class="text-end">{{ formatCurrency(reportData.totals.total_descuento) }}</td>
+                  <td class="text-end">{{ reportData.totals.total_purchases }}</td>
                 </tr>
               </tfoot>
             </table>
@@ -164,12 +153,11 @@
               </div>
               <div class="col-5">
                 <div class="text-white p-2" style="background: linear-gradient(135deg, #f97316 0%, #fb923c 100%); border-radius: 8px;">
-                  <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">REPORTE DE VENTAS POR VENDEDOR</div>
+                  <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">REPORTE DE PROVEEDORES</div>
                   <div style="font-size: 10px; line-height: 1.6;">
                     <strong>Desde:</strong> {{ formatDate(filters.date_from) }}<br>
                     <strong>Hasta:</strong> {{ formatDate(filters.date_to) }}<br>
-                    <strong>Vendedor:</strong> {{ getSellerFilterText() }}<br>
-                    <strong>Sucursal:</strong> {{ getBranchFilterText() }}
+                    <strong>Proveedor:</strong> {{ getSupplierFilterText() }}
                   </div>
                 </div>
               </div>
@@ -181,32 +169,32 @@
             <table class="table table-sm table-bordered" style="font-size: 11px;">
               <thead style="background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);">
                 <tr class="text-white">
-                  <th style="padding: 8px;">VENDEDOR</th>
+                  <th style="padding: 8px;">PROVEEDOR</th>
                   <th class="text-end" style="padding: 8px;">NETO</th>
                   <th class="text-end" style="padding: 8px;">TOTAL+ISV</th>
                   <th class="text-end" style="padding: 8px;">DEVUELTO</th>
-                  <th class="text-end" style="padding: 8px;">COBRADO</th>
+                  <th class="text-end" style="padding: 8px;">DESCUENTOS</th>
                   <th class="text-end" style="padding: 8px;">CANT.</th>
                 </tr>
               </thead>
               <tbody v-if="reportData">
-                <tr v-for="seller in reportData.sellers" :key="seller.seller_id">
-                  <td style="padding: 6px;">{{ seller.seller_name }}</td>
-                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(seller.neto) }}</td>
-                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(seller.total_con_isv) }}</td>
-                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(seller.devuelto) }}</td>
-                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(seller.cobrado) }}</td>
-                  <td class="text-end" style="padding: 6px;">{{ seller.total_invoices }}</td>
+                <tr v-for="supplier in reportData.suppliers" :key="supplier.supplier_name">
+                  <td style="padding: 6px;">{{ supplier.supplier_name }}</td>
+                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(supplier.total_neto) }}</td>
+                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(supplier.total_con_isv) }}</td>
+                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(supplier.devuelto) }}</td>
+                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(supplier.total_descuento) }}</td>
+                  <td class="text-end" style="padding: 6px;">{{ supplier.total_purchases }}</td>
                 </tr>
               </tbody>
               <tfoot v-if="reportData" style="background: #f3f4f6; font-weight: bold;">
                 <tr>
                   <td style="padding: 8px; text-align: right;">TOTALES:</td>
-                  <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.neto) }}</td>
+                  <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.total_neto) }}</td>
                   <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.total_con_isv) }}</td>
                   <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.devuelto) }}</td>
-                  <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.cobrado) }}</td>
-                  <td class="text-end" style="padding: 8px;">{{ reportData.totals.total_invoices }}</td>
+                  <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.total_descuento) }}</td>
+                  <td class="text-end" style="padding: 8px;">{{ reportData.totals.total_purchases }}</td>
                 </tr>
               </tfoot>
             </table>
@@ -248,125 +236,50 @@ export default {
       filters: {
         date_from: this.getTodayDate(),
         date_to: this.getTodayDate(),
-        seller_id: 'all',
-        branch_id: 'all'
+        supplier_id: 'all'
       },
-      users: [],
-      branches: [],
+      suppliers: [],
       reportData: null,
       loading: false,
       searched: false,
       showPrintModal: false,
       showExportDropdown: false,
-      companyInfo: {},
-      printOptions: {
-        orientation: 'vertical',
-        format: 'standard'
-      }
+      companyInfo: {}
     };
   },
   mounted() {
-    this.loadUsers();
-    this.loadBranches();
+    this.loadSuppliers();
     this.loadCompanyInfo();
   },
   methods: {
-    getFirstDayOfMonth() {
-      const date = new Date();
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`;
-    },
     getTodayDate() {
       const date = new Date();
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     },
-    getSellerFilterText() {
-      if (this.filters.seller_id === 'all') return 'TODOS';
-      const user = this.users.find(u => u.id == this.filters.seller_id);
-      return user ? `${user.first_name} ${user.last_name}` : 'TODOS';
-    },
-    getBranchFilterText() {
-      if (this.filters.branch_id === 'all') return 'TODOS';
-      const branch = this.branches.find(b => b.id == this.filters.branch_id);
-      return branch ? branch.nombre : 'TODOS';
+    getSupplierFilterText() {
+      if (this.filters.supplier_id === 'all') return 'TODOS';
+      return this.filters.supplier_id;
     },
     getLogoBase64() {
       return LOGO_BASE64;
     },
-    async loadUsers() {
+    async loadSuppliers() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('/api/v1/users', {
+        const response = await axios.get('/api/v1/supplier-reports/suppliers-list', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.success) {
-          // Handle nested paginated response: {success, data: {data: [...], pagination: ...}}
-          const responseData = response.data.data;
-          let allUsers = [];
-          if (Array.isArray(responseData)) {
-            allUsers = responseData;
-          } else if (responseData && Array.isArray(responseData.data)) {
-            // Nested structure from user controller
-            allUsers = responseData.data;
-          } else if (responseData && responseData.users) {
-            allUsers = responseData.users;
-          } else if (responseData && responseData.rows) {
-            allUsers = responseData.rows;
-          }
-          // Filter only users with vendor/seller role (check roles array or role_name)
-          this.users = allUsers.filter(user => {
-            // Check if user has vendor/seller role
-            if (user.roles && Array.isArray(user.roles)) {
-              return user.roles.some(role =>
-                role.name?.toLowerCase().includes('vendedor') ||
-                role.name?.toLowerCase().includes('seller') ||
-                role.name?.toLowerCase().includes('sales')
-              );
-            }
-            // Check role_name field
-            if (user.role_name) {
-              return user.role_name.toLowerCase().includes('vendedor') ||
-                     user.role_name.toLowerCase().includes('seller') ||
-                     user.role_name.toLowerCase().includes('sales');
-            }
-            // If no role info, include all users for now
-            return true;
-          });
+          this.suppliers = response.data.data || [];
         }
       } catch (error) {
-        console.error('Error loading users:', error);
-      }
-    },
-    async loadBranches() {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('/api/v1/branches', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.data.success) {
-          // Handle nested paginated response
-          const responseData = response.data.data;
-          let allBranches = [];
-          if (Array.isArray(responseData)) {
-            allBranches = responseData;
-          } else if (responseData && Array.isArray(responseData.data)) {
-            // Nested structure
-            allBranches = responseData.data;
-          } else if (responseData && responseData.branches) {
-            allBranches = responseData.branches;
-          } else if (responseData && responseData.rows) {
-            allBranches = responseData.rows;
-          }
-          // Filter only active branches (not deleted)
-          this.branches = allBranches.filter(branch => !branch.deleted_at);
-        }
-      } catch (error) {
-        console.error('Error loading branches:', error);
+        console.error('Error loading suppliers:', error);
       }
     },
     async loadCompanyInfo() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('/api/v1/reports/company-info', {
+        const response = await axios.get('/api/v1/supplier-reports/company-info', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.success) {
@@ -385,10 +298,9 @@ export default {
 
         if (this.filters.date_from) params.append('date_from', this.filters.date_from);
         if (this.filters.date_to) params.append('date_to', this.filters.date_to);
-        if (this.filters.seller_id) params.append('seller_id', this.filters.seller_id);
-        if (this.filters.branch_id) params.append('branch_id', this.filters.branch_id);
+        if (this.filters.supplier_id !== 'all') params.append('supplier_id', this.filters.supplier_id);
 
-        const response = await axios.get(`/api/v1/reports/sales-by-seller?${params.toString()}`, {
+        const response = await axios.get(`/api/v1/supplier-reports/purchases-by-supplier?${params.toString()}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -408,7 +320,6 @@ export default {
     },
     formatDate(dateStr) {
       if (!dateStr) return '';
-      // Parse YYYY-MM-DD format directly to avoid timezone issues
       const parts = dateStr.split('-');
       if (parts.length === 3) {
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -425,45 +336,43 @@ export default {
     },
     exportToExcel() {
       this.showExportDropdown = false;
-      const sellerFilterText = this.getSellerFilterText();
-      const branchFilterText = this.getBranchFilterText();
+      const supplierFilterText = this.getSupplierFilterText();
 
       const data = [
-        ['VENTAS POR VENDEDOR'],
+        ['REPORTE DE PROVEEDORES'],
         [''],
         ['Empresa:', this.companyInfo.company_name || 'EMPRESA'],
         ['Desde:', this.formatDate(this.filters.date_from)],
         ['Hasta:', this.formatDate(this.filters.date_to)],
-        ['Vendedor:', sellerFilterText],
-        ['Sucursal:', branchFilterText],
+        ['Proveedor:', supplierFilterText],
         [''],
-        ['Vendedor', 'Neto', 'Total+ISV', 'Devuelto', 'Cobrado', 'Cant.Facturas']
+        ['Proveedor', 'Neto', 'Total+ISV', 'Devuelto', 'Descuentos', 'Cant.Compras']
       ];
 
-      this.reportData.sellers.forEach(seller => {
+      this.reportData.suppliers.forEach(supplier => {
         data.push([
-          seller.seller_name,
-          seller.neto,
-          seller.total_con_isv,
-          seller.devuelto,
-          seller.cobrado,
-          seller.total_invoices
+          supplier.supplier_name,
+          supplier.total_neto,
+          supplier.total_con_isv,
+          supplier.devuelto,
+          supplier.total_descuento,
+          supplier.total_purchases
         ]);
       });
 
       data.push(['']);
-      data.push(['TOTALES', this.reportData.totals.neto, this.reportData.totals.total_con_isv, this.reportData.totals.devuelto, this.reportData.totals.cobrado, this.reportData.totals.total_invoices]);
+      data.push(['TOTALES', this.reportData.totals.total_neto, this.reportData.totals.total_con_isv, this.reportData.totals.devuelto, this.reportData.totals.total_descuento, this.reportData.totals.total_purchases]);
 
       const ws = XLSX.utils.aoa_to_sheet(data);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Ventas por Vendedor');
-      XLSX.writeFile(wb, `ventas_por_vendedor_${this.filters.date_from}_${this.filters.date_to}.xlsx`);
+      XLSX.utils.book_append_sheet(wb, ws, 'Reporte de Proveedores');
+      XLSX.writeFile(wb, `reporte_proveedores_${this.filters.date_from}_${this.filters.date_to}.xlsx`);
       this.showPrintModal = false;
     },
     async exportToPDF() {
       this.showExportDropdown = false;
       try {
-        const fileName = `ventas_por_vendedor_${this.filters.date_from}_${this.filters.date_to}`;
+        const fileName = `reporte_proveedores_${this.filters.date_from}_${this.filters.date_to}`;
 
         const iframe = document.createElement('iframe');
         iframe.style.position = 'absolute';
@@ -505,7 +414,7 @@ export default {
     async exportToImage() {
       this.showExportDropdown = false;
       try {
-        const fileName = `ventas_por_vendedor_${this.filters.date_from}_${this.filters.date_to}`;
+        const fileName = `reporte_proveedores_${this.filters.date_from}_${this.filters.date_to}`;
 
         const iframe = document.createElement('iframe');
         iframe.style.position = 'absolute';
@@ -541,19 +450,18 @@ export default {
       }
     },
     buildReportHTML() {
-      const sellerFilterText = this.getSellerFilterText();
-      const branchFilterText = this.getBranchFilterText();
+      const supplierFilterText = this.getSupplierFilterText();
 
       let tableRows = '';
-      this.reportData.sellers.forEach(seller => {
+      this.reportData.suppliers.forEach(supplier => {
         tableRows += `
           <tr>
-            <td style="padding: 6px;">${seller.seller_name}</td>
-            <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(seller.neto)}</td>
-            <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(seller.total_con_isv)}</td>
-            <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(seller.devuelto)}</td>
-            <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(seller.cobrado)}</td>
-            <td style="padding: 6px; text-align: right;">${seller.total_invoices}</td>
+            <td style="padding: 6px;">${supplier.supplier_name}</td>
+            <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(supplier.total_neto)}</td>
+            <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(supplier.total_con_isv)}</td>
+            <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(supplier.devuelto)}</td>
+            <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(supplier.total_descuento)}</td>
+            <td style="padding: 6px; text-align: right;">${supplier.total_purchases}</td>
           </tr>
         `;
       });
@@ -678,12 +586,11 @@ export default {
               </div>
             </div>
             <div class="report-box">
-              <div class="report-title">REPORTE DE VENTAS POR VENDEDOR</div>
+              <div class="report-title">REPORTE DE PROVEEDORES</div>
               <div class="report-details">
                 <strong>Desde:</strong> ${this.formatDate(this.filters.date_from)}<br>
                 <strong>Hasta:</strong> ${this.formatDate(this.filters.date_to)}<br>
-                <strong>Vendedor:</strong> ${sellerFilterText}<br>
-                <strong>Sucursal:</strong> ${branchFilterText}
+                <strong>Proveedor:</strong> ${supplierFilterText}
               </div>
             </div>
           </div>
@@ -693,11 +600,11 @@ export default {
           <table>
             <thead>
               <tr>
-                <th>VENDEDOR</th>
+                <th>PROVEEDOR</th>
                 <th class="text-right">NETO</th>
                 <th class="text-right">TOTAL+ISV</th>
                 <th class="text-right">DEVUELTO</th>
-                <th class="text-right">COBRADO</th>
+                <th class="text-right">DESCUENTOS</th>
                 <th class="text-right">CANT.</th>
               </tr>
             </thead>
@@ -707,11 +614,11 @@ export default {
             <tfoot>
               <tr>
                 <td style="text-align: right;">TOTALES:</td>
-                <td class="text-right">L ${this.formatCurrency(this.reportData.totals.neto)}</td>
+                <td class="text-right">L ${this.formatCurrency(this.reportData.totals.total_neto)}</td>
                 <td class="text-right">L ${this.formatCurrency(this.reportData.totals.total_con_isv)}</td>
                 <td class="text-right">L ${this.formatCurrency(this.reportData.totals.devuelto)}</td>
-                <td class="text-right">L ${this.formatCurrency(this.reportData.totals.cobrado)}</td>
-                <td class="text-right">${this.reportData.totals.total_invoices}</td>
+                <td class="text-right">L ${this.formatCurrency(this.reportData.totals.total_descuento)}</td>
+                <td class="text-right">${this.reportData.totals.total_purchases}</td>
               </tr>
             </tfoot>
           </table>
@@ -726,7 +633,6 @@ export default {
       const printHtml = html.replace('</body>', `
         <scr` + `ipt>
           window.onload = function() {
-            // Esperar a que todas las imágenes carguen antes de imprimir
             const images = document.getElementsByTagName('img');
             if (images.length > 0) {
               let loaded = 0;

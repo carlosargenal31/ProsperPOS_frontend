@@ -287,19 +287,13 @@
   "subRoutes": [
     {
       "tittle": "Reporte de Proveedores",
-      "route": "/supplier-report/supplier-report",
+      "route": "/supplier-report/purchases-by-supplier",
       "hasSubRoute": false,
       "showSubRoute": false
     },
     {
       "tittle": "Pérdidas y ganancias",
       "route": "/reports/profit-and-loss",
-      "hasSubRoute": false,
-      "showSubRoute": false
-    },
-    {
-      "tittle": "Reporte Anual",
-      "route": "/reports/annual-report",
       "hasSubRoute": false,
       "showSubRoute": false
     }

@@ -927,26 +927,74 @@
     </div>
 
     <!-- Modal de Impresión de Factura -->
-    <div v-if="showPrintModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
-      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div v-if="showPrintModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;">
+      <div class="modal-dialog modal-lg" style="max-width: 600px; margin: 30px auto;">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Factura Creada Exitosamente</h5>
             <button type="button" class="btn-close" @click="showPrintModal = false"></button>
           </div>
-          <div class="modal-body">
-            <InvoicePrint
+          <div class="modal-body" style="background: #f5f5f5; padding: 0; max-height: calc(100vh - 200px); overflow: hidden;">
+            <iframe
               v-if="createdInvoiceData"
-              :invoiceData="createdInvoiceData"
-              :customerInfo="customerInfo"
-              :vendorInfo="currentVendor"
-            />
+              ref="invoiceFrame"
+              :srcdoc="buildInvoicePreview()"
+              style="width: 100%; height: calc(100vh - 200px); border: none; background: white; display: block;"
+              @load="onIframeLoad">
+            </iframe>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="showPrintModal = false">
               Cerrar
             </button>
+            <div class="btn-group" style="position: relative;">
+              <button type="button" class="btn btn-success dropdown-toggle" @click="showExportMenu = !showExportMenu">
+                <i class="ti ti-download me-1"></i>Otras Opciones
+              </button>
+              <ul class="dropdown-menu" :class="{ show: showExportMenu }" style="position: absolute; bottom: 100%; left: 0; margin-bottom: 5px;">
+                <li><a class="dropdown-item" href="#" @click.prevent="exportToExcel(); showExportMenu = false"><i class="ti ti-file-spreadsheet me-2"></i>Exportar a Excel</a></li>
+                <li><a class="dropdown-item" href="#" @click.prevent="exportToPDF(); showExportMenu = false"><i class="ti ti-file-type-pdf me-2"></i>Exportar a PDF</a></li>
+                <li><a class="dropdown-item" href="#" @click.prevent="exportToImage(); showExportMenu = false"><i class="ti ti-photo me-2"></i>Guardar como Imagen</a></li>
+              </ul>
+            </div>
             <button type="button" class="btn btn-primary" @click="printInvoice">
+              <i class="ti ti-printer me-1"></i>Imprimir
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Quote Preview -->
+    <div v-if="showQuotePreview" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;">
+      <div class="modal-dialog modal-xl" style="max-width: 900px; margin: 30px auto;">
+        <div class="modal-content">
+          <div class="modal-header" style="background: #FF9800; color: white;">
+            <h5 class="modal-title text-white">Vista Previa - Cotización</h5>
+            <button type="button" class="btn-close btn-close-white" @click="showQuotePreview = false"></button>
+          </div>
+          <div class="modal-body" style="background: #f5f5f5; padding: 0; max-height: calc(100vh - 200px); overflow: auto;">
+            <iframe
+              v-if="quotePreviewHTML"
+              :srcdoc="quotePreviewHTML"
+              style="width: 100%; height: calc(100vh - 200px); border: none; background: white; display: block;">
+            </iframe>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeQuotePreview">
+              Cerrar
+            </button>
+            <div class="btn-group" style="position: relative;">
+              <button type="button" class="btn btn-success dropdown-toggle" @click="showQuoteOptionsDropdown = !showQuoteOptionsDropdown">
+                <i class="ti ti-file-export me-1"></i>Otras Opciones
+              </button>
+              <ul class="dropdown-menu" :class="{ show: showQuoteOptionsDropdown }" style="position: absolute; bottom: 100%; left: 0; margin-bottom: 5px;">
+                <li><a class="dropdown-item" href="#" @click.prevent="exportQuoteToPDF(); showQuoteOptionsDropdown = false"><i class="ti ti-file-type-pdf me-2"></i>Exportar a PDF</a></li>
+                <li><a class="dropdown-item" href="#" @click.prevent="exportQuoteToExcel(); showQuoteOptionsDropdown = false"><i class="ti ti-file-type-xls me-2"></i>Exportar a Excel</a></li>
+                <li><a class="dropdown-item" href="#" @click.prevent="saveQuoteAsImage(); showQuoteOptionsDropdown = false"><i class="ti ti-photo me-2"></i>Guardar como Imagen</a></li>
+              </ul>
+            </div>
+            <button type="button" class="btn btn-warning" @click="printQuotePreview">
               <i class="ti ti-printer me-1"></i>Imprimir
             </button>
           </div>
@@ -992,8 +1040,8 @@
                 <label class="form-label fw-bold small">Vendedor</label>
                 <select class="form-select form-select-sm" v-model="importVendorFilter">
                   <option value="">Seleccione un Vendedor</option>
-                  <option v-for="vendor in vendors" :key="vendor.value" :value="vendor.value">
-                    {{ vendor.label }}
+                  <option v-for="vendor in vendors" :key="vendor.id" :value="vendor.id">
+                    {{ vendor.name }}
                   </option>
                 </select>
               </div>
@@ -1226,6 +1274,10 @@ import api from '@/api/config';
 import Swal from 'sweetalert2';
 import ProductModal from '@/components/pos/ProductModal.vue';
 import InvoicePrint from '@/components/InvoicePrint.vue';
+import { LOGO_BASE64 } from '@/assets/img/logo.js';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import * as XLSX from 'xlsx';
 
 export default {
   name: 'POSInvoice',
@@ -1333,6 +1385,7 @@ export default {
       showQuickPaymentModal: false,
       showDetailedPaymentModal: false,
       showPrintModal: false,
+      showExportMenu: false,
       createdInvoiceData: null,
       // Cobro rápido
       quickPayment: {
@@ -1385,7 +1438,15 @@ export default {
       offersSearch: '',
       offersTypeFilter: '',
       offersStatusFilter: 'active',
-      availableOffers: []
+      availableOffers: [],
+      // Quote Preview Modal
+      showQuotePreview: false,
+      quotePreviewHTML: '',
+      companyInfo: {},
+      bankAccounts: [],
+      lastQuoteNumber: null,
+      lastQuoteConsecutive: null,
+      showQuoteOptionsDropdown: false
     };
   },
   computed: {
@@ -1619,6 +1680,12 @@ export default {
   mounted() {
     this.loadInitialData();
     this.focusProductInput();
+    // Event listener para cerrar dropdown al hacer click fuera
+    document.addEventListener('click', this.handleClickOutside);
+  },
+  beforeUnmount() {
+    // Remover event listener al destruir el componente
+    document.removeEventListener('click', this.handleClickOutside);
   },
   methods: {
     toggleDocumentType() {
@@ -1633,7 +1700,9 @@ export default {
         this.loadVendors(),
         this.loadAvailableCoupons(),
         this.loadAvailableOffers(),
-        this.loadResolutionCurrent()
+        this.loadResolutionCurrent(),
+        this.loadCompanyInfo(),
+        this.loadBankAccounts()
       ]);
     },
 
@@ -1869,6 +1938,34 @@ export default {
         this.vendors = [];
       }
     },
+    async loadCompanyInfo() {
+      try {
+        const response = await api.get('/reports/company-info');
+        if (response.data.success) {
+          this.companyInfo = response.data.data;
+        }
+      } catch (error) {
+        console.error('Error loading company info:', error);
+        this.companyInfo = {
+          company_name: 'ProsperPOS',
+          direccion: 'Honduras',
+          telefono: 'N/A',
+          email: 'info@prosperpos.com',
+          rtn: 'N/A'
+        };
+      }
+    },
+    async loadBankAccounts() {
+      try {
+        const response = await api.get('/bank-accounts');
+        if (response.data.success) {
+          this.bankAccounts = response.data.data.data || response.data.data || [];
+        }
+      } catch (error) {
+        console.error('Error loading bank accounts:', error);
+        this.bankAccounts = [];
+      }
+    },
     // ==================== MÉTODOS DE PAGO ====================
     switchToDetailedPayment() {
       this.showQuickPaymentModal = false;
@@ -1953,14 +2050,21 @@ export default {
               product_name: originalItem?.name || item.product_name,
               price: item.unit_price,
               quantity: item.quantity,
-              total: item.total
+              total: item.total,
+              tax_rate: item.tax_percent || 15
             };
           }),
           payment_method: this.quickPayment.method,
           payment_terms: 'CONTADO',
           created_at: new Date().toISOString(),
           due_date: new Date().toISOString(),
-          delivery_date: new Date().toISOString()
+          delivery_date: new Date().toISOString(),
+          vendor_name: this.currentVendor?.name || 'VENDEDOR',
+          cai: this.resolution.cai,
+          prefijo_control: this.resolution.prefix.replace(/-$/, ''),
+          nro_inicial_control: 30001,
+          nro_final_control: 40000,
+          fecha_fin: '2025-12-30'
         };
 
         console.log('📄 Datos de factura para impresión:', this.createdInvoiceData);
@@ -2095,14 +2199,21 @@ export default {
               product_name: originalItem?.name || item.product_name,
               price: item.unit_price,
               quantity: item.quantity,
-              total: item.total
+              total: item.total,
+              tax_rate: item.tax_percent || 15
             };
           }),
           payment_methods: this.detailedPayment.paymentMethods,
           payment_terms: 'CONTADO',
           created_at: new Date().toISOString(),
           due_date: new Date().toISOString(),
-          delivery_date: new Date().toISOString()
+          delivery_date: new Date().toISOString(),
+          vendor_name: this.currentVendor?.name || 'VENDEDOR',
+          cai: this.resolution.cai,
+          prefijo_control: this.resolution.prefix.replace(/-$/, ''),
+          nro_inicial_control: 30001,
+          nro_final_control: 40000,
+          fecha_fin: '2025-12-30'
         };
 
         console.log('📄 Datos de factura detallada para impresión:', this.createdInvoiceData);
@@ -2201,7 +2312,394 @@ export default {
         await this.saveAsPendingInvoice();
       }
     },
-    async saveAsQuote() {
+
+    // ==================== QUOTE PREVIEW METHODS ====================
+    buildQuotePreviewHTML() {
+      const docTitle = 'COTIZACION';
+      const docColor = '#FF9800'; // Orange color for quotes
+
+      // Calculate expiry date (15 days from today)
+      const today = new Date();
+      const expiryDate = new Date(today);
+      expiryDate.setDate(expiryDate.getDate() + 15);
+
+      const formatDate = (date) => {
+        if (!date) return 'N/A';
+        const d = new Date(date);
+        return d.toLocaleDateString('es-HN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      };
+
+      // Build table rows
+      let tableRows = '';
+      let subtotal = 0;
+      let totalDiscount = 0;
+      let totalTax = 0;
+
+      this.invoice.items.forEach((item, index) => {
+        const qty = parseFloat(item.quantity) || 0;
+        const price = parseFloat(item.price) || 0;
+        const discountPercent = parseFloat(item.discount_percent) || 0;
+        const taxRate = parseFloat(item.tax_percent) || 0;
+
+        const itemSubtotal = qty * price;
+        const itemDiscount = itemSubtotal * (discountPercent / 100);
+        const itemAfterDiscount = itemSubtotal - itemDiscount;
+        const itemTax = itemAfterDiscount * (taxRate / 100);
+        const itemTotal = itemAfterDiscount + itemTax;
+
+        subtotal += itemSubtotal;
+        totalDiscount += itemDiscount;
+        totalTax += itemTax;
+
+        tableRows += `
+          <tr>
+            <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${String(index + 1).padStart(2, '0')}</td>
+            <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.code || 'N/A'}</td>
+            <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.name}</td>
+            <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${this.formatCurrency(qty)}</td>
+            <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-size: 10px;">L ${this.formatCurrency(price)}</td>
+            <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 10px;">L ${this.formatCurrency(itemTotal)}</td>
+          </tr>
+        `;
+      });
+
+      const surcharge = parseFloat(this.invoice.shipping_cost) || 0;
+      const grandTotal = subtotal - totalDiscount + totalTax + surcharge;
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${docTitle} - ${this.currentConsecutive}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              color: #333;
+              background: #fff;
+              padding: 0;
+              margin: 0;
+            }
+            .invoice-container {
+              max-width: 850px;
+              margin: 0 auto;
+              background: white;
+              padding: 40px;
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin-bottom: 25px;
+              padding-bottom: 15px;
+              border-bottom: 3px solid ${docColor};
+            }
+            .company-logo { flex: 1; }
+            .company-name {
+              font-size: 26px;
+              font-weight: 700;
+              color: ${docColor};
+              margin-bottom: 6px;
+              letter-spacing: -0.5px;
+            }
+            .company-details {
+              font-size: 11px;
+              color: #000;
+              line-height: 1.5;
+            }
+            .invoice-header {
+              text-align: right;
+              background: ${docColor};
+              color: white;
+              padding: 15px 18px;
+              border-radius: 6px;
+              min-width: 320px;
+            }
+            .invoice-title {
+              font-size: 20px;
+              font-weight: 700;
+              margin-bottom: 8px;
+            }
+            .invoice-meta {
+              font-size: 11px;
+              line-height: 1.5;
+              text-align: right;
+            }
+            .invoice-meta strong { font-weight: 600; }
+            .info-section {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 20px;
+              gap: 20px;
+            }
+            .info-box {
+              flex: 1;
+              background: #fff;
+              padding: 8px 12px;
+              border-radius: 4px;
+              border: 1px solid #e0e0e0;
+              border-left: 3px solid ${docColor};
+            }
+            .info-box h3 {
+              font-size: 9px;
+              text-transform: uppercase;
+              color: #000;
+              margin-bottom: 6px;
+              letter-spacing: 0.5px;
+              font-weight: 600;
+            }
+            .info-box p {
+              font-size: 12px;
+              margin: 3px 0;
+              color: #000;
+              line-height: 1.3;
+            }
+            .info-box .highlight {
+              font-weight: 700;
+              color: #000;
+              font-size: 13px;
+            }
+            .products-table {
+              width: 100%;
+              margin-bottom: 20px;
+              border-collapse: collapse;
+              background: white;
+            }
+            .products-table thead { background: ${docColor}; }
+            .products-table thead th {
+              padding: 8px 6px;
+              text-align: left;
+              font-size: 10px;
+              font-weight: 600;
+              color: white;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .products-table thead th:first-child { text-align: center; }
+            .products-table thead th:nth-child(4),
+            .products-table thead th:nth-child(5),
+            .products-table thead th:nth-child(6) { text-align: right; }
+            .products-table tbody tr:hover { background: #fffbf0; }
+            .totals-section {
+              display: flex;
+              justify-content: space-between;
+              margin-top: 20px;
+              gap: 20px;
+            }
+            .totals-left {
+              flex: 1;
+              font-size: 12px;
+              color: #000;
+              padding: 10px;
+              border: 1px solid #e0e0e0;
+              border-radius: 4px;
+              display: flex;
+              flex-direction: column;
+            }
+            .totals-box {
+              min-width: 350px;
+              border: 1px solid #e0e0e0;
+              border-radius: 4px;
+            }
+            .total-row {
+              display: flex;
+              justify-content: space-between;
+              padding: 8px 15px;
+              font-size: 11px;
+              border-bottom: 1px solid #e0e0e0;
+            }
+            .total-row:last-child { border-bottom: none; }
+            .total-row.grand-total {
+              background: #f8f9fa;
+              font-size: 13px;
+              font-weight: 700;
+              border-top: 2px solid ${docColor};
+            }
+            .total-row .label {
+              font-weight: 400;
+              color: #000;
+            }
+            .total-row .value {
+              font-weight: 600;
+              color: #000;
+            }
+            .footer {
+              margin-top: 30px;
+              padding-top: 20px;
+            }
+            .footer-note {
+              font-size: 10px;
+              color: #000;
+              margin-top: 20px;
+              text-align: center;
+              line-height: 1.6;
+            }
+            @media print {
+              body {
+                margin: 0;
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              .invoice-container {
+                padding: 20px;
+                max-width: 100%;
+              }
+              .header, .products-table, .totals-section, .footer-note {
+                page-break-inside: avoid;
+              }
+              .invoice-header {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                background: ${docColor} !important;
+                color: white !important;
+              }
+              @page {
+                size: letter;
+                margin: 15mm;
+              }
+            }
+            @page {
+              size: letter;
+              margin: 15mm;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-container">
+            <div class="header">
+              <div class="company-logo">
+                <img src="${LOGO_BASE64}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">
+                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.company_name || 'PROSPERPOS'}</div>
+                <div class="company-details">
+                  <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                  <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
+                  <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}<br>
+                  <strong>Teléfono Móvil:</strong> +504 9875-2725<br>
+                  <strong>Email:</strong> ${this.companyInfo.email || 'info@prosperpos.com'}
+                </div>
+              </div>
+              <div style="flex: 1; margin-left: 20px;">
+                <div style="font-size: 11px; color: #333;">
+                  <strong>Cliente:</strong> ${this.customerInfo.name || 'CONSUMIDOR FINAL'}<br>
+                  <strong>RTN:</strong> ${this.customerInfo.rtn || '00000000000000'}<br>
+                  <strong>Vendedor:</strong> ${this.currentVendor.name || 'N/A'}
+                </div>
+              </div>
+              <div class="invoice-header">
+                <div class="invoice-title">${docTitle}: ${this.currentConsecutive}</div>
+                <div class="invoice-meta">
+                  <strong>#Control Interno:</strong> ${this.currentConsecutive}<br>
+                  <strong>Sucursal:</strong> Agencia Principal<br>
+                  <strong>Emisión:</strong> ${formatDate(today)}<br>
+                  <strong>Condiciones de la Transacción:</strong> Contado<br>
+                  <strong>Entrega:</strong> ${formatDate(today)}<br>
+                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong><br>
+                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong><br>
+                  <strong>No. Identificativo del Registro SAG:</strong>
+                </div>
+              </div>
+            </div>
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>NO.</th>
+                  <th>CÓDIGO</th>
+                  <th>DESCRIPCIÓN</th>
+                  <th>CANTIDAD</th>
+                  <th>PRECIO</th>
+                  <th>TOTAL</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
+            <div class="totals-section">
+              <div class="totals-left">
+                <div style="margin-bottom: 15px;">
+                  <strong>TOTAL:</strong> ${this.numberToWords(grandTotal).toUpperCase()} LEMPIRAS ${String(Math.floor((grandTotal % 1) * 100)).padStart(2, '0')}/100
+                </div>
+                <div style="margin-top: auto; padding-top: 40px; text-align: center;">
+                  <div style="border-top: 2px solid #000; width: 250px; margin: 0 auto 10px;"></div>
+                  <div style="margin-bottom: 8px;"><strong>Original Cliente</strong></div>
+                  <div><strong>Copia Obligado Tributario Emisor</strong></div>
+                </div>
+              </div>
+              <div class="totals-box">
+                <div class="total-row">
+                  <span class="label">Importe Exonerado:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Importe Exento:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Gravado 15%</span>
+                  <span class="value">L ${this.formatCurrency(subtotal - totalDiscount)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Gravado 18%</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">I.S.V 15 15%:</span>
+                  <span class="value">L ${this.formatCurrency(totalTax)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">I.S.V 18 18%:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">RECARGOS:</span>
+                  <span class="value">L ${this.formatCurrency(surcharge)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">DESCUENTOS Y REBAJAS OTORGADOS:</span>
+                  <span class="value">L ${this.formatCurrency(totalDiscount)}</span>
+                </div>
+                <div class="total-row grand-total">
+                  <span class="label"><strong>TOTAL:</strong></span>
+                  <span class="value"><strong>L ${this.formatCurrency(grandTotal)}</strong></span>
+                </div>
+              </div>
+            </div>
+            <div class="footer">
+              <div class="footer-note" style="margin-top: 20px; text-align: center; font-size: 14px; line-height: 2;">
+                <strong style="font-size: 15px;">Cuentas Bancarias:</strong><br>
+                ${this.bankAccounts && this.bankAccounts.length > 0 ? this.bankAccounts.filter(acc => acc.is_active).map(acc => {
+                  const bankName = acc.banco || 'Banco';
+                  const accountNumber = acc.numero_cuenta || 'N/A';
+                  const accountType = acc.tipo_cuenta || '';
+                  return `<strong>${bankName}:</strong> ${accountNumber}${accountType ? ` (${accountType})` : ''}`;
+                }).join(' | ') : 'No hay cuentas registradas'}
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      return html;
+    },
+
+    async showQuotePreviewModal() {
+      // Construir el HTML ANTES de limpiar
+      this.quotePreviewHTML = this.buildQuotePreviewHTML();
+
+      // Guardar automáticamente la cotización
+      await this.performSaveAsQuote();
+
+      // Limpiar inmediatamente después de guardar
+      this.clearInvoice();
+
+      // Mostrar el preview
+      this.showQuotePreview = true;
+    },
+
+    async performSaveAsQuote() {
       try {
         const quoteData = {
           customer_id: this.customerInfo.id,
@@ -2264,22 +2762,237 @@ export default {
           quoteNumber = response.data.data.quote_number;
         }
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Cotización Guardada',
-          html: `<p>Número: ${quoteNumber}</p><p>Consecutivo: ${this.currentConsecutive}</p>`,
-          timer: 3000
-        });
+        // Guardar el número de cotización para mostrarlo después
+        this.lastQuoteNumber = quoteNumber;
+        this.lastQuoteConsecutive = this.currentConsecutive;
 
         // Incrementar el consecutivo de cotizaciones
         this.incrementConsecutive();
-
-        this.clearInvoice();
       } catch (error) {
         console.error('Error saving quote:', error);
         Swal.fire('Error', 'Error al guardar la cotización', 'error');
       }
     },
+
+    async saveAsQuote() {
+      // Show preview modal instead of saving directly
+      this.showQuotePreviewModal();
+    },
+
+    closeQuotePreview() {
+      this.showQuotePreview = false;
+      this.showQuoteOptionsDropdown = false;
+
+      // Mostrar mensaje de éxito
+      if (this.lastQuoteNumber) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Cotización Guardada',
+          html: `<p>Número: ${this.lastQuoteNumber}</p><p>Consecutivo: ${this.lastQuoteConsecutive}</p>`,
+          timer: 3000
+        });
+      }
+
+      // NO limpiar la factura aquí porque ya se limpió al guardar
+
+      // Resetear las variables temporales
+      this.lastQuoteNumber = null;
+      this.lastQuoteConsecutive = null;
+    },
+
+    printQuotePreview() {
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(this.quotePreviewHTML);
+      printWindow.document.close();
+      setTimeout(() => {
+        printWindow.print();
+      }, 250);
+    },
+
+    async exportQuoteToPDF() {
+      this.showQuoteOptionsDropdown = false;
+      try {
+        const fileName = `COTIZACION_${this.lastQuoteConsecutive || this.currentConsecutive}`;
+
+        // Crear iframe temporal
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '850px';
+        iframe.style.height = '1100px';
+        document.body.appendChild(iframe);
+
+        // Escribir el HTML de la cotización
+        iframe.contentDocument.write(this.quotePreviewHTML);
+        iframe.contentDocument.close();
+
+        // Esperar a que se renderice
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Capturar como imagen con html2canvas
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 850,
+          windowWidth: 850
+        });
+
+        // Crear PDF
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'letter');
+        const imgWidth = 216;
+        const pageHeight = 279;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        pdf.save(`${fileName}.pdf`);
+
+        // Limpiar
+        document.body.removeChild(iframe);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'PDF Generado',
+          text: 'El PDF se ha descargado exitosamente',
+          timer: 2000
+        });
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al generar el PDF'
+        });
+      }
+    },
+
+    async exportQuoteToExcel() {
+      this.showQuoteOptionsDropdown = false;
+      try {
+        const fileName = `COTIZACION_${this.lastQuoteConsecutive || this.currentConsecutive}`;
+
+        // Preparar datos para Excel
+        const data = [
+          ['COTIZACION'],
+          [''],
+          ['Empresa:', this.companyInfo.company_name || 'PROSPERPOS'],
+          ['Número:', this.lastQuoteConsecutive || this.currentConsecutive],
+          ['Cliente:', this.customerInfo.name || 'CONSUMIDOR FINAL'],
+          ['RTN:', this.customerInfo.rtn || '00000000000000'],
+          ['Vendedor:', this.currentVendor.name || 'N/A'],
+          ['Fecha:', new Date().toLocaleDateString('es-HN')],
+          [''],
+          ['NO.', 'CÓDIGO', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'TOTAL']
+        ];
+
+        // Agregar items
+        this.invoice.items.forEach((item, index) => {
+          const qty = parseFloat(item.quantity) || 0;
+          const price = parseFloat(item.price) || 0;
+          const discountPercent = parseFloat(item.discount_percent) || 0;
+          const taxRate = parseFloat(item.tax_percent) || 0;
+
+          const itemSubtotal = qty * price;
+          const itemDiscount = itemSubtotal * (discountPercent / 100);
+          const itemAfterDiscount = itemSubtotal - itemDiscount;
+          const itemTax = itemAfterDiscount * (taxRate / 100);
+          const itemTotal = itemAfterDiscount + itemTax;
+
+          data.push([
+            String(index + 1).padStart(2, '0'),
+            item.code || 'N/A',
+            item.name,
+            qty,
+            price,
+            itemTotal
+          ]);
+        });
+
+        // Agregar totales
+        data.push(['']);
+        data.push(['', '', '', '', 'TOTAL:', this.totals.total]);
+
+        // Crear hoja de Excel
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'COTIZACION');
+
+        // Descargar archivo
+        XLSX.writeFile(wb, `${fileName}.xlsx`);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Excel Generado',
+          text: 'El archivo Excel se ha descargado exitosamente',
+          timer: 2000
+        });
+      } catch (error) {
+        console.error('Error generating Excel:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al generar el Excel'
+        });
+      }
+    },
+
+    async saveQuoteAsImage() {
+      this.showQuoteOptionsDropdown = false;
+      try {
+        const fileName = `COTIZACION_${this.lastQuoteConsecutive || this.currentConsecutive}`;
+
+        // Crear iframe temporal
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '850px';
+        iframe.style.height = '1100px';
+        document.body.appendChild(iframe);
+
+        // Escribir el HTML de la cotización
+        iframe.contentDocument.write(this.quotePreviewHTML);
+        iframe.contentDocument.close();
+
+        // Esperar a que se renderice
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Capturar como imagen con html2canvas
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 850,
+          windowWidth: 850
+        });
+
+        // Descargar imagen
+        const link = document.createElement('a');
+        link.download = `${fileName}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        // Limpiar
+        document.body.removeChild(iframe);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Imagen Generada',
+          text: 'La imagen se ha descargado exitosamente',
+          timer: 2000
+        });
+      } catch (error) {
+        console.error('Error generating image:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al generar la imagen'
+        });
+      }
+    },
+
     async saveAsPendingInvoice() {
       try {
         const pendingInvoiceData = {
@@ -2345,7 +3058,7 @@ export default {
         Swal.fire({
           icon: 'success',
           title: 'Operación Guardada',
-          html: `<p>Número: ${documentNumber}</p><p>Consecutivo: ${this.currentConsecutive}</p>`,
+          html: `<p>Número: ${documentNumber}</p>`,
           timer: 3000
         });
 
@@ -2642,107 +3355,175 @@ export default {
         maximumFractionDigits: 2
       }).format(value || 0);
     },
-    printInvoice() {
-      // Ocultar el modal para la impresión
-      const printContent = document.querySelector('.invoice-print-wrapper');
-      if (!printContent) {
-        console.error('No se encontró el contenedor de impresión');
+    async printInvoice() {
+      if (!this.createdInvoiceData) {
+        console.error('No hay datos de factura para imprimir');
         return;
       }
 
-      // Crear una nueva ventana para imprimir
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(`
+      let resolutionData = {
+        cai: '2A9170-F8828A-8815E0-63BE03-090956-9D',
+        prefijo_control: '000-002-01',
+        nro_inicial_control: 30001,
+        nro_final_control: 40000,
+        fecha_fin: '2025-12-30'
+      };
+
+      try {
+        const response = await api.get('/resolutions/active');
+        if (response.data && response.data.data) {
+          resolutionData = response.data.data;
+        }
+      } catch (error) {
+        console.warn('No se pudo obtener la resolución activa');
+      }
+
+      let tableRows = '';
+      let subtotal = 0;
+      let totalTax = 0;
+      let taxableAmount = 0;
+
+      this.createdInvoiceData.items.forEach((item) => {
+        const qty = parseFloat(item.quantity) || 0;
+        const price = parseFloat(item.unit_price || item.price) || 0;
+        const taxRate = parseFloat(item.tax_rate) || 0;
+        const itemSubtotal = qty * price;
+        const itemTax = itemSubtotal * (taxRate / 100);
+        const itemTotal = itemSubtotal + itemTax;
+        if (taxRate > 0) {
+          taxableAmount += itemSubtotal;
+          totalTax += itemTax;
+        }
+        subtotal += itemSubtotal;
+        tableRows += `
+          <tr>
+            <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(qty)}</td>
+            <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name || item.name}</td>
+            <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(price)}</td>
+            <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemTotal)}</td>
+          </tr>
+        `;
+      });
+
+      const discount = parseFloat(this.createdInvoiceData.discount || 0);
+      const surcharge = parseFloat(this.createdInvoiceData.surcharge || 0);
+      const grandTotal = this.createdInvoiceData.total || (subtotal + totalTax + surcharge - discount);
+
+      const html = `
         <!DOCTYPE html>
         <html>
         <head>
-          <title>Factura - ${this.createdInvoiceData?.invoice_number}</title>
+          <meta charset="UTF-8">
+          <title>FACTURA - ${this.createdInvoiceData.invoice_number}</title>
           <style>
-            @page {
-              size: 80mm auto;
-              margin: 5mm;
-            }
-            body {
-              margin: 0;
-              padding: 0;
-              font-family: Arial, Helvetica, sans-serif;
-              font-size: 11px;
-              line-height: 1.3;
-            }
-            .invoice-print-wrapper {
-              max-width: 80mm;
-              margin: 0 auto;
-              padding: 10px;
-            }
-            .text-center { text-align: center !important; }
-            .text-end { text-align: right !important; }
-            .fw-bold { font-weight: bold; }
-            .mb-0 { margin-bottom: 0 !important; }
-            .mb-1 { margin-bottom: 0.25rem !important; }
-            .mb-2 { margin-bottom: 0.5rem !important; }
-            .mb-3 { margin-bottom: 1rem !important; }
-            .mt-2 { margin-top: 0.5rem !important; }
-            .mt-3 { margin-top: 1rem !important; }
-            .mt-4 { margin-top: 1.5rem !important; }
-            .separator {
-              border: 0;
-              border-top: 1px dashed #000;
-              margin: 8px 0;
-            }
-            .items-table {
-              width: 100%;
-              border-collapse: collapse;
-              font-size: 10px;
-              margin: 5px 0;
-            }
-            .items-table th,
-            .items-table td {
-              padding: 4px 2px;
-              text-align: left;
-              vertical-align: top;
-            }
-            .items-table th {
-              border-bottom: 1px dashed #000;
-              font-weight: bold;
-            }
-            .items-table td {
-              border-bottom: 1px dotted #ccc;
-            }
-            .totals-row {
-              display: flex;
-              justify-content: space-between;
-              padding: 2px 0;
-              font-size: 10px;
-            }
-            .totals-row.total-final {
-              font-size: 12px;
-              margin-top: 5px;
-              padding-top: 5px;
-              border-top: 1px solid #000;
-            }
-            .company-name {
-              font-size: 14px;
-              font-weight: bold;
-              text-transform: uppercase;
-              margin: 5px 0;
-            }
-            .document-type {
-              font-size: 16px;
-              font-weight: bold;
-              text-transform: uppercase;
-              margin: 10px 0 5px 0;
-            }
-            .invoice-number {
-              font-size: 14px;
-              font-weight: bold;
-            }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; color: #000; background: #fff; padding: 0; margin: 0; font-size: 14px; }
+            .invoice-container { max-width: 80mm; margin: 0 auto; background: white; padding: 12px 18px; }
+            .header { text-align: center; margin-bottom: 2px; }
+            .company-logo { margin-bottom: 8px; }
+            .company-logo img { max-width: 120px; height: auto; }
+            .company-name { font-size: 13px; font-weight: 700; color: #000; margin: 5px 0; text-transform: uppercase; line-height: 1.3; }
+            .company-details { font-size: 13px; color: #000; line-height: 1.2; }
+            .doc-title { font-size: 17px; font-weight: 700; text-align: center; margin: 2px 0; padding: 2px; color: #000; text-transform: uppercase; }
+            .info-section { font-size: 14px; line-height: 1.2; margin: 2px 0; padding: 0; text-align: center; }
+            .info-section strong { font-weight: 700; }
+            .products-table { width: 100%; margin: 2px 0; border-collapse: collapse; font-size: 13px; }
+            .products-table thead { background: none; }
+            .products-table thead th { padding: 5px 4px; text-align: left; font-size: 13px; font-weight: 700; color: #000; border: none; }
+            .products-table tbody td { padding: 5px 4px; font-size: 13px; vertical-align: top; border: none; }
+            .totals-section { margin-top: 8px; padding-top: 0; }
+            .totals-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+            .totals-table td { padding: 1px 4px; line-height: 1.1; }
+            .totals-table .total-label { text-align: left; font-weight: 700; padding-right: 10px; }
+            .totals-table .total-value { text-align: right; font-weight: 400; width: 90px; }
+            .totals-table .grand-total { font-weight: 700; font-size: 15px; }
+            .totals-table .grand-total td { padding-top: 4px; padding-bottom: 4px; }
+            .payment-section { margin-top: 6px; font-size: 12px; line-height: 1.1; padding-top: 4px; text-align: center; }
+            .payment-section strong { font-weight: 700; }
+            .payment-section div { margin: 1px 0; }
+            .footer-note { font-size: 12px; text-align: center; margin-top: 2px; line-height: 1.1; padding-top: 2px; }
+            @media print { body { margin: 0; padding: 0; } .invoice-container { padding: 5px; } @page { size: 80mm auto; margin: 2mm; } }
           </style>
         </head>
         <body>
-          ${printContent.innerHTML}
+          <div class="invoice-container">
+            <div class="header">
+              <div class="company-logo"><img src="${LOGO_BASE64}" alt="Logo"></div>
+              <div class="company-name">CERAMICAS TERRAZOS Y PULIDOS<br>UNIVERSAL</div>
+              <div class="company-details">
+                <strong>RTN:</strong> 01061977002516<br>
+                <strong>Dirección:</strong> Casa Matriz, Barrio La Merced,<br>
+                Avenida 14 de Julio entre 15 y 16 calle frente a<br>
+                Repuestos del Atlántico, La Ceiba, Atlántida<br>
+                <strong>Teléfono de Empresa:</strong> 2440-0037<br>
+                <strong>Teléfono Móvil:</strong> 9875-2725<br>
+                mauricio_argenal@hotmail.com<br>
+                <strong>CAI:</strong> ${resolutionData.cai || 'N/A'}
+              </div>
+            </div>
+            <div class="doc-title">FACTURA</div>
+            <div class="info-section">
+              ${this.createdInvoiceData.invoice_number || '000-002-01-00000000'}<br>
+              <strong>Condiciones de la Transacción:</strong> CONTADO<br>
+              <strong>Cliente:</strong> ${this.customerInfo?.name || 'CONSUMIDOR FINAL'}<br>
+              <strong>RTN:</strong> ${this.customerInfo?.rtn || '00000000000000'}<br>
+              <strong>Vendedor:</strong> ${this.createdInvoiceData.vendor_name || 'VENDEDOR'}
+            </div>
+            <table class="products-table">
+              <thead>
+                <tr><td colspan="4" style="text-align: center; padding: 0; font-size: 12px; border: none;">.......................................................................................</td></tr>
+                <tr>
+                  <th style="width: 35px; text-align: center;">Cant</th>
+                  <th>Producto</th>
+                  <th style="width: 60px; text-align: right;">P/Unit</th>
+                  <th style="width: 65px; text-align: right;">Total</th>
+                </tr>
+              </thead>
+              <tbody>${tableRows}</tbody>
+            </table>
+            <div class="totals-section">
+              <table class="totals-table">
+                <tr><td class="total-label">Importe Exonerado:</td><td class="total-value">L 0.00</td></tr>
+                <tr><td class="total-label">Importe Exento:</td><td class="total-value">L 0.00</td></tr>
+                <tr><td class="total-label">Gravado 15%</td><td class="total-value">L ${this.formatCurrency(taxableAmount)}</td></tr>
+                <tr><td class="total-label">Gravado 18%</td><td class="total-value">L 0.00</td></tr>
+                <tr><td class="total-label">I.S.V 15 15%:</td><td class="total-value">L ${this.formatCurrency(totalTax)}</td></tr>
+                <tr><td class="total-label">I.S.V 18 18%:</td><td class="total-value">L 0.00</td></tr>
+                <tr><td class="total-label">RECARGOS:</td><td class="total-value">L ${this.formatCurrency(surcharge)}</td></tr>
+                <tr><td class="total-label">DESCUENTOS Y REBAJAS OTORGADOS:</td><td class="total-value">L 0.00</td></tr>
+                <tr class="grand-total"><td class="total-label"><strong>TOTAL A PAGAR:</strong></td><td class="total-value"><strong>L<br>${this.formatCurrency(grandTotal)}</strong></td></tr>
+                <tr><td colspan="2" style="text-align: center; padding: 0; font-size: 12px;">.......................................................................................</td></tr>
+              </table>
+            </div>
+            <div class="payment-section">
+              <strong>Pagos Recibidos</strong><br>
+              <strong>Transferencia:</strong> ${this.formatCurrency(grandTotal)}<br>
+              <strong>Valor en letras:</strong> ${(() => {
+                const integerPart = Math.floor(grandTotal);
+                const cents = String(Math.floor((grandTotal % 1) * 100)).padStart(2, '0');
+                return this.numberToWords(integerPart).toUpperCase() + ' LEMPIRAS CON ' + cents + '/100';
+              })()}<br>
+              <strong>Rango de facturación Vigente:</strong><br>
+              <strong>Desde:</strong> ${resolutionData.prefijo_control}-${String(resolutionData.nro_inicial_control).padStart(8, '0')}<br>
+              <strong>Hasta:</strong> ${resolutionData.prefijo_control}-${String(resolutionData.nro_final_control).padStart(8, '0')}<br>
+              <strong>Fecha Limite de Emisión Vigente:</strong> ${this.formatDate(resolutionData.fecha_fin) || '31/12/2025'}<br>
+              <strong>No. Correlativo de la Orden de Compra<br>Exenta:</strong><br>
+              <strong>No. Correlativo de la Constancia del Reg<br>Exonerado:</strong><br>
+              <strong>No. Identificativo del Registro SAG:</strong><br>
+              ${this.formatDateTime(new Date())}
+            </div>
+            <div class="footer-note">
+              <strong>Entrega:</strong> ${this.formatDate(new Date())}<br>
+              Original: Cliente/Copia: Obligado Tributario<br>
+              <strong>Emisor:</strong> ¡La Factura es beneficio de todos. Exígela!
+            </div>
+          </div>
         </body>
         </html>
-      `);
+      `;
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(html);
       printWindow.document.close();
       printWindow.focus();
 
@@ -2768,7 +3549,410 @@ export default {
       const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
       return `${day}/${month}/${year}\n${hours}:${minutes} ${ampm}`;
     },
-    formatVenceDays(dateString) {
+    numberToWords(num) {
+      const units = ['', 'UNO', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+      const tens = ['', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+      const teens = ['DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISÉIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE'];
+      const hundreds = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+      if (num === 0) return 'CERO';
+      const integer = Math.floor(num);
+      if (integer < 10) return units[integer];
+      if (integer < 20) return teens[integer - 10];
+      if (integer < 100) {
+        const ten = Math.floor(integer / 10);
+        const unit = integer % 10;
+        return tens[ten] + (unit > 0 ? ' Y ' + units[unit] : '');
+      }
+      if (integer < 1000) {
+        const hundred = Math.floor(integer / 100);
+        const remainder = integer % 100;
+        let result = hundred === 1 && remainder === 0 ? 'CIEN' : hundreds[hundred];
+        if (remainder > 0) result += ' ' + this.numberToWords(remainder);
+        return result;
+      }
+      if (integer < 1000000) {
+        const thousands = Math.floor(integer / 1000);
+        const remainder = integer % 1000;
+        let result = thousands === 1 ? 'MIL' : this.numberToWords(thousands) + ' MIL';
+        if (remainder > 0) result += ' ' + this.numberToWords(remainder);
+        return result;
+      }
+      if (integer < 1000000000) {
+        const millions = Math.floor(integer / 1000000);
+        const remainder = integer % 1000000;
+        let result = millions === 1 ? 'UN MILLÓN' : this.numberToWords(millions) + ' MILLONES';
+        if (remainder > 0) result += ' ' + this.numberToWords(remainder);
+        return result;
+      }
+      return 'NÚMERO MUY GRANDE';
+    },
+    async exportToExcel() {
+      try {
+        const XLSX = await import('xlsx');
+
+        const data = [
+          ['CERAMICAS TERRAZOS Y PULIDOS UNIVERSAL'],
+          ['FACTURA'],
+          [''],
+          ['Número de Factura:', this.createdInvoiceData.invoice_number],
+          ['Cliente:', this.customerInfo?.name || 'CONSUMIDOR FINAL'],
+          ['RTN:', this.customerInfo?.rtn || '00000000000000'],
+          ['Vendedor:', this.createdInvoiceData.vendor_name || 'VENDEDOR'],
+          [''],
+          ['Cant', 'Producto', 'P/Unit', 'Total']
+        ];
+
+        this.createdInvoiceData.items.forEach(item => {
+          const qty = parseFloat(item.quantity) || 0;
+          const price = parseFloat(item.unit_price || item.price) || 0;
+          const taxRate = parseFloat(item.tax_rate) || 0;
+          const itemSubtotal = qty * price;
+          const itemTax = itemSubtotal * (taxRate / 100);
+          const itemTotal = itemSubtotal + itemTax;
+
+          data.push([
+            qty,
+            item.product_name || item.name,
+            price.toFixed(2),
+            itemTotal.toFixed(2)
+          ]);
+        });
+
+        data.push(['']);
+        data.push(['TOTAL A PAGAR:', 'L ' + this.createdInvoiceData.total.toFixed(2)]);
+
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Factura');
+
+        XLSX.writeFile(wb, `Factura_${this.createdInvoiceData.invoice_number}.xlsx`);
+      } catch (error) {
+        console.error('Error al exportar a Excel:', error);
+        alert('Error al exportar a Excel');
+      }
+    },
+    async exportToPDF() {
+      try {
+        const html2pdf = (await import('html2pdf.js')).default;
+
+        const element = this.$refs.invoiceFrame.contentDocument.body;
+        const opt = {
+          margin: 5,
+          filename: `Factura_${this.createdInvoiceData.invoice_number}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: [80, 200], orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save();
+      } catch (error) {
+        console.error('Error al exportar a PDF:', error);
+        alert('Error al exportar a PDF');
+      }
+    },
+    async exportToImage() {
+      try {
+        const html2canvas = (await import('html2canvas')).default;
+
+        const element = this.$refs.invoiceFrame.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff'
+        });
+
+        canvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Factura_${this.createdInvoiceData.invoice_number}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+      } catch (error) {
+        console.error('Error al exportar como imagen:', error);
+        alert('Error al exportar como imagen');
+      }
+    },
+    handleClickOutside(event) {
+      // Cerrar el dropdown si se hace click fuera del botón
+      const dropdown = event.target.closest('.btn-group');
+      if (!dropdown && this.showExportMenu) {
+        this.showExportMenu = false;
+      }
+    },
+    buildInvoicePreview() {
+      if (!this.createdInvoiceData) return '';
+
+      let tableRows = '';
+      let subtotal = 0;
+      let totalTax = 0;
+      let taxableAmount = 0;
+
+      this.createdInvoiceData.items.forEach((item) => {
+        const qty = parseFloat(item.quantity) || 0;
+        const price = parseFloat(item.unit_price || item.price) || 0;
+        const taxRate = parseFloat(item.tax_rate) || 0;
+        const itemSubtotal = qty * price;
+        const itemTax = itemSubtotal * (taxRate / 100);
+        const itemTotal = itemSubtotal + itemTax;
+        if (taxRate > 0) {
+          taxableAmount += itemSubtotal;
+          totalTax += itemTax;
+        }
+        subtotal += itemSubtotal;
+        tableRows += `
+          <tr>
+            <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(qty)}</td>
+            <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name || item.name}</td>
+            <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(price)}</td>
+            <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemTotal)}</td>
+          </tr>
+        `;
+      });
+
+      const discount = parseFloat(this.createdInvoiceData.discount || 0);
+      const surcharge = parseFloat(this.createdInvoiceData.surcharge || 0);
+      const grandTotal = this.createdInvoiceData.total || (subtotal + totalTax + surcharge - discount);
+
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>FACTURA - ${this.createdInvoiceData.invoice_number}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+
+            body {
+              font-family: Arial, sans-serif;
+              color: #000;
+              background: #fff;
+              padding: 0;
+              margin: 0;
+              font-size: 14px;
+            }
+
+            .invoice-container {
+              max-width: 80mm;
+              margin: 0 auto;
+              background: white;
+              padding: 12px 18px;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 2px;
+            }
+
+            .company-logo {
+              margin-bottom: 8px;
+            }
+
+            .company-logo img {
+              max-width: 120px;
+              height: auto;
+            }
+
+            .company-name {
+              font-size: 13px;
+              font-weight: 700;
+              color: #000;
+              margin: 5px 0;
+              text-transform: uppercase;
+              line-height: 1.3;
+            }
+
+            .company-details {
+              font-size: 13px;
+              color: #000;
+              line-height: 1.2;
+            }
+
+            .doc-title {
+              font-size: 17px;
+              font-weight: 700;
+              text-align: center;
+              margin: 2px 0;
+              padding: 2px;
+              color: #000;
+              text-transform: uppercase;
+            }
+
+            .info-section {
+              font-size: 14px;
+              line-height: 1.2;
+              margin: 2px 0;
+              padding: 0;
+              text-align: center;
+            }
+
+            .info-section strong {
+              font-weight: 700;
+            }
+
+            .products-table {
+              width: 100%;
+              margin: 2px 0;
+              border-collapse: collapse;
+              font-size: 13px;
+            }
+
+            .products-table thead {
+              background: none;
+            }
+
+            .products-table thead th {
+              padding: 5px 4px;
+              text-align: left;
+              font-size: 13px;
+              font-weight: 700;
+              color: #000;
+              border: none;
+            }
+
+            .products-table tbody td {
+              padding: 5px 4px;
+              font-size: 13px;
+              vertical-align: top;
+              border: none;
+            }
+
+            .totals-section {
+              margin-top: 8px;
+              padding-top: 0;
+            }
+
+            .totals-table {
+              width: 100%;
+              font-size: 13px;
+              border-collapse: collapse;
+            }
+
+            .totals-table td {
+              padding: 1px 4px;
+              line-height: 1.1;
+            }
+
+            .totals-table .total-label {
+              text-align: left;
+              font-weight: 700;
+              padding-right: 10px;
+            }
+
+            .totals-table .total-value {
+              text-align: right;
+              font-weight: 400;
+              width: 90px;
+            }
+
+            .totals-table .grand-total {
+              font-weight: 700;
+              font-size: 15px;
+            }
+
+            .totals-table .grand-total td {
+              padding-top: 4px;
+              padding-bottom: 4px;
+            }
+
+            .payment-section {
+              margin-top: 6px;
+              font-size: 12px;
+              line-height: 1.1;
+              padding-top: 4px;
+              text-align: center;
+            }
+
+            .payment-section strong {
+              font-weight: 700;
+            }
+
+            .footer-note {
+              font-size: 12px;
+              text-align: center;
+              margin-top: 2px;
+              line-height: 1.1;
+              padding-top: 2px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-container">
+          <div class="header">
+            <div class="company-logo"><img src="${LOGO_BASE64}" alt="Logo"></div>
+            <div class="company-name">CERAMICAS TERRAZOS Y PULIDOS<br>UNIVERSAL</div>
+            <div class="company-details">
+              <strong>RTN:</strong> 01061977002516<br>
+              <strong>Dirección:</strong> Casa Matriz, Barrio La Merced,<br>
+              Avenida 14 de Julio entre 15 y 16 calle frente a<br>
+              Repuestos del Atlántico, La Ceiba, Atlántida<br>
+              <strong>Teléfono de Empresa:</strong> 2440-0037<br>
+              <strong>Teléfono Móvil:</strong> 9875-2725<br>
+              mauricio_argenal@hotmail.com<br>
+              <strong>CAI:</strong> ${this.createdInvoiceData.cai || '2A9170-F8828A-8815E0-63BE03-090956-9D'}
+            </div>
+          </div>
+          <div class="doc-title">FACTURA</div>
+          <div class="info-section">
+            ${this.createdInvoiceData.invoice_number || '000-002-01-00000000'}<br>
+            <strong>Condiciones de la Transacción:</strong> CONTADO<br>
+            <strong>Cliente:</strong> ${this.customerInfo?.name || 'CONSUMIDOR FINAL'}<br>
+            <strong>RTN:</strong> ${this.customerInfo?.rtn || '00000000000000'}<br>
+            <strong>Vendedor:</strong> ${this.createdInvoiceData.vendor_name || 'VENDEDOR'}
+          </div>
+          <table class="products-table">
+            <thead>
+              <tr><td colspan="4" style="text-align: center; padding: 0; font-size: 12px; border: none;">.......................................................................................</td></tr>
+              <tr>
+                <th style="width: 35px; text-align: center;">Cant</th>
+                <th>Producto</th>
+                <th style="width: 60px; text-align: right;">P/Unit</th>
+                <th style="width: 65px; text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+          <div class="totals-section">
+            <table class="totals-table">
+              <tr><td class="total-label">Importe Exonerado:</td><td class="total-value">L 0.00</td></tr>
+              <tr><td class="total-label">Importe Exento:</td><td class="total-value">L 0.00</td></tr>
+              <tr><td class="total-label">Gravado 15%</td><td class="total-value">L ${this.formatCurrency(taxableAmount)}</td></tr>
+              <tr><td class="total-label">Gravado 18%</td><td class="total-value">L 0.00</td></tr>
+              <tr><td class="total-label">I.S.V 15 15%:</td><td class="total-value">L ${this.formatCurrency(totalTax)}</td></tr>
+              <tr><td class="total-label">I.S.V 18 18%:</td><td class="total-value">L 0.00</td></tr>
+              <tr><td class="total-label">RECARGOS:</td><td class="total-value">L ${this.formatCurrency(surcharge)}</td></tr>
+              <tr><td class="total-label">DESCUENTOS Y REBAJAS OTORGADOS:</td><td class="total-value">L 0.00</td></tr>
+              <tr class="grand-total"><td class="total-label"><strong>TOTAL A PAGAR:</strong></td><td class="total-value"><strong>L<br>${this.formatCurrency(grandTotal)}</strong></td></tr>
+              <tr><td colspan="2" style="text-align: center; padding: 0; font-size: 12px;">.......................................................................................</td></tr>
+            </table>
+          </div>
+          <div class="payment-section">
+            <strong>Pagos Recibidos</strong><br>
+            <strong>Transferencia:</strong> ${this.formatCurrency(grandTotal)}<br>
+            <strong>Valor en letras:</strong> ${(() => {
+              const integerPart = Math.floor(grandTotal);
+              const cents = String(Math.floor((grandTotal % 1) * 100)).padStart(2, '0');
+              return this.numberToWords(integerPart).toUpperCase() + ' LEMPIRAS CON ' + cents + '/100';
+            })()}<br>
+            <strong>Rango de facturación Vigente:</strong><br>
+            <strong>Desde:</strong> ${this.createdInvoiceData.prefijo_control}-${String(this.createdInvoiceData.nro_inicial_control).padStart(8, '0')}<br>
+            <strong>Hasta:</strong> ${this.createdInvoiceData.prefijo_control}-${String(this.createdInvoiceData.nro_final_control).padStart(8, '0')}<br>
+            <strong>Fecha Limite de Emisión Vigente:</strong> ${this.formatDate(this.createdInvoiceData.fecha_fin) || '31/12/2025'}<br>
+            <strong>No. Correlativo de la Orden de Compra<br>Exenta:</strong><br>
+            <strong>No. Correlativo de la Constancia del Reg<br>Exonerado:</strong><br>
+            <strong>No. Identificativo del Registro SAG:</strong><br>
+            ${this.formatDateTime(new Date())}
+          </div>
+          <div class="footer-note">
+            <strong>Entrega:</strong> ${this.formatDate(new Date())}<br>
+            Original: Cliente/Copia: Obligado Tributario<br>
+            <strong>Emisor:</strong> ¡La Factura es beneficio de todos. Exígela!
+          </div>
+          </div>
+        </body>
+        </html>
+      `;
+    },    formatVenceDays(dateString) {
       if (!dateString) return '(0) Días';
       const venceDate = new Date(dateString);
       const today = new Date();
@@ -2810,8 +3994,11 @@ export default {
       this.showImportModal = true;
       this.selectedDocumentId = null;
       this.importSearch = '';
+
+      // Dejar fechas vacías para mostrar todos los documentos
       this.importDateFrom = '';
       this.importDateTo = '';
+
       this.loadDocuments();
     },
     closeImportModal() {

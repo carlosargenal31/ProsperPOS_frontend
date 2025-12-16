@@ -117,8 +117,8 @@
                 >
                   <td>{{ formatDateTime(doc.issue_date) }}</td>
                   <td>
-                    <span :class="getDueDateClass(doc.issue_date, selectedDocumentType)">
-                      {{ formatDueDate(doc.issue_date, selectedDocumentType) }}
+                    <span :class="getExpiryClass(doc.expiry_date)">
+                      {{ formatExpiry(doc.expiry_date) }}
                     </span>
                   </td>
                   <td>
@@ -747,12 +747,12 @@ export default {
         return this.buildShippingGuideHTML();
       }
 
-      // Si es COTIZACIÓN, DEVOLUCIÓN, NOTA DE CRÉDITO o FACT EN ESPERA, usar formato carta (como estado de cuenta)
-      if (docTitle === 'COTIZACION' || docTitle === 'DEVOLUCION' || docTitle === 'NOTA DE CREDITO' || docTitle === 'FACT EN ESPERA') {
+      // Si es COTIZACIÓN, DEVOLUCIÓN o NOTA DE CRÉDITO, usar formato carta (como estado de cuenta)
+      if (docTitle === 'COTIZACION' || docTitle === 'DEVOLUCION' || docTitle === 'NOTA DE CREDITO') {
         return this.buildLetterFormatHTML();
       }
 
-      // Para FACTURA, usar formato de ticket (80mm)
+      // Para FACTURA y FACT EN ESPERA, usar formato de ticket (80mm)
 
       let tableRows = '';
       let subtotal = 0;
@@ -1121,21 +1121,12 @@ export default {
       return html;
     },
     buildLetterFormatHTML() {
+      // Formato EXACTO de Estado de Cuenta Ventas para COTIZACIÓN, DEVOLUCIÓN y NOTA DE CRÉDITO
       const docTitle = this.selectedDocumentType;
-      const docColor = '#FF9800'; // Naranja/Amarillo uniforme
 
-      // Si es GUÍA DE REMISIÓN, usar formato especial
-      if (this.selectedDocumentType === 'GUIA DE REMISION') {
-        return this.buildShippingGuideHTML();
-      }
-
-      // Devoluciones y notas de crédito usan el mismo formato que los demás documentos
-
-      // Construir filas de la tabla según el tipo de documento
+      // Construir filas de items (mismo estilo que estado de cuenta)
       let tableRows = '';
-      let subtotal = 0;
-      let totalDiscount = 0;
-      let totalTax = 0;
+      let grandTotal = this.selectedDocument.total || 0;
 
       this.selectedDocument.items.forEach((item, index) => {
         const qty = parseFloat(item.quantity) || 0;
@@ -1149,374 +1140,169 @@ export default {
         const itemTax = itemAfterDiscount * (taxRate / 100);
         const itemTotal = itemAfterDiscount + itemTax;
 
-        subtotal += itemSubtotal;
-        totalDiscount += itemDiscount;
-        totalTax += itemTax;
-
         tableRows += `
           <tr>
-            <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${String(index + 1).padStart(2, '0')}</td>
-            <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_code || 'N/A'}</td>
-            <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_name}</td>
-            <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${this.formatCurrency(qty)}</td>
-            <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-size: 10px;">L ${this.formatCurrency(price)}</td>
-            <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 10px;">L ${this.formatCurrency(itemTotal)}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${index + 1}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${item.product_code || 'N/A'}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${item.product_name}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${this.formatCurrency(qty)}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">L ${this.formatCurrency(price)}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${discountValue > 0 ? discountValue + '%' : '0%'}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${taxRate > 0 ? taxRate + '%' : '0%'}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">L ${this.formatCurrency(itemTotal)}</td>
           </tr>
         `;
       });
 
-      const documentDiscount = parseFloat(this.selectedDocument.discount || this.selectedDocument.total_discount) || 0;
-      const documentSurcharges = parseFloat(this.selectedDocument.surcharges || this.selectedDocument.surcharge) || 0;
-      const finalDiscount = documentDiscount > 0 ? documentDiscount : totalDiscount;
-      const finalSurcharges = documentSurcharges;
-      const grandTotal = subtotal - finalDiscount + totalTax + finalSurcharges;
-
-      const html = `
+      return `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="UTF-8">
-          <title>${docTitle} - ${this.selectedDocument.document_number || this.selectedDocument.correlative}</title>
           <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              color: #333;
-              background: #fff;
-              padding: 0;
+            * {
               margin: 0;
+              padding: 0;
+              box-sizing: border-box;
             }
-            .invoice-container {
-              max-width: 850px;
-              margin: 0 auto;
+            body {
+              font-family: Arial, sans-serif;
+              padding: 15px;
               background: white;
-              padding: 40px;
+              margin: 0;
+              width: 800px;
             }
-            .header {
+            .header-section {
               display: flex;
               justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 25px;
-              padding-bottom: 15px;
-              border-bottom: 3px solid ${docColor};
+              margin-bottom: 15px;
+              gap: 15px;
             }
-            .company-logo { flex: 1; }
-            .company-name {
-              font-size: 26px;
-              font-weight: 700;
-              color: ${docColor};
-              margin-bottom: 6px;
-              letter-spacing: -0.5px;
+            .company-info {
+              width: 60%;
+              flex-shrink: 0;
+            }
+            .company-info img {
+              max-width: 180px;
+              height: auto;
+              margin-bottom: 8px;
             }
             .company-details {
               font-size: 11px;
-              color: #000;
               line-height: 1.5;
             }
-            .invoice-header {
-              text-align: right;
-              background: ${docColor};
+            .report-box {
+              width: 38%;
+              flex-shrink: 0;
+              background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
               color: white;
-              padding: 15px 18px;
-              border-radius: 6px;
-              min-width: 230px;
+              padding: 10px;
+              border-radius: 8px;
             }
-            .invoice-title {
-              font-size: 20px;
-              font-weight: 700;
+            .report-title {
+              font-size: 13px;
+              font-weight: bold;
               margin-bottom: 8px;
             }
-            .invoice-meta {
-              font-size: 12px;
+            .report-details {
+              font-size: 10px;
               line-height: 1.6;
             }
-            .invoice-meta strong { font-weight: 600; }
-            .info-section {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 20px;
-              gap: 20px;
+            .separator {
+              border: none;
+              border-top: 3px solid #f97316;
+              margin: 15px 0;
             }
-            .info-box {
-              flex: 1;
-              background: #fff;
-              padding: 8px 12px;
-              border-radius: 4px;
-              border: 1px solid #e0e0e0;
-              border-left: 3px solid ${docColor};
-            }
-            .info-box h3 {
-              font-size: 9px;
-              text-transform: uppercase;
-              color: #000;
-              margin-bottom: 6px;
-              letter-spacing: 0.5px;
-              font-weight: 600;
-            }
-            .info-box p {
-              font-size: 12px;
-              margin: 3px 0;
-              color: #000;
-              line-height: 1.3;
-            }
-            .info-box .highlight {
-              font-weight: 700;
-              color: #000;
-              font-size: 13px;
-            }
-            .products-table {
+            table {
               width: 100%;
-              margin-bottom: 20px;
               border-collapse: collapse;
-              background: white;
+              font-size: 9px;
             }
-            .products-table thead { background: ${docColor}; }
-            .products-table thead th {
-              padding: 8px 6px;
-              text-align: left;
-              font-size: 10px;
-              font-weight: 600;
+            thead {
+              background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
               color: white;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
             }
-            .products-table thead th:first-child { text-align: center; }
-            .products-table thead th:nth-child(4),
-            .products-table thead th:nth-child(5),
-            .products-table thead th:nth-child(6) { text-align: right; }
-            .products-table tbody tr:hover { background: #fffbf0; }
-            .totals-section {
-              display: flex;
-              justify-content: space-between;
-              margin-top: 20px;
-              gap: 20px;
+            th {
+              padding: 8px 4px;
+              text-align: left;
+              border: 1px solid #ddd;
+              font-size: 9px;
             }
-            .totals-left {
-              flex: 1;
-              font-size: 12px;
-              color: #000;
-              padding: 10px;
-              border: 1px solid #e0e0e0;
-              border-radius: 4px;
-              display: flex;
-              flex-direction: column;
+            td {
+              padding: 6px;
+              border: 1px solid #ddd;
             }
-            .totals-box {
-              min-width: 350px;
-              border: 1px solid #e0e0e0;
-              border-radius: 4px;
+            .text-right {
+              text-align: right;
             }
-            .total-row {
-              display: flex;
-              justify-content: space-between;
-              padding: 8px 15px;
-              font-size: 11px;
-              border-bottom: 1px solid #e0e0e0;
+            tfoot {
+              background: #f3f4f6;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+              font-weight: bold;
             }
-            .total-row:last-child { border-bottom: none; }
-            .total-row.grand-total {
-              background: #f8f9fa;
-              font-size: 13px;
-              font-weight: 700;
-              border-top: 2px solid ${docColor};
-            }
-            .total-row .label {
-              font-weight: 400;
-              color: #000;
-            }
-            .total-row .value {
-              font-weight: 600;
-              color: #000;
-            }
-            .footer {
-              margin-top: 30px;
-              padding-top: 20px;
-            }
-            .footer-signature {
-              display: flex;
-              justify-content: center;
-              margin-bottom: 20px;
-            }
-            .signature-box { text-align: center; padding: 20px; }
-            .signature-line {
-              width: 300px;
-              height: 1px;
-              background: #000;
-              margin: 40px auto 10px;
-            }
-            .signature-box p {
-              font-size: 10px;
-              color: #000;
-              margin: 4px 0;
-            }
-            .footer-note {
-              font-size: 10px;
-              color: #000;
-              margin-top: 20px;
-              text-align: center;
-              line-height: 1.6;
-            }
-            @media print {
-              body {
-                margin: 0;
-                padding: 0;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-              .invoice-container {
-                padding: 20px;
-                max-width: 100%;
-              }
-              .header, .products-table, .totals-section, .footer-note {
-                page-break-inside: avoid;
-              }
-              .invoice-header {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                background: #FF9800 !important;
-                color: white !important;
-              }
-              @page {
-                size: letter;
-                margin: 15mm;
-              }
-            }
-            @page {
-              size: letter;
-              margin: 15mm;
+            tfoot td {
+              padding: 8px 4px;
+              font-size: 9px;
             }
           </style>
         </head>
         <body>
-          <div class="invoice-container">
-            <div class="header">
-              <div class="company-logo">
-                <img src="${LOGO_BASE64}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">
-                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.company_name || 'PROSPERPOS'}</div>
-                <div class="company-details">
-                  <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
-                  <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                  <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}<br>
-                  <strong>Teléfono Móvil:</strong> +504 9875-2725<br>
-                  <strong>Email:</strong> ${this.companyInfo.email || 'info@prosperpos.com'}
-                </div>
-              </div>
-              <div style="flex: 1; margin-left: 20px;">
-                <div style="font-size: 11px; color: #333;">
-                  <strong>Cliente:</strong> ${this.selectedDocument.customer_name || 'CONSUMIDOR FINAL'}<br>
-                  <strong>RTN:</strong> ${this.selectedDocument.customer_rtn || '00000000000000'}<br>
-                  ${this.selectedDocumentType !== 'DEVOLUCION' && this.selectedDocumentType !== 'NOTA DE CREDITO' ? `<strong>Vendedor:</strong> ${this.selectedDocument.seller_name || this.selectedDocument.created_by_name || 'N/A'}` : ''}
-                </div>
-              </div>
-              <div class="invoice-header">
-                <div class="invoice-title">${docTitle}: ${this.selectedDocument.correlative || this.selectedDocument.document_number || this.selectedDocument.full_number || 'N/A'}</div>
-                <div class="invoice-meta">
-                  <strong>#Control Interno:</strong> ${(() => {
-                    const num = this.selectedDocument.correlative || this.selectedDocument.document_number || this.selectedDocument.full_number || '0';
-                    const numStr = String(num);
-                    return /^[0-9]+$/.test(numStr) ? numStr.padStart(10, '0') : numStr;
-                  })()}<br>
-                  ${this.selectedDocumentType === 'DEVOLUCION' || this.selectedDocumentType === 'NOTA DE CREDITO' ? `<strong>Doc/Devuelto:</strong> ${this.selectedDocument.invoice_number || 'N/A'}<br>` : ''}
-                  <strong>Sucursal:</strong> ${this.selectedDocument.branch_name || this.companyInfo.company_name || 'AGENCIA PRINCIPAL'}<br>
-                  <strong>Emisión:</strong> ${this.formatDate(this.selectedDocument.emission_date || this.selectedDocument.issue_date || this.selectedDocument.quote_date || this.selectedDocument.created_at)}<br>
-                  <strong>Condiciones de la Transacción:</strong> ${this.selectedDocument.payment_terms || 'Contado'}<br>
-                  <strong>Entrega:</strong> ${this.formatDate(this.selectedDocument.emission_date || this.selectedDocument.issue_date || this.selectedDocument.quote_date || this.selectedDocument.created_at)}<br>
-                  ${this.selectedDocument.invoice_number && this.selectedDocumentType !== 'DEVOLUCION' && this.selectedDocumentType !== 'NOTA DE CREDITO' ? `<strong>Factura Orig.:</strong> ${this.selectedDocument.invoice_number}<br>` : ''}
-                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong><br>
-                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong><br>
-                  <strong>No. Identificativo del Registro SAG:</strong>
-                </div>
+          <div class="header-section">
+            <div class="company-info">
+              <img src="${LOGO_BASE64}" alt="Logo">
+              <div class="company-details">
+                <strong>${this.companyInfo.business_description || this.companyInfo.description || this.companyInfo.company_name || 'PROSPERPOS'}</strong><br>
+                <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.telefono_movil || this.companyInfo.phone_mobile || '+504 9875-2725'}<br>
+                <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
               </div>
             </div>
-            <table class="products-table">
-              <thead>
-                <tr>
-                  <th>NO.</th>
-                  <th>CÓDIGO</th>
-                  <th>DESCRIPCIÓN</th>
-                  <th>CANTIDAD</th>
-                  <th>PRECIO</th>
-                  <th>TOTAL</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${tableRows}
-              </tbody>
-            </table>
-            <div class="totals-section">
-              <div class="totals-left">
-                <div style="margin-bottom: 15px;">
-                  <strong>TOTAL:</strong> ${this.numberToWords(this.selectedDocument.total || grandTotal).toUpperCase()} LEMPIRAS ${String(Math.floor(((this.selectedDocument.total || grandTotal) % 1) * 100)).padStart(2, '0')}/100
-                </div>
-                <div style="margin-top: auto; padding-top: 40px; text-align: center;">
-                  <div style="border-top: 2px solid #000; width: 250px; margin: 0 auto 10px;"></div>
-                  <div style="margin-bottom: 8px;"><strong>Original Cliente</strong></div>
-                  <div><strong>Copia Obligado Tributario Emisor</strong></div>
-                </div>
-                ${(this.selectedDocumentType === 'DEVOLUCION' || this.selectedDocumentType === 'NOTA DE CREDITO') && this.selectedDocument.notes ? `
-                <div style="margin-top: 30px; text-align: left; font-size: 12px;">
-                  <strong>Notas:</strong> ${this.selectedDocument.notes}
-                </div>
-                ` : ''}
-              </div>
-              <div class="totals-box">
-                <div class="total-row">
-                  <span class="label">Importe Exonerado:</span>
-                  <span class="value">L ${this.formatCurrency(this.selectedDocument.exempt_amount || 0)}</span>
-                </div>
-                <div class="total-row">
-                  <span class="label">Importe Exento:</span>
-                  <span class="value">L ${this.formatCurrency(this.selectedDocument.tax_exempt_amount || 0)}</span>
-                </div>
-                <div class="total-row">
-                  <span class="label">Gravado 15%</span>
-                  <span class="value">L ${this.formatCurrency(subtotal - finalDiscount)}</span>
-                </div>
-                <div class="total-row">
-                  <span class="label">Gravado 18%</span>
-                  <span class="value">L 0.00</span>
-                </div>
-                <div class="total-row">
-                  <span class="label">I.S.V 15 15%:</span>
-                  <span class="value">L ${this.formatCurrency(totalTax)}</span>
-                </div>
-                <div class="total-row">
-                  <span class="label">I.S.V 18 18%:</span>
-                  <span class="value">L 0.00</span>
-                </div>
-                <div class="total-row">
-                  <span class="label">RECARGOS:</span>
-                  <span class="value">L ${this.formatCurrency(finalSurcharges)}</span>
-                </div>
-                <div class="total-row">
-                  <span class="label">DESCUENTOS Y REBAJAS OTORGADOS:</span>
-                  <span class="value">L ${this.formatCurrency(finalDiscount)}</span>
-                </div>
-                <div class="total-row grand-total">
-                  <span class="label"><strong>TOTAL:</strong></span>
-                  <span class="value"><strong>L ${this.formatCurrency(this.selectedDocument.total || grandTotal)}</strong></span>
-                </div>
+            <div class="report-box">
+              <div class="report-title">${docTitle}</div>
+              <div class="report-details">
+                <strong>No. Documento:</strong> ${this.selectedDocument.document_number || this.selectedDocument.full_number || this.selectedDocument.correlative || 'N/A'}<br>
+                <strong>Fecha:</strong> ${this.formatDate(this.selectedDocument.issue_date || this.selectedDocument.emission_date)}<br>
+                ${this.selectedDocument.expiry_date ? `<strong>Vence:</strong> ${this.formatDate(this.selectedDocument.expiry_date)}<br>` : ''}
+                <strong>Cliente:</strong> ${(this.selectedDocument.customer_name || 'N/A').substring(0, 25)}<br>
+                ${this.selectedDocument.seller_name ? `<strong>Vendedor:</strong> ${(this.selectedDocument.seller_name || 'N/A').substring(0, 15)}` : ''}
               </div>
             </div>
-            ${this.selectedDocumentType !== 'DEVOLUCION' && this.selectedDocumentType !== 'NOTA DE CREDITO' && this.selectedDocumentType !== 'GUIA DE REMISION' ? `
-            <div class="footer">
-              <div class="footer-note" style="margin-top: 20px; text-align: center; font-size: 14px; line-height: 2;">
-                <strong style="font-size: 15px;">Cuentas Bancarias:</strong><br>
-                ${this.bankAccounts && this.bankAccounts.length > 0 ? this.bankAccounts.filter(acc => acc.is_active).map(acc => {
-                  const bankName = acc.banco || 'Banco';
-                  const accountNumber = acc.numero_cuenta || 'N/A';
-                  const accountType = acc.tipo_cuenta || '';
-                  return `<strong>${bankName}:</strong> ${accountNumber}${accountType ? ` (${accountType})` : ''}`;
-                }).join(' | ') : 'No hay cuentas registradas'}
-              </div>
-            </div>
-            ` : ''}
           </div>
+
+          <hr class="separator">
+
+          <table>
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Código</th>
+                <th>Producto</th>
+                <th>Cant.</th>
+                <th class="text-right">P. Unit.</th>
+                <th>Desc.</th>
+                <th>ISV</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="7" style="text-align: right; font-weight: bold;">TOTAL:</td>
+                <td class="text-right">L ${this.formatCurrency(grandTotal)}</td>
+              </tr>
+            </tfoot>
+          </table>
         </body>
         </html>
       `;
-
-      return html;
     },
     buildShippingGuideHTML() {
       const docColor = '#FF9800';
@@ -1961,7 +1747,6 @@ export default {
         'pending': 'PENDIENTE',
         'partial': 'PARCIAL',
         'overdue': 'VENCIDO',
-        'expired': 'VENCIDO',
         'cancelled': 'CANCELADO',
         'returned': 'DEVUELTO',
         'approved': 'APROBADO',
@@ -1978,8 +1763,6 @@ export default {
         'paid': 'bg-success',
         'pending': 'bg-warning',
         'active': 'bg-info',
-        'expired': 'bg-danger',
-        'overdue': 'bg-danger',
         'converted to invoice': 'bg-success',
         'converted_to_invoice': 'bg-success',
         'cancelled': 'bg-danger',
@@ -2094,93 +1877,6 @@ export default {
       }
 
       return integer.toString();
-    },
-
-    /**
-     * Formatea la fecha de vencimiento basándose en el tipo de documento
-     */
-    formatDueDate(emissionDate, docType) {
-      if (!emissionDate) return 'N/A';
-
-      const date = new Date(emissionDate);
-      let daysToAdd = 0;
-
-      // Mapear tipos de documento de reimpresiones a los mismos valores que estado de cuenta
-      const normalizedDocType = docType ? docType.toLowerCase().replace(/\s+/g, '_') : '';
-
-      if (normalizedDocType === 'factura') {
-        daysToAdd = 7;
-      } else if (normalizedDocType === 'cotizacion') {
-        daysToAdd = 15;
-      } else if (normalizedDocType === 'fact_en_espera') {
-        daysToAdd = 0; // Mismo día
-      } else if (normalizedDocType === 'guia_de_remision') {
-        daysToAdd = 0;
-      } else {
-        return 'N/A';
-      }
-
-      const dueDate = new Date(date);
-      dueDate.setDate(dueDate.getDate() + daysToAdd);
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const dueDateOnly = new Date(dueDate);
-      dueDateOnly.setHours(0, 0, 0, 0);
-
-      const diffTime = dueDateOnly - today;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays < 0) {
-        return `Vencido hace ${Math.abs(diffDays)} ${Math.abs(diffDays) === 1 ? 'día' : 'días'}`;
-      } else if (diffDays === 0) {
-        return 'Vence Hoy';
-      } else {
-        return `${diffDays} ${diffDays === 1 ? 'día' : 'días'}`;
-      }
-    },
-
-    /**
-     * Retorna la clase CSS para la columna "Vence" según el estado
-     */
-    getDueDateClass(emissionDate, docType) {
-      if (!emissionDate) return '';
-
-      const date = new Date(emissionDate);
-      let daysToAdd = 0;
-
-      const normalizedDocType = docType ? docType.toLowerCase().replace(/\s+/g, '_') : '';
-
-      if (normalizedDocType === 'factura') {
-        daysToAdd = 7;
-      } else if (normalizedDocType === 'cotizacion') {
-        daysToAdd = 15;
-      } else if (normalizedDocType === 'fact_en_espera') {
-        daysToAdd = 0;
-      } else if (normalizedDocType === 'guia_de_remision') {
-        daysToAdd = 0;
-      } else {
-        return '';
-      }
-
-      const dueDate = new Date(date);
-      dueDate.setDate(dueDate.getDate() + daysToAdd);
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const dueDateOnly = new Date(dueDate);
-      dueDateOnly.setHours(0, 0, 0, 0);
-
-      const diffTime = dueDateOnly - today;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays < 0) {
-        return 'text-danger fw-bold'; // Vencido
-      } else if (diffDays === 0) {
-        return 'text-warning fw-bold'; // Vence hoy
-      } else {
-        return 'text-success'; // Pendiente
-      }
     }
   }
 };

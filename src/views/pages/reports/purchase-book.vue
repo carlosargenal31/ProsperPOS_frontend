@@ -154,9 +154,8 @@
                   @change="loadPurchaseBook"
                 >
                   <option value="">Todos</option>
-                  <option value="paid">Pagado</option>
-                  <option value="pending">Pendiente</option>
-                  <option value="partial">Abonos</option>
+                  <option value="Completed">Completado</option>
+                  <option value="Returned">Devuelto</option>
                 </select>
               </div>
             </div>
@@ -242,6 +241,12 @@
                   <th v-if="isColumnVisible('subtotal')" @click="sortByColumn('subtotal')" class="text-end cursor-pointer">
                     Subtotal <i :class="getSortIcon('subtotal')"></i>
                   </th>
+                  <th v-if="isColumnVisible('descuento')" @click="sortByColumn('descuento')" class="text-end cursor-pointer">
+                    Descuento <i :class="getSortIcon('descuento')"></i>
+                  </th>
+                  <th v-if="isColumnVisible('recargo')" @click="sortByColumn('recargo')" class="text-end cursor-pointer">
+                    Recargo <i :class="getSortIcon('recargo')"></i>
+                  </th>
                   <th v-if="isColumnVisible('isv')" @click="sortByColumn('isv')" class="text-end cursor-pointer">
                     ISV <i :class="getSortIcon('isv')"></i>
                   </th>
@@ -263,6 +268,8 @@
                   <td v-if="isColumnVisible('proveedor')">{{ purchase.proveedor }}</td>
                   <td v-if="isColumnVisible('rtn')">{{ purchase.rtn_proveedor || 'N/A' }}</td>
                   <td v-if="isColumnVisible('subtotal')" class="text-end">{{ formatCurrency(purchase.subtotal) }}</td>
+                  <td v-if="isColumnVisible('descuento')" class="text-end">{{ formatCurrency(purchase.descuento) }}</td>
+                  <td v-if="isColumnVisible('recargo')" class="text-end">{{ formatCurrency(purchase.recargo) }}</td>
                   <td v-if="isColumnVisible('isv')" class="text-end">{{ formatCurrency(purchase.isv) }}</td>
                   <td v-if="isColumnVisible('total')" class="text-end fw-bold">
                     {{ formatCurrency(purchase.total) }}
@@ -291,6 +298,8 @@
                   <td v-if="isColumnVisible('proveedor')"></td>
                   <td v-if="isColumnVisible('rtn')">SUBTOTALES:</td>
                   <td v-if="isColumnVisible('subtotal')" class="text-end">{{ formatCurrency(totals.subtotal_total) }}</td>
+                  <td v-if="isColumnVisible('descuento')" class="text-end">{{ formatCurrency(totals.descuento_total) }}</td>
+                  <td v-if="isColumnVisible('recargo')" class="text-end">{{ formatCurrency(totals.recargo_total) }}</td>
                   <td v-if="isColumnVisible('isv')" class="text-end">{{ formatCurrency(totals.isv_total) }}</td>
                   <td v-if="isColumnVisible('total')" class="text-end">{{ formatCurrency(totals.total_total) }}</td>
                   <td v-if="isColumnVisible('estatus')"></td>
@@ -329,6 +338,9 @@
               <button class="btn btn-outline-primary" @click="saveAsImage">
                 <i class="ti ti-photo me-2"></i> Guardar como Imagen
               </button>
+              <button class="btn btn-outline-secondary" @click="printReport">
+                <i class="ti ti-printer me-2"></i> Imprimir
+              </button>
             </div>
           </div>
           <div class="modal-footer">
@@ -347,6 +359,7 @@ import axios from 'axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
+import { LOGO_BASE64 } from '@/assets/img/logo.js';
 
 export default {
   name: 'PurchaseBook',
@@ -364,6 +377,8 @@ export default {
         total_compras: 0,
         total_devoluciones: 0,
         subtotal_total: 0,
+        descuento_total: 0,
+        recargo_total: 0,
         isv_total: 0,
         total_total: 0,
         total_devuelto: 0,
@@ -386,6 +401,8 @@ export default {
         { key: 'proveedor', label: 'Proveedor', visible: true },
         { key: 'rtn', label: 'RTN', visible: true },
         { key: 'subtotal', label: 'Subtotal', visible: true },
+        { key: 'descuento', label: 'Descuento', visible: true },
+        { key: 'recargo', label: 'Recargo', visible: true },
         { key: 'isv', label: 'ISV', visible: true },
         { key: 'total', label: 'Total', visible: true },
         { key: 'estatus', label: 'Estatus', visible: true },
@@ -396,6 +413,17 @@ export default {
   computed: {
     filteredPurchases() {
       let filtered = [...this.purchases];
+
+      // Filtrar devoluciones según el estado seleccionado
+      // Si el filtro es "Completed", excluir las devoluciones
+      if (this.filters.payment_status === 'Completed') {
+        filtered = filtered.filter(pur => pur.tipo_fila !== 'DEVOLUCION' && pur.estatus_raw !== 'Returned');
+      }
+      // Si el filtro es "Returned", mostrar devoluciones Y facturas devueltas
+      else if (this.filters.payment_status === 'Returned') {
+        filtered = filtered.filter(pur => pur.tipo_fila === 'DEVOLUCION' || pur.estatus_raw === 'Returned');
+      }
+      // Si no hay filtro o es "Todos", mostrar todo
 
       if (this.searchQuery) {
         const query = this.searchQuery.toLowerCase();
@@ -509,10 +537,8 @@ export default {
     },
     getStatusBadgeClass(status) {
       const classes = {
-        paid: 'bg-success',
-        pending: 'bg-warning',
-        partial: 'bg-info',
-        returned: 'bg-danger',
+        'Completed': 'bg-success',  // Verde para completado
+        'Returned': 'bg-danger',    // Rojo para devuelto
       };
       return classes[status] || 'bg-secondary';
     },
@@ -552,39 +578,31 @@ export default {
         const ws = XLSX.utils.aoa_to_sheet(headerData);
 
         const data = this.filteredPurchases.map(pur => ({
-          'Fecha': pur.fecha_operacion,
-          'Almacén': pur.almacen || 'N/A',
-          'Nro Compra': pur.nro_documento,
-          'Factura Proveedor': pur.factura_proveedor || 'N/A',
+          'Fecha': pur.fecha,
+          'Número Factura': pur.numero_factura,
           'Proveedor': pur.proveedor,
           'RTN': pur.rtn_proveedor || 'N/A',
           'Estatus': pur.estatus,
           'Subtotal': parseFloat(pur.subtotal || 0),
           'Descuento': parseFloat(pur.descuento || 0),
-          'Flete': parseFloat(pur.flete || 0),
-          'Impuesto': parseFloat(pur.impuesto || 0),
+          'Recargo': parseFloat(pur.recargo || 0),
+          'ISV': parseFloat(pur.isv || 0),
           'Total': parseFloat(pur.total || 0),
-          'Abonado': parseFloat(pur.abonado || 0),
-          'Saldo': parseFloat(pur.saldo || 0),
-          'Comprador': pur.comprador
+          'Usuario': pur.usuario
         }));
 
         data.push({
           'Fecha': '',
-          'Almacén': '',
-          'Nro Compra': '',
-          'Factura Proveedor': '',
+          'Número Factura': '',
           'Proveedor': '',
           'RTN': '',
           'Estatus': 'TOTALES',
           'Subtotal': this.totals.subtotal_total,
           'Descuento': this.totals.descuento_total,
-          'Flete': this.totals.flete_total || 0,
-          'Impuesto': this.totals.impuesto_total,
+          'Recargo': this.totals.recargo_total,
+          'ISV': this.totals.isv_total,
           'Total': this.totals.total_total,
-          'Abonado': this.totals.abonado_total,
-          'Saldo': this.totals.saldo_total,
-          'Comprador': ''
+          'Usuario': ''
         });
 
         XLSX.utils.sheet_add_json(ws, data, { origin: 'A9', skipHeader: false });
@@ -597,88 +615,212 @@ export default {
         alert('Error al generar el archivo Excel');
       }
     },
+    buildPurchaseBookHTML() {
+      // Generar HTML de tabla de compras
+      const purchaseRows = this.filteredPurchases.map(pur => {
+        return `
+        <tr>
+          <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${pur.fecha ? pur.fecha.substring(0, 10) : 'N/A'}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${pur.numero_factura}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${pur.proveedor.substring(0, 25)}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; color: #000; font-weight: bold;">${pur.estatus}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(pur.subtotal)}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(pur.descuento)}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(pur.recargo)}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(pur.isv)}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(pur.total)}</td>
+        </tr>
+      `}).join('');
+
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              padding: 15px;
+              background: white;
+              margin: 0;
+              width: 800px;
+            }
+            .header-section {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 15px;
+              gap: 15px;
+            }
+            .company-info {
+              width: 60%;
+              flex-shrink: 0;
+            }
+            .company-info img {
+              max-width: 180px;
+              height: auto;
+              margin-bottom: 8px;
+            }
+            .company-details {
+              font-size: 11px;
+              line-height: 1.5;
+            }
+            .report-box {
+              width: 38%;
+              flex-shrink: 0;
+              background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+              color: white;
+              padding: 10px;
+              border-radius: 8px;
+            }
+            .report-title {
+              font-size: 13px;
+              font-weight: bold;
+              margin-bottom: 8px;
+            }
+            .report-details {
+              font-size: 10px;
+              line-height: 1.6;
+            }
+            .separator {
+              border: none;
+              border-top: 3px solid #f97316;
+              margin: 15px 0;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              font-size: 9px;
+            }
+            thead {
+              background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+              color: white;
+            }
+            th {
+              padding: 8px 4px;
+              text-align: left;
+              border: 1px solid #ddd;
+              font-size: 9px;
+            }
+            td {
+              padding: 6px;
+              border: 1px solid #ddd;
+            }
+            .text-right {
+              text-align: right;
+            }
+            tfoot {
+              background: #f3f4f6;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+              font-weight: bold;
+            }
+            tfoot td {
+              padding: 8px 4px;
+              font-size: 9px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header-section">
+            <div class="company-info">
+              <img src="${LOGO_BASE64}" alt="Logo">
+              <div class="company-details">
+                <strong>${this.companyInfo.business_description || this.companyInfo.description || 'Cerámicas Terrazos y Pulidos'}</strong><br>
+                <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.telefono_movil || this.companyInfo.phone_mobile || '+504 9875-2725'}<br>
+                <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
+              </div>
+            </div>
+            <div class="report-box">
+              <div class="report-title">LIBRO DE COMPRAS</div>
+              <div class="report-details">
+                <strong>Desde:</strong> ${this.filters.date_from}<br>
+                <strong>Hasta:</strong> ${this.filters.date_to}<br>
+                <strong>Compras:</strong> ${this.totals.total_compras || 0}<br>
+                <strong>Devoluciones:</strong> ${this.totals.total_devoluciones || 0}
+              </div>
+            </div>
+          </div>
+
+          <hr class="separator">
+
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Nro Factura</th>
+                <th>Proveedor</th>
+                <th>Estatus</th>
+                <th class="text-right">Subtotal</th>
+                <th class="text-right">Descuento</th>
+                <th class="text-right">Recargo</th>
+                <th class="text-right">ISV</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${purchaseRows}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" style="text-align: right; font-weight: bold;">TOTALES:</td>
+                <td class="text-right">L ${this.formatCurrency(this.totals.subtotal_total)}</td>
+                <td class="text-right">L ${this.formatCurrency(this.totals.descuento_total)}</td>
+                <td class="text-right">L ${this.formatCurrency(this.totals.recargo_total)}</td>
+                <td class="text-right">L ${this.formatCurrency(this.totals.isv_total)}</td>
+                <td class="text-right">L ${this.formatCurrency(this.totals.total_total)}</td>
+              </tr>
+              <tr style="background: #e8e8e8;">
+                <td colspan="9" style="padding: 8px 4px; font-size: 9px;">
+                  <strong>Total Devuelto:</strong> L ${this.formatCurrency(this.totals.total_devuelto || 0)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </body>
+        </html>
+      `;
+    },
     async saveAsPDF() {
       this.showSaveReportModal = false;
 
       try {
-        const reportHTML = document.createElement('div');
-        reportHTML.style.width = '1200px';
-        reportHTML.style.padding = '30px';
-        reportHTML.style.backgroundColor = '#ffffff';
-        reportHTML.style.fontFamily = 'Arial, sans-serif';
+        const fileName = `libro-compras-${this.filters.date_from}-${this.filters.date_to}`;
 
-        reportHTML.innerHTML = `
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="margin: 0; font-size: 20px; font-weight: bold;">${this.companyInfo.company_name || 'PROSPERPOS'}</h2>
-            <p style="margin: 5px 0; font-size: 12px;">${this.companyInfo.direccion || 'Sin dirección'}</p>
-            <p style="margin: 5px 0; font-size: 12px;">Tel: ${this.companyInfo.telefono || 'N/A'}</p>
-          </div>
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h3 style="margin: 10px 0; font-size: 16px; font-weight: bold;">LIBRO DE COMPRAS</h3>
-            <p style="margin: 5px 0; font-size: 11px;">Desde: ${this.filters.date_from} | Hasta: ${this.filters.date_to}</p>
-          </div>
-          <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
-            <thead>
-              <tr style="background-color: #f0f0f0; border-bottom: 2px solid #333;">
-                <th style="padding: 8px 4px; text-align: left; border: 1px solid #ddd;">Fecha</th>
-                <th style="padding: 8px 4px; text-align: left; border: 1px solid #ddd;">Almacén</th>
-                <th style="padding: 8px 4px; text-align: left; border: 1px solid #ddd;">Nro Compra</th>
-                <th style="padding: 8px 4px; text-align: left; border: 1px solid #ddd;">Proveedor</th>
-                <th style="padding: 8px 4px; text-align: left; border: 1px solid #ddd;">Estatus</th>
-                <th style="padding: 8px 4px; text-align: right; border: 1px solid #ddd;">Subtotal</th>
-                <th style="padding: 8px 4px; text-align: right; border: 1px solid #ddd;">Desc</th>
-                <th style="padding: 8px 4px; text-align: right; border: 1px solid #ddd;">Flete</th>
-                <th style="padding: 8px 4px; text-align: right; border: 1px solid #ddd;">Impuesto</th>
-                <th style="padding: 8px 4px; text-align: right; border: 1px solid #ddd;">Total</th>
-                <th style="padding: 8px 4px; text-align: right; border: 1px solid #ddd;">Saldo</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${this.filteredPurchases.map(pur => `
-                <tr style="border-bottom: 1px solid #ddd;">
-                  <td style="padding: 6px 4px; border: 1px solid #ddd;">${pur.fecha_operacion.substring(0, 16)}</td>
-                  <td style="padding: 6px 4px; border: 1px solid #ddd;">${pur.almacen || 'N/A'}</td>
-                  <td style="padding: 6px 4px; border: 1px solid #ddd;">${pur.nro_documento}</td>
-                  <td style="padding: 6px 4px; border: 1px solid #ddd;">${pur.proveedor.substring(0, 25)}</td>
-                  <td style="padding: 6px 4px; border: 1px solid #ddd;">${pur.estatus}</td>
-                  <td style="padding: 6px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(pur.subtotal)}</td>
-                  <td style="padding: 6px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(pur.descuento)}</td>
-                  <td style="padding: 6px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(pur.flete)}</td>
-                  <td style="padding: 6px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(pur.impuesto)}</td>
-                  <td style="padding: 6px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(pur.total)}</td>
-                  <td style="padding: 6px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(pur.saldo)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-            <tfoot>
-              <tr style="background-color: #f0f0f0; font-weight: bold; border-top: 2px solid #333;">
-                <td colspan="5" style="padding: 10px 4px; border: 1px solid #ddd;">TOTALES</td>
-                <td style="padding: 10px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(this.totals.subtotal_total)}</td>
-                <td style="padding: 10px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(this.totals.descuento_total)}</td>
-                <td style="padding: 10px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(this.totals.flete_total)}</td>
-                <td style="padding: 10px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(this.totals.impuesto_total)}</td>
-                <td style="padding: 10px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(this.totals.total_total)}</td>
-                <td style="padding: 10px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(this.totals.saldo_total)}</td>
-              </tr>
-            </tfoot>
-          </table>
-        `;
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
 
-        reportHTML.style.position = 'absolute';
-        reportHTML.style.left = '-9999px';
-        document.body.appendChild(reportHTML);
+        const htmlContent = this.buildPurchaseBookHTML();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
 
-        const canvas = await html2canvas(reportHTML, {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
           scale: 2,
-          logging: false,
           useCORS: true,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          width: 800,
+          windowWidth: 800
         });
 
-        document.body.removeChild(reportHTML);
-
         const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('l', 'mm', 'a4');
+        const pdf = new jsPDF('p', 'mm', 'letter');
 
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -689,17 +831,18 @@ export default {
         let position = 10;
 
         pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
+        heightLeft -= (pdfHeight - 20);
 
         while (heightLeft > 0) {
-          position = heightLeft - imgHeight + 10;
+          position = -(imgHeight - heightLeft) + 10;
           pdf.addPage();
           pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-          heightLeft -= pdfHeight;
+          heightLeft -= (pdfHeight - 20);
         }
 
-        const fileName = `libro-compras-${this.filters.date_from}-${this.filters.date_to}.pdf`;
-        pdf.save(fileName);
+        pdf.save(`${fileName}.pdf`);
+
+        document.body.removeChild(iframe);
       } catch (error) {
         console.error('Error al guardar PDF:', error);
         alert('Error al generar el archivo PDF');
@@ -709,93 +852,67 @@ export default {
       this.showSaveReportModal = false;
 
       try {
-        const reportHTML = document.createElement('div');
-        reportHTML.style.width = '1200px';
-        reportHTML.style.padding = '30px';
-        reportHTML.style.backgroundColor = '#ffffff';
-        reportHTML.style.fontFamily = 'Arial, sans-serif';
+        const fileName = `libro-compras-${this.filters.date_from}-${this.filters.date_to}`;
 
-        reportHTML.innerHTML = `
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="margin: 0; font-size: 20px; font-weight: bold;">${this.companyInfo.company_name || 'PROSPERPOS'}</h2>
-            <p style="margin: 5px 0; font-size: 12px;">${this.companyInfo.direccion || 'Sin dirección'}</p>
-            <p style="margin: 5px 0; font-size: 12px;">Tel: ${this.companyInfo.telefono || 'N/A'}</p>
-          </div>
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h3 style="margin: 10px 0; font-size: 16px; font-weight: bold;">LIBRO DE COMPRAS</h3>
-            <p style="margin: 5px 0; font-size: 11px;">Desde: ${this.filters.date_from} | Hasta: ${this.filters.date_to}</p>
-          </div>
-          <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
-            <thead>
-              <tr style="background-color: #f0f0f0; border-bottom: 2px solid #333;">
-                <th style="padding: 8px 4px; text-align: left; border: 1px solid #ddd;">Fecha</th>
-                <th style="padding: 8px 4px; text-align: left; border: 1px solid #ddd;">Almacén</th>
-                <th style="padding: 8px 4px; text-align: left; border: 1px solid #ddd;">Nro Compra</th>
-                <th style="padding: 8px 4px; text-align: left; border: 1px solid #ddd;">Proveedor</th>
-                <th style="padding: 8px 4px; text-align: left; border: 1px solid #ddd;">Estatus</th>
-                <th style="padding: 8px 4px; text-align: right; border: 1px solid #ddd;">Subtotal</th>
-                <th style="padding: 8px 4px; text-align: right; border: 1px solid #ddd;">Desc</th>
-                <th style="padding: 8px 4px; text-align: right; border: 1px solid #ddd;">Flete</th>
-                <th style="padding: 8px 4px; text-align: right; border: 1px solid #ddd;">Impuesto</th>
-                <th style="padding: 8px 4px; text-align: right; border: 1px solid #ddd;">Total</th>
-                <th style="padding: 8px 4px; text-align: right; border: 1px solid #ddd;">Saldo</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${this.filteredPurchases.map(pur => `
-                <tr style="border-bottom: 1px solid #ddd;">
-                  <td style="padding: 6px 4px; border: 1px solid #ddd;">${pur.fecha_operacion.substring(0, 16)}</td>
-                  <td style="padding: 6px 4px; border: 1px solid #ddd;">${pur.almacen || 'N/A'}</td>
-                  <td style="padding: 6px 4px; border: 1px solid #ddd;">${pur.nro_documento}</td>
-                  <td style="padding: 6px 4px; border: 1px solid #ddd;">${pur.proveedor.substring(0, 25)}</td>
-                  <td style="padding: 6px 4px; border: 1px solid #ddd;">${pur.estatus}</td>
-                  <td style="padding: 6px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(pur.subtotal)}</td>
-                  <td style="padding: 6px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(pur.descuento)}</td>
-                  <td style="padding: 6px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(pur.flete)}</td>
-                  <td style="padding: 6px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(pur.impuesto)}</td>
-                  <td style="padding: 6px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(pur.total)}</td>
-                  <td style="padding: 6px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(pur.saldo)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-            <tfoot>
-              <tr style="background-color: #f0f0f0; font-weight: bold; border-top: 2px solid #333;">
-                <td colspan="5" style="padding: 10px 4px; border: 1px solid #ddd;">TOTALES</td>
-                <td style="padding: 10px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(this.totals.subtotal_total)}</td>
-                <td style="padding: 10px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(this.totals.descuento_total)}</td>
-                <td style="padding: 10px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(this.totals.flete_total)}</td>
-                <td style="padding: 10px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(this.totals.impuesto_total)}</td>
-                <td style="padding: 10px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(this.totals.total_total)}</td>
-                <td style="padding: 10px 4px; text-align: right; border: 1px solid #ddd;">L ${this.formatCurrency(this.totals.saldo_total)}</td>
-              </tr>
-            </tfoot>
-          </table>
-        `;
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
 
-        reportHTML.style.position = 'absolute';
-        reportHTML.style.left = '-9999px';
-        document.body.appendChild(reportHTML);
+        const htmlContent = this.buildPurchaseBookHTML();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
 
-        const canvas = await html2canvas(reportHTML, {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
           scale: 2,
-          logging: false,
           useCORS: true,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          width: 800,
+          windowWidth: 800
         });
 
-        document.body.removeChild(reportHTML);
-
-        canvas.toBlob((blob) => {
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `libro-compras-${this.filters.date_from}-${this.filters.date_to}.png`;
-          link.click();
-          URL.revokeObjectURL(url);
-        });
+        const link = document.createElement('a');
+        link.download = `${fileName}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        document.body.removeChild(iframe);
       } catch (error) {
         console.error('Error al guardar imagen:', error);
         alert('Error al generar la imagen');
+      }
+    },
+    async printReport() {
+      this.showSaveReportModal = false;
+
+      try {
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
+
+        const htmlContent = this.buildPurchaseBookHTML();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+
+        // Esperar un momento antes de remover el iframe
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      } catch (error) {
+        console.error('Error al imprimir:', error);
+        alert('Error al imprimir el reporte');
       }
     },
     async loadCompanyInfo() {

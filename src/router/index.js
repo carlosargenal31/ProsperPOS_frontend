@@ -255,6 +255,7 @@ const routes = [
       { path: "trial-balance", component: () => import('@/views/pages/finance/trial-balance.vue') },
       { path: "cash-flow", component: () => import('@/views/pages/finance/cash-flow.vue') },
       { path: "account-statement", component: () => import('@/views/pages/finance/account-statement.vue') },
+      { path: "purchase-statement", component: () => import('@/views/pages/finance/purchase-statement.vue') },
     ]
   },
   {
@@ -331,9 +332,10 @@ const routes = [
       { path: "tax-report", component: () => import('@/views/pages/reports/tax-report/tax-report.vue') },
       { path: "annual-report", component: () => import('@/views/pages/reports/annual-report.vue') },
       { path: "sales-tax", component: () => import('@/views/pages/reports/tax-report/salestax-report.vue') },
-      { path: "profit-and-loss", component: () => import('@/views/pages/reports/profit-and-loss.vue') },
+      { path: "profit-and-loss", component: () => import('@/views/pages/reports/profit-loss-report.vue') },
       { path: "sales-book", component: () => import('@/views/pages/reports/sales-book.vue') },
       { path: "purchase-book", component: () => import('@/views/pages/reports/purchase-book.vue') },
+      { path: "physical-inventory", component: () => import('@/views/pages/reports/physical-inventory.vue') },
     ]
   },
   {
@@ -359,7 +361,8 @@ const routes = [
     path: '/supplier-report',
     component: () => import('@/views/pages/reports/supplier-report/pos-supplierreport.vue'),
     children: [
-      { path: '', redirect: '/supplier-report/supplier-report' },
+      { path: '', redirect: '/supplier-report/purchases-by-supplier' },
+      { path: "purchases-by-supplier", component: () => import('@/views/pages/reports/supplier-report/purchases-by-supplier.vue') },
       { path: "supplier-report", component: () => import('@/views/pages/reports/supplier-report/supplier-report.vue') },
       { path: "supplier-due-report", component: () => import('@/views/pages/reports/supplier-report/supplier-due-report.vue') },
     ]
@@ -373,6 +376,11 @@ const routes = [
       { path: "stock-history", component: () => import('@/views/pages/reports/inventory-report/stock-history.vue') },
       { path: "sold-stock", component: () => import('@/views/pages/reports/inventory-report/sold-stock.vue') },
     ]
+  },
+  {
+    path: '/reports/sold-items',
+    name: 'sold-items-report',
+    component: () => import('@/views/pages/reports/sold-items-report.vue'),
   },
   {
     path: '/sales-report',
@@ -618,6 +626,11 @@ const routes = [
     ]
   },
   {
+    path: '/purchases/purchase-reprint',
+    name: 'purchase-reprint',
+    component: () => import('@/views/pages/purchases/purchase-reprint.vue')
+  },
+  {
     path: '/purchase-returns',
     component: () => import('@/views/pages/purchases/purchase-returns.vue')
   },
@@ -708,6 +721,33 @@ const routes = [
     path: '/shipments/print/:id',
     name: 'print-shipment',
     component: () => import('@/views/pages/shipments/print-shipment.vue')
+  },
+
+  // E-Commerce Routes
+  {
+    path: '/shop',
+    name: 'shop-catalog',
+    component: () => import('@/views/shop/catalog.vue')
+  },
+  {
+    path: '/shop/login',
+    name: 'shop-login',
+    component: () => import('@/views/shop/login.vue')
+  },
+  {
+    path: '/shop/cart',
+    name: 'shop-cart',
+    component: () => import('@/views/shop/cart.vue')
+  },
+  {
+    path: '/shop/checkout',
+    name: 'shop-checkout',
+    component: () => import('@/views/shop/checkout.vue')
+  },
+  {
+    path: '/shop/orders',
+    name: 'shop-orders',
+    component: () => import('@/views/shop/orders.vue')
   },
 ];
 
