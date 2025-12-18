@@ -1453,7 +1453,7 @@ export default {
             <div class="company-info">
               <img src="${LOGO_BASE64}" alt="Logo">
               <div class="company-details">
-                <strong>${this.companyInfo.business_description || this.companyInfo.description || 'Cerámicas Terrazos y Pulidos'}</strong><br>
+                ${this.companyInfo.business_description || this.companyInfo.description || 'Cerámicas Terrazos y Pulidos'}<br>
                 <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
                 <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
                 <strong>Tel:</strong> ${this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.telefono_movil || this.companyInfo.phone_mobile || 'N/A'}<br>
