@@ -408,6 +408,9 @@
                             Cantidad
                             <i class="ti" :class="getSortIcon('cantidad')"></i>
                           </th>
+                          <th v-if="filters.is_for_inventory_taking" class="text-center" style="min-width: 100px;">
+                            Toma de Inv.
+                          </th>
                           <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_unit')">
                             Costo Unit.
                             <i class="ti" :class="getSortIcon('costo_unit')"></i>
@@ -434,6 +437,7 @@
                           <td v-if="filters.include_brand">{{ item.marca || '-' }}</td>
                           <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
                           <td class="text-end">{{ parseFloat(item.cantidad || 0).toFixed(2) }}</td>
+                          <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
                           <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_unit || 0) }}</td>
                           <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_total || 0) }}</td>
                           <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_unit || 0) }}</td>
@@ -445,7 +449,82 @@
                 </div>
               </template>
 
-              <!-- Sin agrupación por categorías -->
+              <!-- Si también está agrupado por subcategorías, mostrar sub-agrupación -->
+              <template v-else-if="filters.group_by_articles">
+                <div v-for="(subcategoryGroup, subIndex) in groupBySubcategory(warehouse.items)" :key="subIndex" class="mb-3">
+                  <h6 class="text-secondary mb-2 ms-3">
+                    <i class="ti ti-tag me-2"></i>{{ subcategoryGroup.subcategoria || 'Sin Subcategoría' }}
+                  </h6>
+                  <div class="table-responsive ms-4">
+                    <table class="table table-bordered table-striped table-sm">
+                      <thead class="table-light">
+                        <tr>
+                          <th v-if="filters.include_codes" class="sortable" @click="sortBy('codigo')">
+                            Código
+                            <i class="ti" :class="getSortIcon('codigo')"></i>
+                          </th>
+                          <th class="sortable" @click="sortBy('nombre')">
+                            Nombre
+                            <i class="ti" :class="getSortIcon('nombre')"></i>
+                          </th>
+                          <th class="sortable" @click="sortBy('categoria')">
+                            Categoría
+                            <i class="ti" :class="getSortIcon('categoria')"></i>
+                          </th>
+                          <th v-if="filters.include_brand" class="sortable" @click="sortBy('marca')">
+                            Marca
+                            <i class="ti" :class="getSortIcon('marca')"></i>
+                          </th>
+                          <th v-if="filters.include_unit" class="sortable" @click="sortBy('unidad_medida')">
+                            Unidad
+                            <i class="ti" :class="getSortIcon('unidad_medida')"></i>
+                          </th>
+                          <th class="text-center sortable" @click="sortBy('cantidad')">
+                            Cantidad
+                            <i class="ti" :class="getSortIcon('cantidad')"></i>
+                          </th>
+                          <th v-if="filters.is_for_inventory_taking" class="text-center" style="min-width: 100px;">
+                            Toma de Inv.
+                          </th>
+                          <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_unit')">
+                            Costo Unit.
+                            <i class="ti" :class="getSortIcon('costo_unit')"></i>
+                          </th>
+                          <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_total')">
+                            Costo Total
+                            <i class="ti" :class="getSortIcon('costo_total')"></i>
+                          </th>
+                          <th v-if="filters.include_prices" class="text-end sortable" @click="sortBy('precio_unit')">
+                            Precio Unit.
+                            <i class="ti" :class="getSortIcon('precio_unit')"></i>
+                          </th>
+                          <th v-if="filters.include_prices" class="text-end sortable" @click="sortBy('precio_total')">
+                            Precio Total
+                            <i class="ti" :class="getSortIcon('precio_total')"></i>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(item, index) in getSortedItems(subcategoryGroup.items)" :key="index">
+                          <td v-if="filters.include_codes">{{ item.codigo || '-' }}</td>
+                          <td>{{ item.nombre }}</td>
+                          <td>{{ item.categoria || '-' }}</td>
+                          <td v-if="filters.include_brand">{{ item.marca || '-' }}</td>
+                          <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
+                          <td class="text-end">{{ parseFloat(item.cantidad || 0).toFixed(2) }}</td>
+                          <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
+                          <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_unit || 0) }}</td>
+                          <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_total || 0) }}</td>
+                          <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_unit || 0) }}</td>
+                          <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_total || 0) }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </template>
+
+              <!-- Sin agrupación por categorías ni subcategorías -->
               <div v-else class="table-responsive">
                 <table class="table table-bordered table-striped table-sm">
                   <thead class="table-light">
@@ -478,6 +557,9 @@
                         Cantidad
                         <i class="ti" :class="getSortIcon('cantidad')"></i>
                       </th>
+                      <th v-if="filters.is_for_inventory_taking" class="text-center" style="min-width: 100px;">
+                        Toma de Inv.
+                      </th>
                       <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_unit')">
                         Costo Unit.
                         <i class="ti" :class="getSortIcon('costo_unit')"></i>
@@ -505,6 +587,7 @@
                       <td v-if="filters.include_brand">{{ item.marca || '-' }}</td>
                       <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
                       <td class="text-end">{{ parseFloat(item.cantidad || 0).toFixed(2) }}</td>
+                      <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
                       <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_unit || 0) }}</td>
                       <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_total || 0) }}</td>
                       <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_unit || 0) }}</td>
@@ -563,6 +646,9 @@
                       Cantidad
                       <i class="ti" :class="getSortIcon('cantidad')"></i>
                     </th>
+                    <th v-if="filters.is_for_inventory_taking" class="text-center" style="min-width: 100px;">
+                      Toma de Inv.
+                    </th>
                     <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_unit')">
                       Costo Unit.
                       <i class="ti" :class="getSortIcon('costo_unit')"></i>
@@ -591,6 +677,7 @@
                     <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
                     <td>{{ item.almacen || '-' }}</td>
                     <td class="text-end">{{ parseFloat(item.cantidad || 0).toFixed(2) }}</td>
+                    <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
                     <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_unit || 0) }}</td>
                     <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_total || 0) }}</td>
                     <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_unit || 0) }}</td>
@@ -1103,6 +1190,30 @@ export default {
       return Object.values(grouped).sort((a, b) => {
         const aName = a.categoria || ''
         const bName = b.categoria || ''
+        return aName.localeCompare(bName)
+      })
+    },
+    groupBySubcategory(items) {
+      // Agrupar items por subcategoría
+      const grouped = {}
+
+      items.forEach(item => {
+        const subcategoryKey = item.subcategoria || 'Sin Subcategoría'
+
+        if (!grouped[subcategoryKey]) {
+          grouped[subcategoryKey] = {
+            subcategoria: subcategoryKey,
+            items: []
+          }
+        }
+
+        grouped[subcategoryKey].items.push(item)
+      })
+
+      // Convertir a array y ordenar por subcategoría
+      return Object.values(grouped).sort((a, b) => {
+        const aName = a.subcategoria || ''
+        const bName = b.subcategoria || ''
         return aName.localeCompare(bName)
       })
     }
