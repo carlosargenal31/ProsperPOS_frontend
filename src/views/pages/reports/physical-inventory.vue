@@ -420,9 +420,6 @@
                                 Cantidad
                                 <i class="ti" :class="getSortIcon('cantidad')"></i>
                               </th>
-                              <th v-if="filters.is_for_inventory_taking" class="text-center" style="min-width: 100px;">
-                                Toma de Inv.
-                              </th>
                               <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_unit')">
                                 Costo Unit.
                                 <i class="ti" :class="getSortIcon('costo_unit')"></i>
@@ -439,6 +436,9 @@
                                 Precio Total
                                 <i class="ti" :class="getSortIcon('precio_total')"></i>
                               </th>
+                              <th v-if="filters.is_for_inventory_taking" class="text-center" style="min-width: 100px;">
+                                Toma de Inv.
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
@@ -448,11 +448,11 @@
                               <td v-if="filters.include_brand">{{ item.marca || '-' }}</td>
                               <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
                               <td class="text-end">{{ parseFloat(item.cantidad || 0).toFixed(2) }}</td>
-                              <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
                               <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_unit || 0) }}</td>
                               <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_total || 0) }}</td>
                               <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_unit || 0) }}</td>
                               <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_total || 0) }}</td>
+                              <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
                             </tr>
                           </tbody>
                         </table>
@@ -489,9 +489,6 @@
                             Cantidad
                             <i class="ti" :class="getSortIcon('cantidad')"></i>
                           </th>
-                          <th v-if="filters.is_for_inventory_taking" class="text-center" style="min-width: 100px;">
-                            Toma de Inv.
-                          </th>
                           <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_unit')">
                             Costo Unit.
                             <i class="ti" :class="getSortIcon('costo_unit')"></i>
@@ -508,6 +505,9 @@
                             Precio Total
                             <i class="ti" :class="getSortIcon('precio_total')"></i>
                           </th>
+                          <th v-if="filters.is_for_inventory_taking" class="text-center" style="min-width: 100px;">
+                            Toma de Inv.
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -518,11 +518,11 @@
                           <td v-if="filters.include_brand">{{ item.marca || '-' }}</td>
                           <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
                           <td class="text-end">{{ parseFloat(item.cantidad || 0).toFixed(2) }}</td>
-                          <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
                           <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_unit || 0) }}</td>
                           <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_total || 0) }}</td>
                           <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_unit || 0) }}</td>
                           <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_total || 0) }}</td>
+                          <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
                         </tr>
                       </tbody>
                     </table>
@@ -563,9 +563,6 @@
                         Cantidad
                         <i class="ti" :class="getSortIcon('cantidad')"></i>
                       </th>
-                      <th v-if="filters.is_for_inventory_taking" class="text-center" style="min-width: 100px;">
-                        Toma de Inv.
-                      </th>
                       <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_unit')">
                         Costo Unit.
                         <i class="ti" :class="getSortIcon('costo_unit')"></i>
@@ -582,6 +579,9 @@
                         Precio Total
                         <i class="ti" :class="getSortIcon('precio_total')"></i>
                       </th>
+                      <th v-if="filters.is_for_inventory_taking" class="text-center" style="min-width: 100px;">
+                        Toma de Inv.
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -593,11 +593,11 @@
                       <td v-if="filters.include_brand">{{ item.marca || '-' }}</td>
                       <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
                       <td class="text-end">{{ parseFloat(item.cantidad || 0).toFixed(2) }}</td>
-                      <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
                       <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_unit || 0) }}</td>
                       <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_total || 0) }}</td>
                       <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_unit || 0) }}</td>
                       <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_total || 0) }}</td>
+                      <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
                     </tr>
                   </tbody>
                   <tfoot class="table-secondary fw-bold">
@@ -608,6 +608,7 @@
                       <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(warehouse.totals.costo_total || 0) }}</td>
                       <td v-if="filters.include_prices" class="text-end"></td>
                       <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(warehouse.totals.precio_total || 0) }}</td>
+                      <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
                     </tr>
                   </tfoot>
                 </table>
@@ -652,9 +653,6 @@
                       Cantidad
                       <i class="ti" :class="getSortIcon('cantidad')"></i>
                     </th>
-                    <th v-if="filters.is_for_inventory_taking" class="text-center" style="min-width: 100px;">
-                      Toma de Inv.
-                    </th>
                     <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_unit')">
                       Costo Unit.
                       <i class="ti" :class="getSortIcon('costo_unit')"></i>
@@ -671,6 +669,9 @@
                       Precio Total
                       <i class="ti" :class="getSortIcon('precio_total')"></i>
                     </th>
+                    <th v-if="filters.is_for_inventory_taking" class="text-center" style="min-width: 100px;">
+                      Toma de Inv.
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -683,11 +684,11 @@
                     <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
                     <td>{{ item.almacen || '-' }}</td>
                     <td class="text-end">{{ parseFloat(item.cantidad || 0).toFixed(2) }}</td>
-                    <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
                     <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_unit || 0) }}</td>
                     <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_total || 0) }}</td>
                     <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_unit || 0) }}</td>
                     <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_total || 0) }}</td>
+                    <td v-if="filters.is_for_inventory_taking" class="text-center"></td>
                   </tr>
                 </tbody>
               </table>
@@ -1302,11 +1303,11 @@ export default {
                   ${this.filters.include_brand ? `<td>${item.marca || ''}</td>` : ''}
                   ${this.filters.include_unit ? `<td>${item.unidad_medida || ''}</td>` : ''}
                   <td class="text-right">${parseFloat(item.cantidad || 0).toFixed(2)}</td>
-                  ${this.filters.is_for_inventory_taking ? `<td style="text-align: center; background: #f9fafb;"></td>` : ''}
                   ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_unit || 0)}</td>` : ''}
                   ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_total || 0)}</td>` : ''}
                   ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_unit || 0)}</td>` : ''}
                   ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_total || 0)}</td>` : ''}
+                  ${this.filters.is_for_inventory_taking ? `<td style="text-align: center; background: #f9fafb;"></td>` : ''}
                 </tr>
               `;
             });
@@ -1324,11 +1325,11 @@ export default {
               ${this.filters.include_unit ? `<td>${item.unidad_medida || ''}</td>` : ''}
               <td>${item.almacen || ''}</td>
               <td class="text-right">${parseFloat(item.cantidad || 0).toFixed(2)}</td>
-              ${this.filters.is_for_inventory_taking ? `<td style="text-align: center; background: #f9fafb;"></td>` : ''}
               ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_unit || 0)}</td>` : ''}
               ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_total || 0)}</td>` : ''}
               ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_unit || 0)}</td>` : ''}
               ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_total || 0)}</td>` : ''}
+              ${this.filters.is_for_inventory_taking ? `<td style="text-align: center; background: #f9fafb;"></td>` : ''}
             </tr>
           `;
         });
@@ -1475,11 +1476,11 @@ export default {
                 ${this.filters.include_unit ? '<th>Unidad</th>' : ''}
                 ${!this.filters.group_by_warehouses ? '<th>Bodega</th>' : ''}
                 <th class="text-right">Cantidad</th>
-                ${this.filters.is_for_inventory_taking ? '<th style="text-align: center;">Toma Inv.</th>' : ''}
                 ${this.filters.include_cost ? '<th class="text-right">Costo Unit.</th>' : ''}
                 ${this.filters.include_cost ? '<th class="text-right">Costo Total</th>' : ''}
                 ${this.filters.include_prices ? '<th class="text-right">Precio Unit.</th>' : ''}
                 ${this.filters.include_prices ? '<th class="text-right">Precio Total</th>' : ''}
+                ${this.filters.is_for_inventory_taking ? '<th style="text-align: center;">Toma Inv.</th>' : ''}
               </tr>
             </thead>
             <tbody>
@@ -1489,11 +1490,11 @@ export default {
               <tr>
                 <td colspan="${this.getColspanForTotals()}" style="text-align: right; font-weight: bold;">TOTALES:</td>
                 <td class="text-right">${this.totals.cantidad_total.toFixed(2)}</td>
-                ${this.filters.is_for_inventory_taking ? '<td></td>' : ''}
                 ${this.filters.include_cost ? '<td></td>' : ''}
                 ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(this.totals.costo_total)}</td>` : ''}
                 ${this.filters.include_prices ? '<td></td>' : ''}
                 ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(this.totals.precio_total || 0)}</td>` : ''}
+                ${this.filters.is_for_inventory_taking ? '<td></td>' : ''}
               </tr>
             </tfoot>
           </table>
