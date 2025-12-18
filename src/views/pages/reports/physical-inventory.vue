@@ -1291,8 +1291,8 @@ export default {
       if (this.filters.group_by_warehouses && Array.isArray(this.inventoryData)) {
         this.inventoryData.forEach(warehouse => {
           inventoryRows += `
-            <tr style="background: #f0f0f0;">
-              <td colspan="12" style="padding: 8px; font-weight: bold; font-size: 11px;">
+            <tr style="background: #f3f4f6; font-weight: bold;">
+              <td colspan="12" style="padding: 8px; font-size: 10px;">
                 BODEGA: ${warehouse.almacen || 'Sin Bodega'}
               </td>
             </tr>
@@ -1302,18 +1302,18 @@ export default {
             warehouse.items.forEach(item => {
               inventoryRows += `
                 <tr>
-                  ${this.filters.include_codes ? `<td style="padding: 4px; font-size: 9px;">${item.codigo || ''}</td>` : ''}
-                  <td style="padding: 4px; font-size: 9px;">${item.nombre || ''}</td>
-                  <td style="padding: 4px; font-size: 9px;">${item.categoria || ''}</td>
-                  <td style="padding: 4px; font-size: 9px;">${item.subcategoria || ''}</td>
-                  ${this.filters.include_brand ? `<td style="padding: 4px; font-size: 9px;">${item.marca || ''}</td>` : ''}
-                  ${this.filters.include_unit ? `<td style="padding: 4px; font-size: 9px;">${item.unidad_medida || ''}</td>` : ''}
-                  <td style="padding: 4px; font-size: 9px; text-align: right;">${parseFloat(item.cantidad || 0).toFixed(2)}</td>
-                  ${this.filters.is_for_inventory_taking ? `<td style="padding: 4px; font-size: 9px; text-align: center; border: 1px solid #999;"></td>` : ''}
-                  ${this.filters.include_cost ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.costo_unit || 0)}</td>` : ''}
-                  ${this.filters.include_cost ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.costo_total || 0)}</td>` : ''}
-                  ${this.filters.include_prices ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.precio_unit || 0)}</td>` : ''}
-                  ${this.filters.include_prices ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.precio_total || 0)}</td>` : ''}
+                  ${this.filters.include_codes ? `<td>${item.codigo || ''}</td>` : ''}
+                  <td>${item.nombre || ''}</td>
+                  <td>${item.categoria || ''}</td>
+                  <td>${item.subcategoria || ''}</td>
+                  ${this.filters.include_brand ? `<td>${item.marca || ''}</td>` : ''}
+                  ${this.filters.include_unit ? `<td>${item.unidad_medida || ''}</td>` : ''}
+                  <td class="text-right">${parseFloat(item.cantidad || 0).toFixed(2)}</td>
+                  ${this.filters.is_for_inventory_taking ? `<td style="text-align: center; background: #f9fafb;"></td>` : ''}
+                  ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_unit || 0)}</td>` : ''}
+                  ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_total || 0)}</td>` : ''}
+                  ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_unit || 0)}</td>` : ''}
+                  ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_total || 0)}</td>` : ''}
                 </tr>
               `;
             });
@@ -1323,22 +1323,32 @@ export default {
         this.inventoryData.forEach(item => {
           inventoryRows += `
             <tr>
-              ${this.filters.include_codes ? `<td style="padding: 4px; font-size: 9px;">${item.codigo || ''}</td>` : ''}
-              <td style="padding: 4px; font-size: 9px;">${item.nombre || ''}</td>
-              <td style="padding: 4px; font-size: 9px;">${item.categoria || ''}</td>
-              <td style="padding: 4px; font-size: 9px;">${item.subcategoria || ''}</td>
-              ${this.filters.include_brand ? `<td style="padding: 4px; font-size: 9px;">${item.marca || ''}</td>` : ''}
-              ${this.filters.include_unit ? `<td style="padding: 4px; font-size: 9px;">${item.unidad_medida || ''}</td>` : ''}
-              <td style="padding: 4px; font-size: 9px;">${item.almacen || ''}</td>
-              <td style="padding: 4px; font-size: 9px; text-align: right;">${parseFloat(item.cantidad || 0).toFixed(2)}</td>
-              ${this.filters.is_for_inventory_taking ? `<td style="padding: 4px; font-size: 9px; text-align: center; border: 1px solid #999;"></td>` : ''}
-              ${this.filters.include_cost ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.costo_unit || 0)}</td>` : ''}
-              ${this.filters.include_cost ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.costo_total || 0)}</td>` : ''}
-              ${this.filters.include_prices ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.precio_unit || 0)}</td>` : ''}
-              ${this.filters.include_prices ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.precio_total || 0)}</td>` : ''}
+              ${this.filters.include_codes ? `<td>${item.codigo || ''}</td>` : ''}
+              <td>${item.nombre || ''}</td>
+              <td>${item.categoria || ''}</td>
+              <td>${item.subcategoria || ''}</td>
+              ${this.filters.include_brand ? `<td>${item.marca || ''}</td>` : ''}
+              ${this.filters.include_unit ? `<td>${item.unidad_medida || ''}</td>` : ''}
+              <td>${item.almacen || ''}</td>
+              <td class="text-right">${parseFloat(item.cantidad || 0).toFixed(2)}</td>
+              ${this.filters.is_for_inventory_taking ? `<td style="text-align: center; background: #f9fafb;"></td>` : ''}
+              ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_unit || 0)}</td>` : ''}
+              ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_total || 0)}</td>` : ''}
+              ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_unit || 0)}</td>` : ''}
+              ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_total || 0)}</td>` : ''}
             </tr>
           `;
         });
+      }
+
+      // Calcular totales de productos
+      let totalProducts = 0;
+      if (this.filters.group_by_warehouses && Array.isArray(this.inventoryData)) {
+        this.inventoryData.forEach(warehouse => {
+          if (warehouse.items) totalProducts += warehouse.items.length;
+        });
+      } else if (Array.isArray(this.inventoryData)) {
+        totalProducts = this.inventoryData.length;
       }
 
       return `
@@ -1347,33 +1357,120 @@ export default {
         <head>
           <meta charset="UTF-8">
           <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            .company-info { display: flex; align-items: flex-start; margin-bottom: 20px; }
-            .company-info img { width: 80px; margin-right: 15px; }
-            .company-details { flex: 1; font-size: 10px; line-height: 1.4; }
-            .report-box { border: 2px solid #000; padding: 10px; margin-bottom: 20px; text-align: center; }
-            .report-box h2 { margin: 0; font-size: 16px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 9px; }
-            th { background: #333; color: white; padding: 6px 4px; font-size: 9px; font-weight: bold; }
-            td { border: 1px solid #ddd; padding: 4px; }
-            .totals { background: #e8e8e8; font-weight: bold; }
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              padding: 15px;
+              background: white;
+              margin: 0;
+              width: 800px;
+            }
+            .header-section {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 15px;
+              gap: 15px;
+            }
+            .company-info {
+              width: 60%;
+              flex-shrink: 0;
+            }
+            .company-info img {
+              max-width: 180px;
+              height: auto;
+              margin-bottom: 8px;
+            }
+            .company-details {
+              font-size: 11px;
+              line-height: 1.5;
+            }
+            .report-box {
+              width: 38%;
+              flex-shrink: 0;
+              background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+              color: white;
+              padding: 10px;
+              border-radius: 8px;
+            }
+            .report-title {
+              font-size: 13px;
+              font-weight: bold;
+              margin-bottom: 8px;
+            }
+            .report-details {
+              font-size: 10px;
+              line-height: 1.6;
+            }
+            .separator {
+              border: none;
+              border-top: 3px solid #f97316;
+              margin: 15px 0;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              font-size: 9px;
+            }
+            thead {
+              background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+              color: white;
+            }
+            th {
+              padding: 8px 4px;
+              text-align: left;
+              border: 1px solid #ddd;
+              font-size: 9px;
+            }
+            td {
+              padding: 6px;
+              border: 1px solid #ddd;
+            }
+            .text-right {
+              text-align: right;
+            }
+            tfoot {
+              background: #f3f4f6;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+              font-weight: bold;
+            }
+            tfoot td {
+              padding: 8px 4px;
+              font-size: 9px;
+            }
           </style>
         </head>
         <body>
-          <div class="company-info">
-            <img src="${LOGO_BASE64}" alt="Logo">
-            <div class="company-details">
-              <strong>${this.companyInfo.business_description || this.companyInfo.description || 'ProsperPOS'}</strong><br>
-              <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
-              <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-              <strong>Tel:</strong> ${this.companyInfo.telefono || 'N/A'}<br>
-              <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
+          <div class="header-section">
+            <div class="company-info">
+              <img src="${LOGO_BASE64}" alt="Logo">
+              <div class="company-details">
+                <strong>${this.companyInfo.business_description || this.companyInfo.description || 'Cerámicas Terrazos y Pulidos'}</strong><br>
+                <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.telefono_movil || this.companyInfo.phone_mobile || 'N/A'}<br>
+                <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
+              </div>
+            </div>
+            <div class="report-box">
+              <div class="report-title">REPORTE DE INVENTARIO FÍSICO</div>
+              <div class="report-details">
+                <strong>Generado:</strong> ${dateGenerated}<br>
+                <strong>Productos:</strong> ${totalProducts}
+              </div>
             </div>
           </div>
-          <div class="report-box">
-            <h2>REPORTE DE INVENTARIO FÍSICO</h2>
-            <p style="margin: 5px 0; font-size: 10px;">Generado: ${dateGenerated}</p>
-          </div>
+
+          <hr class="separator">
+
           <table>
             <thead>
               <tr>
@@ -1384,26 +1481,26 @@ export default {
                 ${this.filters.include_brand ? '<th>Marca</th>' : ''}
                 ${this.filters.include_unit ? '<th>Unidad</th>' : ''}
                 ${!this.filters.group_by_warehouses ? '<th>Bodega</th>' : ''}
-                <th>Cantidad</th>
-                ${this.filters.is_for_inventory_taking ? '<th>Toma Inv.</th>' : ''}
-                ${this.filters.include_cost ? '<th>Costo Unit.</th>' : ''}
-                ${this.filters.include_cost ? '<th>Costo Total</th>' : ''}
-                ${this.filters.include_prices ? '<th>Precio Unit.</th>' : ''}
-                ${this.filters.include_prices ? '<th>Precio Total</th>' : ''}
+                <th class="text-right">Cantidad</th>
+                ${this.filters.is_for_inventory_taking ? '<th style="text-align: center;">Toma Inv.</th>' : ''}
+                ${this.filters.include_cost ? '<th class="text-right">Costo Unit.</th>' : ''}
+                ${this.filters.include_cost ? '<th class="text-right">Costo Total</th>' : ''}
+                ${this.filters.include_prices ? '<th class="text-right">Precio Unit.</th>' : ''}
+                ${this.filters.include_prices ? '<th class="text-right">Precio Total</th>' : ''}
               </tr>
             </thead>
             <tbody>
               ${inventoryRows}
             </tbody>
             <tfoot>
-              <tr class="totals">
-                <td colspan="${this.filters.group_by_warehouses ? (this.filters.include_codes ? 6 : 5) : (this.filters.include_codes ? 7 : 6)}" style="text-align: right; padding: 8px;">TOTALES:</td>
-                <td style="text-align: right; padding: 8px;">${this.totals.cantidad_total.toFixed(2)}</td>
+              <tr>
+                <td colspan="${this.getColspanForTotals()}" style="text-align: right; font-weight: bold;">TOTALES:</td>
+                <td class="text-right">${this.totals.cantidad_total.toFixed(2)}</td>
                 ${this.filters.is_for_inventory_taking ? '<td></td>' : ''}
                 ${this.filters.include_cost ? '<td></td>' : ''}
-                ${this.filters.include_cost ? `<td style="text-align: right;">L ${this.formatCurrency(this.totals.costo_total)}</td>` : ''}
+                ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(this.totals.costo_total)}</td>` : ''}
                 ${this.filters.include_prices ? '<td></td>' : ''}
-                ${this.filters.include_prices ? `<td style="text-align: right;">L ${this.formatCurrency(this.totals.precio_total || 0)}</td>` : ''}
+                ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(this.totals.precio_total || 0)}</td>` : ''}
               </tr>
             </tfoot>
           </table>
@@ -1614,6 +1711,16 @@ export default {
         console.error('Error al imprimir:', error);
         alert('Error al imprimir el reporte');
       }
+    },
+    getColspanForTotals() {
+      let count = 3; // Nombre, Categoría, Subcategoría
+
+      if (this.filters.include_codes) count++;
+      if (this.filters.include_brand) count++;
+      if (this.filters.include_unit) count++;
+      if (!this.filters.group_by_warehouses) count++; // Bodega column
+
+      return count;
     }
   }
 }
