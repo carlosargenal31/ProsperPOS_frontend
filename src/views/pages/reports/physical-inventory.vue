@@ -1215,9 +1215,21 @@ export default {
           costo_total: 0
         }
 
+        console.log('===== DEBUG INVENTORY DATA =====')
         console.log('inventoryData asignado:', this.inventoryData)
         console.log('inventoryData.length:', this.inventoryData.length)
+        console.log('inventoryData es array?:', Array.isArray(this.inventoryData))
+        if (this.inventoryData.length > 0) {
+          console.log('Primer item:', this.inventoryData[0])
+          console.log('Primer item.nombre:', this.inventoryData[0].nombre)
+          console.log('Primer item.categoria:', this.inventoryData[0].categoria)
+          console.log('Primer item.almacen:', this.inventoryData[0].almacen)
+        }
         console.log('totals:', this.totals)
+        console.log('filters.group_by_warehouses:', this.filters.group_by_warehouses)
+        console.log('filters.group_by_groups:', this.filters.group_by_groups)
+        console.log('filters.group_by_articles:', this.filters.group_by_articles)
+        console.log('================================')
       } catch (error) {
         console.error('Error al cargar inventario:', error)
         this.$swal.fire({
