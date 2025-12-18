@@ -354,6 +354,15 @@
                     <i class="ti ti-search me-1"></i>
                     {{ loading ? "Generando..." : "Generar Reporte" }}
                   </button>
+                  <button
+                    type="button"
+                    class="btn btn-success"
+                    @click="showSaveReportModal = true"
+                    :disabled="inventoryData.length === 0"
+                  >
+                    <i class="ti ti-download me-1"></i>
+                    Guardar Reporte
+                  </button>
                   <button type="button" class="btn btn-secondary" @click="clearFilters">
                     CERRAR
                   </button>
@@ -855,10 +864,48 @@
   </div>
   <div class="modal-backdrop fade show" v-if="showProductSearch" @click="showProductSearch = false"></div>
 
+  <!-- Modal Guardar Reporte -->
+  <div v-if="showSaveReportModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Guardar Reporte - Inventario Físico</h5>
+          <button type="button" class="btn-close" @click="showSaveReportModal = false"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">Selecciona el formato en el que deseas guardar el reporte:</p>
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-success" @click="saveAsExcel">
+              <i class="ti ti-file-spreadsheet me-2"></i> Guardar como Excel
+            </button>
+            <button class="btn btn-outline-danger" @click="saveAsPDF">
+              <i class="ti ti-file-type-pdf me-2"></i> Guardar como PDF
+            </button>
+            <button class="btn btn-outline-primary" @click="saveAsImage">
+              <i class="ti ti-photo me-2"></i> Guardar como Imagen
+            </button>
+            <button class="btn btn-outline-secondary" @click="printReport">
+              <i class="ti ti-printer me-2"></i> Imprimir
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="showSaveReportModal = false">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 <script>
 import api from "@/utils/axios";
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import * as XLSX from 'xlsx';
+import { LOGO_BASE64 } from '@/assets/img/logo.js';
 
 export default {
   name: 'PhysicalInventory',
@@ -866,6 +913,8 @@ export default {
     return {
       loading: false,
       inventoryData: [],
+      showSaveReportModal: false,
+      companyInfo: {},
       totals: {
         total_registros: 0,
         cantidad_total: 0,
@@ -927,6 +976,7 @@ export default {
   },
   mounted() {
     this.loadCatalogs()
+    this.loadCompanyInfo()
   },
   methods: {
     async loadCatalogs() {
@@ -1213,6 +1263,357 @@ export default {
         const bName = b.subcategoria || ''
         return aName.localeCompare(bName)
       })
+    },
+    async loadCompanyInfo() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await api.get('/general-settings', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.data.success) {
+          this.companyInfo = response.data.data;
+        }
+      } catch (error) {
+        console.error('Error loading company info:', error);
+      }
+    },
+    buildInventoryHTML() {
+      const dateGenerated = new Date().toLocaleString('es-HN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      let inventoryRows = '';
+
+      if (this.filters.group_by_warehouses && Array.isArray(this.inventoryData)) {
+        this.inventoryData.forEach(warehouse => {
+          inventoryRows += `
+            <tr style="background: #f0f0f0;">
+              <td colspan="12" style="padding: 8px; font-weight: bold; font-size: 11px;">
+                BODEGA: ${warehouse.almacen || 'Sin Bodega'}
+              </td>
+            </tr>
+          `;
+
+          if (warehouse.items && warehouse.items.length > 0) {
+            warehouse.items.forEach(item => {
+              inventoryRows += `
+                <tr>
+                  ${this.filters.include_codes ? `<td style="padding: 4px; font-size: 9px;">${item.codigo || ''}</td>` : ''}
+                  <td style="padding: 4px; font-size: 9px;">${item.nombre || ''}</td>
+                  <td style="padding: 4px; font-size: 9px;">${item.categoria || ''}</td>
+                  <td style="padding: 4px; font-size: 9px;">${item.subcategoria || ''}</td>
+                  ${this.filters.include_brand ? `<td style="padding: 4px; font-size: 9px;">${item.marca || ''}</td>` : ''}
+                  ${this.filters.include_unit ? `<td style="padding: 4px; font-size: 9px;">${item.unidad_medida || ''}</td>` : ''}
+                  <td style="padding: 4px; font-size: 9px; text-align: right;">${parseFloat(item.cantidad || 0).toFixed(2)}</td>
+                  ${this.filters.is_for_inventory_taking ? `<td style="padding: 4px; font-size: 9px; text-align: center; border: 1px solid #999;"></td>` : ''}
+                  ${this.filters.include_cost ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.costo_unit || 0)}</td>` : ''}
+                  ${this.filters.include_cost ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.costo_total || 0)}</td>` : ''}
+                  ${this.filters.include_prices ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.precio_unit || 0)}</td>` : ''}
+                  ${this.filters.include_prices ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.precio_total || 0)}</td>` : ''}
+                </tr>
+              `;
+            });
+          }
+        });
+      } else if (Array.isArray(this.inventoryData)) {
+        this.inventoryData.forEach(item => {
+          inventoryRows += `
+            <tr>
+              ${this.filters.include_codes ? `<td style="padding: 4px; font-size: 9px;">${item.codigo || ''}</td>` : ''}
+              <td style="padding: 4px; font-size: 9px;">${item.nombre || ''}</td>
+              <td style="padding: 4px; font-size: 9px;">${item.categoria || ''}</td>
+              <td style="padding: 4px; font-size: 9px;">${item.subcategoria || ''}</td>
+              ${this.filters.include_brand ? `<td style="padding: 4px; font-size: 9px;">${item.marca || ''}</td>` : ''}
+              ${this.filters.include_unit ? `<td style="padding: 4px; font-size: 9px;">${item.unidad_medida || ''}</td>` : ''}
+              <td style="padding: 4px; font-size: 9px;">${item.almacen || ''}</td>
+              <td style="padding: 4px; font-size: 9px; text-align: right;">${parseFloat(item.cantidad || 0).toFixed(2)}</td>
+              ${this.filters.is_for_inventory_taking ? `<td style="padding: 4px; font-size: 9px; text-align: center; border: 1px solid #999;"></td>` : ''}
+              ${this.filters.include_cost ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.costo_unit || 0)}</td>` : ''}
+              ${this.filters.include_cost ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.costo_total || 0)}</td>` : ''}
+              ${this.filters.include_prices ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.precio_unit || 0)}</td>` : ''}
+              ${this.filters.include_prices ? `<td style="padding: 4px; font-size: 9px; text-align: right;">L ${this.formatCurrency(item.precio_total || 0)}</td>` : ''}
+            </tr>
+          `;
+        });
+      }
+
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            .company-info { display: flex; align-items: flex-start; margin-bottom: 20px; }
+            .company-info img { width: 80px; margin-right: 15px; }
+            .company-details { flex: 1; font-size: 10px; line-height: 1.4; }
+            .report-box { border: 2px solid #000; padding: 10px; margin-bottom: 20px; text-align: center; }
+            .report-box h2 { margin: 0; font-size: 16px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 9px; }
+            th { background: #333; color: white; padding: 6px 4px; font-size: 9px; font-weight: bold; }
+            td { border: 1px solid #ddd; padding: 4px; }
+            .totals { background: #e8e8e8; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="company-info">
+            <img src="${LOGO_BASE64}" alt="Logo">
+            <div class="company-details">
+              <strong>${this.companyInfo.business_description || this.companyInfo.description || 'ProsperPOS'}</strong><br>
+              <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+              <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
+              <strong>Tel:</strong> ${this.companyInfo.telefono || 'N/A'}<br>
+              <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
+            </div>
+          </div>
+          <div class="report-box">
+            <h2>REPORTE DE INVENTARIO FÍSICO</h2>
+            <p style="margin: 5px 0; font-size: 10px;">Generado: ${dateGenerated}</p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                ${this.filters.include_codes ? '<th>Código</th>' : ''}
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Subcategoría</th>
+                ${this.filters.include_brand ? '<th>Marca</th>' : ''}
+                ${this.filters.include_unit ? '<th>Unidad</th>' : ''}
+                ${!this.filters.group_by_warehouses ? '<th>Bodega</th>' : ''}
+                <th>Cantidad</th>
+                ${this.filters.is_for_inventory_taking ? '<th>Toma Inv.</th>' : ''}
+                ${this.filters.include_cost ? '<th>Costo Unit.</th>' : ''}
+                ${this.filters.include_cost ? '<th>Costo Total</th>' : ''}
+                ${this.filters.include_prices ? '<th>Precio Unit.</th>' : ''}
+                ${this.filters.include_prices ? '<th>Precio Total</th>' : ''}
+              </tr>
+            </thead>
+            <tbody>
+              ${inventoryRows}
+            </tbody>
+            <tfoot>
+              <tr class="totals">
+                <td colspan="${this.filters.group_by_warehouses ? (this.filters.include_codes ? 6 : 5) : (this.filters.include_codes ? 7 : 6)}" style="text-align: right; padding: 8px;">TOTALES:</td>
+                <td style="text-align: right; padding: 8px;">${this.totals.cantidad_total.toFixed(2)}</td>
+                ${this.filters.is_for_inventory_taking ? '<td></td>' : ''}
+                ${this.filters.include_cost ? '<td></td>' : ''}
+                ${this.filters.include_cost ? `<td style="text-align: right;">L ${this.formatCurrency(this.totals.costo_total)}</td>` : ''}
+                ${this.filters.include_prices ? '<td></td>' : ''}
+                ${this.filters.include_prices ? `<td style="text-align: right;">L ${this.formatCurrency(this.totals.precio_total || 0)}</td>` : ''}
+              </tr>
+            </tfoot>
+          </table>
+        </body>
+        </html>
+      `;
+    },
+    saveAsExcel() {
+      this.showSaveReportModal = false;
+
+      try {
+        const wb = XLSX.utils.book_new();
+
+        const headerData = [
+          [this.companyInfo.company_name || this.companyInfo.business_description || 'PROSPERPOS'],
+          [this.companyInfo.direccion || 'Sin dirección'],
+          [`Tel: ${this.companyInfo.telefono || 'N/A'}`],
+          [''],
+          ['REPORTE DE INVENTARIO FÍSICO'],
+          [`Generado: ${new Date().toLocaleString('es-HN')}`],
+          ['']
+        ];
+
+        const ws = XLSX.utils.aoa_to_sheet(headerData);
+
+        const data = [];
+        if (this.filters.group_by_warehouses && Array.isArray(this.inventoryData)) {
+          this.inventoryData.forEach(warehouse => {
+            data.push({
+              codigo: '',
+              nombre: `BODEGA: ${warehouse.almacen}`,
+              categoria: '',
+              subcategoria: '',
+              marca: '',
+              unidad: '',
+              cantidad: '',
+              toma_inv: '',
+              costo_unit: '',
+              costo_total: '',
+              precio_unit: '',
+              precio_total: ''
+            });
+
+            if (warehouse.items && warehouse.items.length > 0) {
+              warehouse.items.forEach(item => {
+                data.push({
+                  codigo: this.filters.include_codes ? (item.codigo || '') : undefined,
+                  nombre: item.nombre || '',
+                  categoria: item.categoria || '',
+                  subcategoria: item.subcategoria || '',
+                  marca: this.filters.include_brand ? (item.marca || '') : undefined,
+                  unidad: this.filters.include_unit ? (item.unidad_medida || '') : undefined,
+                  cantidad: parseFloat(item.cantidad || 0).toFixed(2),
+                  toma_inv: this.filters.is_for_inventory_taking ? '' : undefined,
+                  costo_unit: this.filters.include_cost ? this.formatCurrency(item.costo_unit || 0) : undefined,
+                  costo_total: this.filters.include_cost ? this.formatCurrency(item.costo_total || 0) : undefined,
+                  precio_unit: this.filters.include_prices ? this.formatCurrency(item.precio_unit || 0) : undefined,
+                  precio_total: this.filters.include_prices ? this.formatCurrency(item.precio_total || 0) : undefined
+                });
+              });
+            }
+          });
+        } else if (Array.isArray(this.inventoryData)) {
+          this.inventoryData.forEach(item => {
+            data.push({
+              codigo: this.filters.include_codes ? (item.codigo || '') : undefined,
+              nombre: item.nombre || '',
+              categoria: item.categoria || '',
+              subcategoria: item.subcategoria || '',
+              marca: this.filters.include_brand ? (item.marca || '') : undefined,
+              unidad: this.filters.include_unit ? (item.unidad_medida || '') : undefined,
+              bodega: item.almacen || '',
+              cantidad: parseFloat(item.cantidad || 0).toFixed(2),
+              toma_inv: this.filters.is_for_inventory_taking ? '' : undefined,
+              costo_unit: this.filters.include_cost ? this.formatCurrency(item.costo_unit || 0) : undefined,
+              costo_total: this.filters.include_cost ? this.formatCurrency(item.costo_total || 0) : undefined,
+              precio_unit: this.filters.include_prices ? this.formatCurrency(item.precio_unit || 0) : undefined,
+              precio_total: this.filters.include_prices ? this.formatCurrency(item.precio_total || 0) : undefined
+            });
+          });
+        }
+
+        XLSX.utils.sheet_add_json(ws, data, { origin: 'A9', skipHeader: false });
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Inventario Físico');
+
+        const fileName = `inventario-fisico-${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+      } catch (error) {
+        console.error('Error al guardar Excel:', error);
+        alert('Error al generar el archivo Excel');
+      }
+    },
+    async saveAsPDF() {
+      this.showSaveReportModal = false;
+
+      try {
+        const fileName = `inventario-fisico-${new Date().toISOString().split('T')[0]}`;
+
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
+
+        const htmlContent = this.buildInventoryHTML();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 800,
+          windowWidth: 800
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 190;
+        const pageHeight = 277;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 10;
+
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= (pageHeight - 20);
+
+        while (heightLeft > 0) {
+          position = -(imgHeight - heightLeft) + 10;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+          heightLeft -= (pageHeight - 20);
+        }
+
+        pdf.save(`${fileName}.pdf`);
+        document.body.removeChild(iframe);
+      } catch (error) {
+        console.error('Error al guardar PDF:', error);
+        alert('Error al generar el archivo PDF');
+      }
+    },
+    async saveAsImage() {
+      this.showSaveReportModal = false;
+
+      try {
+        const fileName = `inventario-fisico-${new Date().toISOString().split('T')[0]}`;
+
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
+
+        const htmlContent = this.buildInventoryHTML();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 800,
+          windowWidth: 800
+        });
+
+        const link = document.createElement('a');
+        link.download = `${fileName}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        document.body.removeChild(iframe);
+      } catch (error) {
+        console.error('Error al guardar imagen:', error);
+        alert('Error al generar la imagen');
+      }
+    },
+    async printReport() {
+      this.showSaveReportModal = false;
+
+      try {
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
+
+        const htmlContent = this.buildInventoryHTML();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        iframe.contentWindow.print();
+
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      } catch (error) {
+        console.error('Error al imprimir:', error);
+        alert('Error al imprimir el reporte');
+      }
     }
   }
 }
