@@ -914,7 +914,14 @@ export default {
       loading: false,
       inventoryData: [],
       showSaveReportModal: false,
-      companyInfo: {},
+      companyInfo: {
+        company_name: 'Cerámicas Terrazos y Pulidos Universal',
+        rtn: '01061977002516',
+        direccion: 'Casa Matriz, Barrio La Merced, Avenida 14 de Julio entre 15 y 16 calle frente a Repuestos del Atlántico. La Ceiba, Atlántida',
+        telefono: '+504 2440-0037',
+        telefono_movil: '+504 9875-2725',
+        email: 'mauricio_argenal@hotmail.com'
+      },
       totals: {
         total_registros: 0,
         cantidad_total: 0,
@@ -976,7 +983,6 @@ export default {
   },
   mounted() {
     this.loadCatalogs()
-    this.loadCompanyInfo()
   },
   methods: {
     async loadCatalogs() {
@@ -1263,19 +1269,6 @@ export default {
         const bName = b.subcategoria || ''
         return aName.localeCompare(bName)
       })
-    },
-    async loadCompanyInfo() {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await api.get('/general-settings', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.data.success) {
-          this.companyInfo = response.data.data;
-        }
-      } catch (error) {
-        console.error('Error loading company info:', error);
-      }
     },
     buildInventoryHTML() {
       const dateGenerated = new Date().toLocaleString('es-HN', {
