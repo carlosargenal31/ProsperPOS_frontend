@@ -1608,7 +1608,29 @@ export default {
 
       let inventoryRows = '';
 
+      // Función auxiliar para generar fila de producto
+      const generateProductRow = (item) => {
+        return `
+          <tr>
+            ${this.filters.include_codes ? `<td>${item.codigo || ''}</td>` : ''}
+            <td>${item.nombre || ''}</td>
+            <td>${item.categoria || ''}</td>
+            <td>${item.subcategoria || ''}</td>
+            ${this.filters.include_brand ? `<td>${item.marca || ''}</td>` : ''}
+            ${this.filters.include_unit ? `<td>${item.unidad_medida || ''}</td>` : ''}
+            ${!this.filters.group_by_warehouses ? `<td>${item.almacen || ''}</td>` : ''}
+            <td class="text-right">${parseFloat(item.cantidad || 0).toFixed(2)}</td>
+            ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_unit || 0)}</td>` : ''}
+            ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_total || 0)}</td>` : ''}
+            ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_unit || 0)}</td>` : ''}
+            ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_total || 0)}</td>` : ''}
+            ${this.filters.is_for_inventory_taking ? `<td style="text-align: center; background: #f9fafb;"></td>` : ''}
+          </tr>
+        `;
+      };
+
       if (this.filters.group_by_warehouses && Array.isArray(this.inventoryData)) {
+        // Agrupar por bodega
         this.inventoryData.forEach(warehouse => {
           inventoryRows += `
             <tr style="background: #f3f4f6; font-weight: bold;">
@@ -1619,46 +1641,116 @@ export default {
           `;
 
           if (warehouse.items && warehouse.items.length > 0) {
-            warehouse.items.forEach(item => {
-              inventoryRows += `
-                <tr>
-                  ${this.filters.include_codes ? `<td>${item.codigo || ''}</td>` : ''}
-                  <td>${item.nombre || ''}</td>
-                  <td>${item.categoria || ''}</td>
-                  <td>${item.subcategoria || ''}</td>
-                  ${this.filters.include_brand ? `<td>${item.marca || ''}</td>` : ''}
-                  ${this.filters.include_unit ? `<td>${item.unidad_medida || ''}</td>` : ''}
-                  <td class="text-right">${parseFloat(item.cantidad || 0).toFixed(2)}</td>
-                  ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_unit || 0)}</td>` : ''}
-                  ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_total || 0)}</td>` : ''}
-                  ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_unit || 0)}</td>` : ''}
-                  ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_total || 0)}</td>` : ''}
-                  ${this.filters.is_for_inventory_taking ? `<td style="text-align: center; background: #f9fafb;"></td>` : ''}
-                </tr>
-              `;
-            });
+            // Si también agrupa por categorías
+            if (this.filters.group_by_groups) {
+              const categoryGroups = this.groupByCategory(warehouse.items);
+              categoryGroups.forEach(categoryGroup => {
+                inventoryRows += `
+                  <tr style="background: #e5e7eb; font-weight: bold;">
+                    <td colspan="12" style="padding: 6px 8px; font-size: 9px; padding-left: 20px;">
+                      CATEGORÍA: ${categoryGroup.categoria || 'Sin Categoría'}
+                    </td>
+                  </tr>
+                `;
+
+                // Si también agrupa por subcategorías
+                if (this.filters.group_by_articles) {
+                  const subcategoryGroups = this.groupBySubcategory(categoryGroup.items);
+                  subcategoryGroups.forEach(subcategoryGroup => {
+                    inventoryRows += `
+                      <tr style="background: #d1d5db; font-weight: bold;">
+                        <td colspan="12" style="padding: 4px 8px; font-size: 8px; padding-left: 40px;">
+                          SUBCATEGORÍA: ${subcategoryGroup.subcategoria || 'Sin Subcategoría'}
+                        </td>
+                      </tr>
+                    `;
+                    subcategoryGroup.items.forEach(item => {
+                      inventoryRows += generateProductRow(item);
+                    });
+                  });
+                } else {
+                  categoryGroup.items.forEach(item => {
+                    inventoryRows += generateProductRow(item);
+                  });
+                }
+              });
+            } else if (this.filters.group_by_articles) {
+              // Solo subcategorías (sin categorías)
+              const subcategoryGroups = this.groupBySubcategory(warehouse.items);
+              subcategoryGroups.forEach(subcategoryGroup => {
+                inventoryRows += `
+                  <tr style="background: #e5e7eb; font-weight: bold;">
+                    <td colspan="12" style="padding: 6px 8px; font-size: 9px; padding-left: 20px;">
+                      SUBCATEGORÍA: ${subcategoryGroup.subcategoria || 'Sin Subcategoría'}
+                    </td>
+                  </tr>
+                `;
+                subcategoryGroup.items.forEach(item => {
+                  inventoryRows += generateProductRow(item);
+                });
+              });
+            } else {
+              // Sin agrupación adicional
+              warehouse.items.forEach(item => {
+                inventoryRows += generateProductRow(item);
+              });
+            }
           }
         });
       } else if (Array.isArray(this.inventoryData)) {
-        this.inventoryData.forEach(item => {
-          inventoryRows += `
-            <tr>
-              ${this.filters.include_codes ? `<td>${item.codigo || ''}</td>` : ''}
-              <td>${item.nombre || ''}</td>
-              <td>${item.categoria || ''}</td>
-              <td>${item.subcategoria || ''}</td>
-              ${this.filters.include_brand ? `<td>${item.marca || ''}</td>` : ''}
-              ${this.filters.include_unit ? `<td>${item.unidad_medida || ''}</td>` : ''}
-              <td>${item.almacen || ''}</td>
-              <td class="text-right">${parseFloat(item.cantidad || 0).toFixed(2)}</td>
-              ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_unit || 0)}</td>` : ''}
-              ${this.filters.include_cost ? `<td class="text-right">L ${this.formatCurrency(item.costo_total || 0)}</td>` : ''}
-              ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_unit || 0)}</td>` : ''}
-              ${this.filters.include_prices ? `<td class="text-right">L ${this.formatCurrency(item.precio_total || 0)}</td>` : ''}
-              ${this.filters.is_for_inventory_taking ? `<td style="text-align: center; background: #f9fafb;"></td>` : ''}
-            </tr>
-          `;
-        });
+        // Sin agrupar por bodega
+        if (this.filters.group_by_groups) {
+          const categoryGroups = this.groupByCategory(this.inventoryData);
+          categoryGroups.forEach(categoryGroup => {
+            inventoryRows += `
+              <tr style="background: #f3f4f6; font-weight: bold;">
+                <td colspan="12" style="padding: 8px; font-size: 10px;">
+                  CATEGORÍA: ${categoryGroup.categoria || 'Sin Categoría'}
+                </td>
+              </tr>
+            `;
+
+            if (this.filters.group_by_articles) {
+              const subcategoryGroups = this.groupBySubcategory(categoryGroup.items);
+              subcategoryGroups.forEach(subcategoryGroup => {
+                inventoryRows += `
+                  <tr style="background: #e5e7eb; font-weight: bold;">
+                    <td colspan="12" style="padding: 6px 8px; font-size: 9px; padding-left: 20px;">
+                      SUBCATEGORÍA: ${subcategoryGroup.subcategoria || 'Sin Subcategoría'}
+                    </td>
+                  </tr>
+                `;
+                subcategoryGroup.items.forEach(item => {
+                  inventoryRows += generateProductRow(item);
+                });
+              });
+            } else {
+              categoryGroup.items.forEach(item => {
+                inventoryRows += generateProductRow(item);
+              });
+            }
+          });
+        } else if (this.filters.group_by_articles) {
+          // Solo subcategorías
+          const subcategoryGroups = this.groupBySubcategory(this.inventoryData);
+          subcategoryGroups.forEach(subcategoryGroup => {
+            inventoryRows += `
+              <tr style="background: #f3f4f6; font-weight: bold;">
+                <td colspan="12" style="padding: 8px; font-size: 10px;">
+                  SUBCATEGORÍA: ${subcategoryGroup.subcategoria || 'Sin Subcategoría'}
+                </td>
+              </tr>
+            `;
+            subcategoryGroup.items.forEach(item => {
+              inventoryRows += generateProductRow(item);
+            });
+          });
+        } else {
+          // Sin agrupación
+          this.inventoryData.forEach(item => {
+            inventoryRows += generateProductRow(item);
+          });
+        }
       }
 
       // Calcular totales de productos
