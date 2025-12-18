@@ -73,7 +73,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xl-3 col-sm-6 col-12 d-flex">
+        <div class="col-xl-3 col-sm-6 col-12 d-flex" v-if="filters.include_cost">
           <div class="card border border-info sale-widget flex-fill">
             <div class="card-body d-flex align-items-center">
               <span class="sale-icon-md bg-info text-white">
@@ -86,15 +86,15 @@
             </div>
           </div>
         </div>
-        <div class="col-xl-3 col-sm-6 col-12 d-flex">
+        <div class="col-xl-3 col-sm-6 col-12 d-flex" v-if="filters.include_prices">
           <div class="card border border-warning sale-widget flex-fill">
             <div class="card-body d-flex align-items-center">
               <span class="sale-icon-md bg-warning text-white">
-                <i class="ti ti-clipboard-list"></i>
+                <i class="ti ti-cash"></i>
               </span>
               <div class="ms-3">
-                <p class="summary-label-md mb-1">Apartadas</p>
-                <h3 class="summary-value-md mb-0">{{ totals.apartadas_total.toFixed(2) }}</h3>
+                <p class="summary-label-md mb-1">Precio Total</p>
+                <h3 class="summary-value-md mb-0">L {{ formatCurrency(totals.precio_total || 0) }}</h3>
               </div>
             </div>
           </div>
@@ -221,19 +221,6 @@
                       <input
                         class="form-check-input"
                         type="checkbox"
-                        v-model="filters.include_average_cost"
-                        id="includeAvgCost"
-                      />
-                      <label class="form-check-label" for="includeAvgCost">
-                        Incluir Costo Promedio
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-lg-3 col-md-4 col-sm-6 mb-2">
-                    <div class="form-check">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
                         v-model="filters.include_prices"
                         id="includePrices"
                       />
@@ -281,19 +268,6 @@
                       </label>
                     </div>
                   </div>
-                  <div class="col-lg-3 col-md-4 col-sm-6 mb-2">
-                    <div class="form-check">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        v-model="filters.include_images"
-                        id="includeImages"
-                      />
-                      <label class="form-check-label" for="includeImages">
-                        Incluir Imágenes
-                      </label>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -338,7 +312,7 @@
                         id="groupByArticles"
                       />
                       <label class="form-check-label" for="groupByArticles">
-                        Agrupar por Productos
+                        Agrupar por Subcategoría
                       </label>
                     </div>
                   </div>
@@ -376,8 +350,9 @@
             <div class="row">
               <div class="col-12">
                 <div class="d-flex gap-2">
-                  <button type="submit" class="btn btn-primary">
-                    <i class="ti ti-file-text me-2"></i>IMPRIMIR
+                  <button type="submit" class="btn btn-primary" :disabled="loading">
+                    <i class="ti ti-search me-1"></i>
+                    {{ loading ? "Generando..." : "Generar Reporte" }}
                   </button>
                   <button type="button" class="btn btn-secondary" @click="clearFilters">
                     CERRAR
@@ -398,52 +373,152 @@
               <h5 class="text-primary mb-3">
                 <i class="ti ti-archive me-2"></i>Bodega: {{ warehouse.almacen }}
               </h5>
-              <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                  <thead>
+
+              <!-- Si también está agrupado por categorías, mostrar sub-agrupación -->
+              <template v-if="filters.group_by_groups">
+                <div v-for="(categoryGroup, catIndex) in groupByCategory(warehouse.items)" :key="catIndex" class="mb-3">
+                  <h6 class="text-secondary mb-2 ms-3">
+                    <i class="ti ti-folder me-2"></i>{{ categoryGroup.categoria || 'Sin Categoría' }}
+                  </h6>
+                  <div class="table-responsive ms-4">
+                    <table class="table table-bordered table-striped table-sm">
+                      <thead class="table-light">
+                        <tr>
+                          <th v-if="filters.include_codes" class="sortable" @click="sortBy('codigo')">
+                            Código
+                            <i class="ti" :class="getSortIcon('codigo')"></i>
+                          </th>
+                          <th class="sortable" @click="sortBy('nombre')">
+                            Nombre
+                            <i class="ti" :class="getSortIcon('nombre')"></i>
+                          </th>
+                          <th class="sortable" @click="sortBy('subcategoria')">
+                            Subcategoría
+                            <i class="ti" :class="getSortIcon('subcategoria')"></i>
+                          </th>
+                          <th v-if="filters.include_brand" class="sortable" @click="sortBy('marca')">
+                            Marca
+                            <i class="ti" :class="getSortIcon('marca')"></i>
+                          </th>
+                          <th v-if="filters.include_unit" class="sortable" @click="sortBy('unidad_medida')">
+                            Unidad
+                            <i class="ti" :class="getSortIcon('unidad_medida')"></i>
+                          </th>
+                          <th class="text-center sortable" @click="sortBy('cantidad')">
+                            Cantidad
+                            <i class="ti" :class="getSortIcon('cantidad')"></i>
+                          </th>
+                          <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_unit')">
+                            Costo Unit.
+                            <i class="ti" :class="getSortIcon('costo_unit')"></i>
+                          </th>
+                          <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_total')">
+                            Costo Total
+                            <i class="ti" :class="getSortIcon('costo_total')"></i>
+                          </th>
+                          <th v-if="filters.include_prices" class="text-end sortable" @click="sortBy('precio_unit')">
+                            Precio Unit.
+                            <i class="ti" :class="getSortIcon('precio_unit')"></i>
+                          </th>
+                          <th v-if="filters.include_prices" class="text-end sortable" @click="sortBy('precio_total')">
+                            Precio Total
+                            <i class="ti" :class="getSortIcon('precio_total')"></i>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(item, index) in getSortedItems(categoryGroup.items)" :key="index">
+                          <td v-if="filters.include_codes">{{ item.codigo || '-' }}</td>
+                          <td>{{ item.nombre }}</td>
+                          <td>{{ item.subcategoria || '-' }}</td>
+                          <td v-if="filters.include_brand">{{ item.marca || '-' }}</td>
+                          <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
+                          <td class="text-end">{{ parseFloat(item.cantidad || 0).toFixed(2) }}</td>
+                          <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_unit || 0) }}</td>
+                          <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_total || 0) }}</td>
+                          <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_unit || 0) }}</td>
+                          <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_total || 0) }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </template>
+
+              <!-- Sin agrupación por categorías -->
+              <div v-else class="table-responsive">
+                <table class="table table-bordered table-striped table-sm">
+                  <thead class="table-light">
                     <tr>
-                      <th>Nombre</th>
-                      <th>Tipo</th>
-                      <th>Subcategoría</th>
-                      <th>Cantidad</th>
-                      <th>Apartadas</th>
-                      <th>Cant.Total</th>
-                      <th v-if="filters.include_codes">Código</th>
-                      <th v-if="filters.include_unit">Unidad</th>
-                      <th v-if="filters.include_brand">Marca</th>
-                      <th v-if="filters.include_cost">Costo Unit</th>
-                      <th v-if="filters.include_cost">Costo Total</th>
-                      <th v-if="filters.include_prices">Precio Neto</th>
+                      <th v-if="filters.include_codes" class="sortable" @click="sortBy('codigo')">
+                        Código
+                        <i class="ti" :class="getSortIcon('codigo')"></i>
+                      </th>
+                      <th class="sortable" @click="sortBy('nombre')">
+                        Nombre
+                        <i class="ti" :class="getSortIcon('nombre')"></i>
+                      </th>
+                      <th class="sortable" @click="sortBy('categoria')">
+                        Categoría
+                        <i class="ti" :class="getSortIcon('categoria')"></i>
+                      </th>
+                      <th class="sortable" @click="sortBy('subcategoria')">
+                        Subcategoría
+                        <i class="ti" :class="getSortIcon('subcategoria')"></i>
+                      </th>
+                      <th v-if="filters.include_brand" class="sortable" @click="sortBy('marca')">
+                        Marca
+                        <i class="ti" :class="getSortIcon('marca')"></i>
+                      </th>
+                      <th v-if="filters.include_unit" class="sortable" @click="sortBy('unidad_medida')">
+                        Unidad
+                        <i class="ti" :class="getSortIcon('unidad_medida')"></i>
+                      </th>
+                      <th class="text-center sortable" @click="sortBy('cantidad')">
+                        Cantidad
+                        <i class="ti" :class="getSortIcon('cantidad')"></i>
+                      </th>
+                      <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_unit')">
+                        Costo Unit.
+                        <i class="ti" :class="getSortIcon('costo_unit')"></i>
+                      </th>
+                      <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_total')">
+                        Costo Total
+                        <i class="ti" :class="getSortIcon('costo_total')"></i>
+                      </th>
+                      <th v-if="filters.include_prices" class="text-end sortable" @click="sortBy('precio_unit')">
+                        Precio Unit.
+                        <i class="ti" :class="getSortIcon('precio_unit')"></i>
+                      </th>
+                      <th v-if="filters.include_prices" class="text-end sortable" @click="sortBy('precio_total')">
+                        Precio Total
+                        <i class="ti" :class="getSortIcon('precio_total')"></i>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(item, index) in warehouse.items" :key="index">
-                      <td>{{ item.nombre }}</td>
-                      <td>{{ item.tipo || 'Servicio' }}</td>
-                      <td>{{ item.subcategoria || '-' }}</td>
-                      <td class="text-end">{{ item.cantidad }}</td>
-                      <td class="text-end">{{ item.apartadas }}</td>
-                      <td class="text-end">{{ item.cant_total }}</td>
+                    <tr v-for="(item, index) in getSortedItems(warehouse.items)" :key="index">
                       <td v-if="filters.include_codes">{{ item.codigo || '-' }}</td>
-                      <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
+                      <td>{{ item.nombre }}</td>
+                      <td>{{ item.categoria || '-' }}</td>
+                      <td>{{ item.subcategoria || '-' }}</td>
                       <td v-if="filters.include_brand">{{ item.marca || '-' }}</td>
-                      <td v-if="filters.include_cost" class="text-end">L {{ formatCurrency(item.costo_unit) }}</td>
-                      <td v-if="filters.include_cost" class="text-end">L {{ formatCurrency(item.costo_total) }}</td>
-                      <td v-if="filters.include_prices" class="text-end">L {{ formatCurrency(item.precio_neto) }}</td>
+                      <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
+                      <td class="text-end">{{ parseFloat(item.cantidad || 0).toFixed(2) }}</td>
+                      <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_unit || 0) }}</td>
+                      <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_total || 0) }}</td>
+                      <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_unit || 0) }}</td>
+                      <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_total || 0) }}</td>
                     </tr>
                   </tbody>
-                  <tfoot v-if="filters.include_cost">
-                    <tr class="table-secondary fw-bold">
-                      <td colspan="3">TOTALES - {{ warehouse.almacen }}</td>
+                  <tfoot class="table-secondary fw-bold">
+                    <tr>
+                      <td :colspan="getColspanCount()" class="text-end">TOTALES - {{ warehouse.almacen }}</td>
                       <td class="text-end">{{ warehouse.totals.cantidad.toFixed(2) }}</td>
-                      <td class="text-end">{{ warehouse.totals.apartadas.toFixed(2) }}</td>
-                      <td class="text-end">{{ (warehouse.totals.cantidad + warehouse.totals.apartadas).toFixed(2) }}</td>
-                      <td v-if="filters.include_codes"></td>
-                      <td v-if="filters.include_unit"></td>
-                      <td v-if="filters.include_brand"></td>
-                      <td v-if="filters.include_cost"></td>
-                      <td v-if="filters.include_cost" class="text-end">L {{ formatCurrency(warehouse.totals.costo_total) }}</td>
-                      <td v-if="filters.include_prices"></td>
+                      <td v-if="filters.include_cost" class="text-end"></td>
+                      <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(warehouse.totals.costo_total || 0) }}</td>
+                      <td v-if="filters.include_prices" class="text-end"></td>
+                      <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(warehouse.totals.precio_total || 0) }}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -453,39 +528,73 @@
           <div v-else>
             <!-- Not Grouped -->
             <div class="table-responsive">
-              <table class="table table-bordered table-striped">
-                <thead>
+              <table class="table table-bordered table-striped table-sm">
+                <thead class="table-light">
                   <tr>
-                    <th>Nombre</th>
-                    <th>Tipo</th>
-                    <th>Subcategoría</th>
-                    <th>Bodega</th>
-                    <th>Cantidad</th>
-                    <th>Apartadas</th>
-                    <th>Cant.Total</th>
-                    <th v-if="filters.include_codes">Código</th>
-                    <th v-if="filters.include_unit">Unidad</th>
-                    <th v-if="filters.include_brand">Marca</th>
-                    <th v-if="filters.include_cost">Costo Unit</th>
-                    <th v-if="filters.include_cost">Costo Total</th>
-                    <th v-if="filters.include_prices">Precio Neto</th>
+                    <th v-if="filters.include_codes" class="sortable" @click="sortBy('codigo')">
+                      Código
+                      <i class="ti" :class="getSortIcon('codigo')"></i>
+                    </th>
+                    <th class="sortable" @click="sortBy('nombre')">
+                      Nombre
+                      <i class="ti" :class="getSortIcon('nombre')"></i>
+                    </th>
+                    <th class="sortable" @click="sortBy('categoria')">
+                      Categoría
+                      <i class="ti" :class="getSortIcon('categoria')"></i>
+                    </th>
+                    <th class="sortable" @click="sortBy('subcategoria')">
+                      Subcategoría
+                      <i class="ti" :class="getSortIcon('subcategoria')"></i>
+                    </th>
+                    <th v-if="filters.include_brand" class="sortable" @click="sortBy('marca')">
+                      Marca
+                      <i class="ti" :class="getSortIcon('marca')"></i>
+                    </th>
+                    <th v-if="filters.include_unit" class="sortable" @click="sortBy('unidad_medida')">
+                      Unidad
+                      <i class="ti" :class="getSortIcon('unidad_medida')"></i>
+                    </th>
+                    <th class="sortable" @click="sortBy('almacen')">
+                      Bodega
+                      <i class="ti" :class="getSortIcon('almacen')"></i>
+                    </th>
+                    <th class="text-center sortable" @click="sortBy('cantidad')">
+                      Cantidad
+                      <i class="ti" :class="getSortIcon('cantidad')"></i>
+                    </th>
+                    <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_unit')">
+                      Costo Unit.
+                      <i class="ti" :class="getSortIcon('costo_unit')"></i>
+                    </th>
+                    <th v-if="filters.include_cost" class="text-end sortable" @click="sortBy('costo_total')">
+                      Costo Total
+                      <i class="ti" :class="getSortIcon('costo_total')"></i>
+                    </th>
+                    <th v-if="filters.include_prices" class="text-end sortable" @click="sortBy('precio_unit')">
+                      Precio Unit.
+                      <i class="ti" :class="getSortIcon('precio_unit')"></i>
+                    </th>
+                    <th v-if="filters.include_prices" class="text-end sortable" @click="sortBy('precio_total')">
+                      Precio Total
+                      <i class="ti" :class="getSortIcon('precio_total')"></i>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in inventoryData" :key="index">
-                    <td>{{ item.nombre }}</td>
-                    <td>{{ item.tipo || 'Servicio' }}</td>
-                    <td>{{ item.subcategoria || '-' }}</td>
-                    <td>{{ item.almacen || '-' }}</td>
-                    <td class="text-end">{{ item.cantidad }}</td>
-                    <td class="text-end">{{ item.apartadas }}</td>
-                    <td class="text-end">{{ item.cant_total }}</td>
+                  <tr v-for="(item, index) in getSortedItems(inventoryData)" :key="index">
                     <td v-if="filters.include_codes">{{ item.codigo || '-' }}</td>
-                    <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
+                    <td>{{ item.nombre }}</td>
+                    <td>{{ item.categoria || '-' }}</td>
+                    <td>{{ item.subcategoria || '-' }}</td>
                     <td v-if="filters.include_brand">{{ item.marca || '-' }}</td>
-                    <td v-if="filters.include_cost" class="text-end">L {{ formatCurrency(item.costo_unit) }}</td>
-                    <td v-if="filters.include_cost" class="text-end">L {{ formatCurrency(item.costo_total) }}</td>
-                    <td v-if="filters.include_prices" class="text-end">L {{ formatCurrency(item.precio_neto) }}</td>
+                    <td v-if="filters.include_unit">{{ item.unidad_medida || '-' }}</td>
+                    <td>{{ item.almacen || '-' }}</td>
+                    <td class="text-end">{{ parseFloat(item.cantidad || 0).toFixed(2) }}</td>
+                    <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_unit || 0) }}</td>
+                    <td v-if="filters.include_cost" class="text-end">{{ formatCurrency(item.costo_total || 0) }}</td>
+                    <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_unit || 0) }}</td>
+                    <td v-if="filters.include_prices" class="text-end">{{ formatCurrency(item.precio_total || 0) }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -637,7 +746,6 @@
                 <tr>
                   <th>Código</th>
                   <th>Nombre</th>
-                  <th>Categoría</th>
                   <th>Acción</th>
                 </tr>
               </thead>
@@ -645,7 +753,6 @@
                 <tr v-for="product in filteredProducts" :key="product.id">
                   <td>{{ product.code }}</td>
                   <td>{{ product.name }}</td>
-                  <td>{{ product.category_name || '-' }}</td>
                   <td>
                     <button class="btn btn-sm btn-primary" @click="selectProduct(product)">
                       Seleccionar
@@ -653,7 +760,7 @@
                   </td>
                 </tr>
                 <tr v-if="filteredProducts.length === 0">
-                  <td colspan="4" class="text-center">No se encontraron productos</td>
+                  <td colspan="3" class="text-center">No se encontraron productos</td>
                 </tr>
               </tbody>
             </table>
@@ -690,12 +797,10 @@ export default {
         brand_id: '',
         existence_filter: 'all',
         include_cost: false,
-        include_average_cost: false,
         include_prices: false,
         include_codes: false,
         include_unit: false,
         include_brand: false,
-        include_images: false,
         group_by_warehouses: true,
         group_by_groups: false,
         group_by_articles: false,
@@ -719,7 +824,10 @@ export default {
       filteredProducts: [],
       selectedCategory: null,
       selectedSubcategory: null,
-      selectedProduct: null
+      selectedProduct: null,
+      // Ordenamiento
+      sortField: null,
+      sortDirection: 'asc'
     }
   },
   computed: {
@@ -744,18 +852,29 @@ export default {
           api.get('/subcategories'),
           api.get('/warehouses'),
           api.get('/brands'),
-          api.get('/products')
+          api.get('/products/search/all', { params: { status: 'active' } })
         ])
 
-        this.groups = categoriesRes.data.data || categoriesRes.data.categories || []
-        this.subgroups = subcategoriesRes.data.data || subcategoriesRes.data.subcategories || []
-        this.warehouses = warehousesRes.data.data || warehousesRes.data.warehouses || []
-        this.brands = brandsRes.data.data || brandsRes.data.brands || []
-        this.products = productsRes.data.data || productsRes.data.products || []
+        if (categoriesRes.data.success) {
+          this.groups = categoriesRes.data.data || []
+        }
+        if (subcategoriesRes.data.success) {
+          this.subgroups = subcategoriesRes.data.data || []
+        }
+        if (warehousesRes.data.success) {
+          this.warehouses = warehousesRes.data.data || []
+        }
+        if (brandsRes.data.success) {
+          this.brands = brandsRes.data.data || []
+        }
+        if (productsRes.data.success) {
+          this.products = productsRes.data.data || []
+          this.filteredProducts = this.products
+          console.log(`Productos cargados: ${this.products.length}`)
+        }
 
         this.filteredCategories = this.groups
         this.filteredSubcategories = this.subgroups
-        this.filteredProducts = this.products
       } catch (error) {
         console.error('Error al cargar catálogos:', error)
         this.$swal.fire({
@@ -770,27 +889,41 @@ export default {
       try {
         const queryParams = new URLSearchParams()
 
+        // Enviar TODOS los parámetros, incluyendo false y valores vacíos
         Object.keys(this.filters).forEach(key => {
-          if (this.filters[key] !== '' && this.filters[key] !== null && this.filters[key] !== false) {
-            queryParams.append(key, this.filters[key])
+          const value = this.filters[key]
+          // Solo excluir valores null o undefined
+          if (value !== null && value !== undefined) {
+            queryParams.append(key, value)
           }
         })
 
+        console.log('Cargando inventario con parámetros:', queryParams.toString())
+
         const response = await api.get(`/physical-inventory?${queryParams.toString()}`)
 
-        this.inventoryData = response.data.data || []
-        this.totals = response.data.totals || {
+        console.log('Respuesta del servidor:', response.data)
+
+        // La respuesta viene envuelta: response.data.data contiene el objeto con data, totals, filters, metadata
+        const result = response.data.data || {}
+
+        this.inventoryData = result.data || []
+        this.totals = result.totals || {
           total_registros: 0,
           cantidad_total: 0,
           apartadas_total: 0,
           costo_total: 0
         }
+
+        console.log('inventoryData asignado:', this.inventoryData)
+        console.log('inventoryData.length:', this.inventoryData.length)
+        console.log('totals:', this.totals)
       } catch (error) {
         console.error('Error al cargar inventario:', error)
         this.$swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'No se pudo cargar el inventario físico'
+          text: error.response?.data?.message || 'No se pudo cargar el inventario físico'
         })
       } finally {
         this.loading = false
@@ -861,12 +994,10 @@ export default {
         brand_id: '',
         existence_filter: 'all',
         include_cost: false,
-        include_average_cost: false,
         include_prices: false,
         include_codes: false,
         include_unit: false,
         include_brand: false,
-        include_images: false,
         group_by_warehouses: true,
         group_by_groups: false,
         group_by_articles: false,
@@ -890,6 +1021,90 @@ export default {
       if (header) {
         header.classList.toggle('collapsed')
       }
+    },
+    sortBy(field) {
+      if (this.sortField === field) {
+        // Toggle direction if clicking the same field
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc'
+      } else {
+        // New field, default to ascending
+        this.sortField = field
+        this.sortDirection = 'asc'
+      }
+    },
+    getSortIcon(field) {
+      if (this.sortField !== field) {
+        return 'ti-selector'
+      }
+      return this.sortDirection === 'asc' ? 'ti-sort-ascending' : 'ti-sort-descending'
+    },
+    getSortedItems(items) {
+      if (!this.sortField || !items || items.length === 0) {
+        return items
+      }
+
+      // Create a copy to avoid mutating original array
+      return [...items].sort((a, b) => {
+        let aVal = a[this.sortField]
+        let bVal = b[this.sortField]
+
+        // Handle null/undefined values
+        if (aVal === null || aVal === undefined) aVal = ''
+        if (bVal === null || bVal === undefined) bVal = ''
+
+        // Handle numeric sorting for numeric fields
+        const numericFields = ['cantidad', 'costo_unit', 'costo_total', 'precio_unit', 'precio_total']
+        if (numericFields.includes(this.sortField)) {
+          aVal = parseFloat(aVal) || 0
+          bVal = parseFloat(bVal) || 0
+        } else {
+          // String sorting for text fields
+          aVal = String(aVal).toLowerCase()
+          bVal = String(bVal).toLowerCase()
+        }
+
+        // Compare values based on sort direction
+        if (this.sortDirection === 'asc') {
+          return aVal > bVal ? 1 : aVal < bVal ? -1 : 0
+        } else {
+          return aVal < bVal ? 1 : aVal > bVal ? -1 : 0
+        }
+      })
+    },
+    getColspanCount() {
+      // Base columns: Nombre, Categoría, Subcategoría
+      let count = 3
+
+      // Optional columns
+      if (this.filters.include_codes) count++
+      if (this.filters.include_brand) count++
+      if (this.filters.include_unit) count++
+
+      return count
+    },
+    groupByCategory(items) {
+      // Agrupar items por categoría
+      const grouped = {}
+
+      items.forEach(item => {
+        const categoryKey = item.categoria || 'Sin Categoría'
+
+        if (!grouped[categoryKey]) {
+          grouped[categoryKey] = {
+            categoria: categoryKey,
+            items: []
+          }
+        }
+
+        grouped[categoryKey].items.push(item)
+      })
+
+      // Convertir a array y ordenar por categoría
+      return Object.values(grouped).sort((a, b) => {
+        const aName = a.categoria || ''
+        const bName = b.categoria || ''
+        return aName.localeCompare(bName)
+      })
     }
   }
 }
@@ -914,6 +1129,22 @@ export default {
   justify-content: center;
   border-radius: 8px;
   font-size: 24px;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.sortable:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sortable i {
+  margin-left: 5px;
+  font-size: 0.875rem;
+  opacity: 0.6;
 }
 
 @media print {

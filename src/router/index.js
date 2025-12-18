@@ -224,6 +224,7 @@ const routes = [
       { path: "cargo-descargo/create", name: "cargo-descargo-create", component: () => import('@/views/pages/inventory/cargo-descargo-form.vue') },
       { path: "cargo-descargo/edit/:id", name: "cargo-descargo-edit", component: () => import('@/views/pages/inventory/cargo-descargo-form.vue') },
       { path: "cargo-descargo/view/:id", name: "cargo-descargo-view", component: () => import('@/views/pages/inventory/cargo-descargo-list.vue') },
+      { path: "inventory-management", name: "inventory-management", component: () => import('@/views/pages/inventory/inventory-management.vue') },
     ]
   },
   {
@@ -570,7 +571,9 @@ const routes = [
     children: [
       { path: '', redirect: '/stock/manage-stocks' },
       { path: "manage-stocks", component: () => import('@/views/pages/stock/manage-stocks.vue') },
-      { path: "stock-adjustment", component: () => import('@/views/pages/stock/stock-adjustment.vue') },
+      { path: "stock-adjustment", component: () => import('@/views/pages/stock/stock-adjustment-list.vue') },
+      { path: "stock-adjustment-old", component: () => import('@/views/pages/stock/stock-adjustment.vue') },
+      { path: "stock-adjustment-new", component: () => import('@/views/pages/stock/stock-adjustment-new.vue') },
       { path: "stock-transfer", component: () => import('@/views/pages/stock/stock-transfer.vue') },
     ]
   },

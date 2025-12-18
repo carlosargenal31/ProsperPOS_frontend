@@ -155,11 +155,11 @@
         "subMenus": [
           {
             "menuValue": "Manejo de Inventario",
-            "route": "/inventory/cargo-descargo",
-            "active_link": "/inventory/cargo-descargo"
+            "route": "/inventory/inventory-management",
+            "active_link": "/inventory/inventory-management"
           },
           {
-            "menuValue": "Ajuste de Existencias",
+            "menuValue": "Ajuste de Inventario",
             "route": "/stock/stock-adjustment",
             "active_link": "/stock/stock-adjustment"
           }
@@ -172,12 +172,6 @@
         "hasSubRoute": true,
         "showSubRoute": false,
         "subMenus": [
-          {
-            "menuValue": "Inventario",
-            "route": "/inventory-report/inventory-report",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
           {
             "menuValue": "Lista de Inventario Físico",
             "route": "/reports/physical-inventory",
