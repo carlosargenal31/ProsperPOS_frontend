@@ -206,7 +206,7 @@ const routes = [
       { path: '', redirect: '/inventory/product-list' },
       { path: "product-list", component: () => import('@/views/pages/inventory/product-list/product-list.vue') },
       { path: "add-product", component: () => import('@/views/pages/inventory/add-product.vue') },
-      { path: "edit-product", component: () => import('@/views/pages/inventory/edit-product.vue') },
+      { path: "edit-product/:id?", name: "EditProduct", component: () => import('@/views/pages/inventory/edit-product.vue') },
       { path: "expired-products", component: () => import('@/views/pages/inventory/expired-products.vue') },
       { path: "low-stocks", component: () => import('@/views/pages/inventory/low-stocks/low-stocks.vue') },
       { path: "category-list", component: () => import('@/views/pages/inventory/category-list.vue') },
@@ -666,22 +666,6 @@ const routes = [
     ]
   },
   {
-    path: '/ecommerce',
-    component: () => import('@/views/pages/application/ecommerce/ecommerce-index.vue'),
-    children: [
-      { path: '', redirect: '/ecommerce/products' },
-      { path: "products", component: () => import('@/views/pages/application/ecommerce/products/products-index.vue') },
-      { path: "add-product", component: () => import('@/views/pages/application/ecommerce/products/add-product.vue') },
-      { path: "edit-product", component: () => import('@/views/pages/application/ecommerce/products/edit-product.vue') },
-      { path: "orders", component: () => import('@/views/pages/application/ecommerce/orders-list.vue') },
-      { path: "customers", component: () => import('@/views/pages/application/ecommerce/customers-list.vue') },
-      { path: "cart", component: () => import('@/views/pages/application/ecommerce/cart-list.vue') },
-      { path: "checkout", component: () => import('@/views/pages/application/ecommerce/checkout-index.vue') },
-      { path: "wishlist", component: () => import('@/views/pages/application/ecommerce/wishlist-index.vue') },
-      { path: "reviews", component: () => import('@/views/pages/application/ecommerce/reviews-list.vue') },
-    ]
-  },
-  {
     path: '/layouts',
     component: () => import('@/views/pages/layouts/layouts.vue'),
     children: [
@@ -725,12 +709,23 @@ const routes = [
     name: 'print-shipment',
     component: () => import('@/views/pages/shipments/print-shipment.vue')
   },
-
-  // E-Commerce Routes
+  // ===================================================================
+  // RUTAS DE TIENDA EN LÍNEA
+  // ===================================================================
   {
-    path: '/shop',
+    path: '/shop/home',
+    name: 'shop-home',
+    component: () => import('@/views/shop/home.vue')
+  },
+  {
+    path: '/shop/catalog',
     name: 'shop-catalog',
     component: () => import('@/views/shop/catalog.vue')
+  },
+  {
+    path: '/shop/product/:id',
+    name: 'shop-product-detail',
+    component: () => import('@/views/shop/product-detail-new.vue')
   },
   {
     path: '/shop/login',
@@ -752,6 +747,31 @@ const routes = [
     name: 'shop-orders',
     component: () => import('@/views/shop/orders.vue')
   },
+  // Legacy routes for backward compatibility
+  {
+    path: '/ecommerce/catalog',
+    redirect: '/shop/catalog'
+  },
+  {
+    path: '/ecommerce/product/:id',
+    redirect: (to) => `/shop/product/${to.params.id}`
+  },
+  {
+    path: '/ecommerce/login',
+    redirect: '/shop/login'
+  },
+  {
+    path: '/ecommerce/cart',
+    redirect: '/shop/cart'
+  },
+  {
+    path: '/ecommerce/checkout',
+    redirect: '/shop/checkout'
+  },
+  {
+    path: '/ecommerce/orders',
+    redirect: '/shop/orders'
+  }
 ];
 
 export const router = createRouter({

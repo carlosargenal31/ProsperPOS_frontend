@@ -1,0 +1,56 @@
+[
+  {
+    "tittle": "Tienda en Línea",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Catálogo de Productos",
+        "icon": "ti ti-shopping-cart",
+        "route": "/ecommerce/catalog",
+        "active_link": "/ecommerce/catalog",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Mi Carrito",
+        "icon": "ti ti-shopping-bag",
+        "route": "/ecommerce/cart",
+        "active_link": "/ecommerce/cart",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Mis Pedidos",
+        "icon": "ti ti-package",
+        "route": "/ecommerce/orders",
+        "active_link": "/ecommerce/orders",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Finalizar Compra",
+        "icon": "ti ti-credit-card",
+        "route": "/ecommerce/checkout",
+        "active_link": "/ecommerce/checkout",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "Navegación",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Volver al Panel Admin",
+        "icon": "ti ti-arrow-back",
+        "route": "/dashboard/admin-dashboard",
+        "active_link": "/dashboard",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  }
+]

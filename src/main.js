@@ -184,7 +184,7 @@ import "ionicons-npm/css/ionicons.css";
 import '@/assets/css/tabler-icons.css'
 import 'remixicon/fonts/remixicon.css';
 import 'leaflet/dist/leaflet.css';
-import "@/assets/css/feather.css"; 
+import "@/assets/css/feather.css";
 import '@/assets/scss/main.scss'
 
 const app = createApp(App);

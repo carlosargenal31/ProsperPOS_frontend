@@ -378,5 +378,61 @@ export const userService = {
   delete: (id) => api.delete(`/users/${id}`)
 };
 
+/**
+ * Servicio de Historial de Existencias
+ */
+export const stockHistoryService = {
+  /**
+   * Obtener historial de existencias
+   */
+  getStockHistory: (params = {}) => {
+    return api.get('/stock-history', { params });
+  },
+
+  /**
+   * Exportar historial de existencias
+   */
+  exportStockHistory: (params = {}) => {
+    return api.get('/stock-history/export', {
+      params,
+      responseType: 'blob'
+    });
+  },
+
+  /**
+   * Obtener lista de categorías para filtros
+   */
+  getCategories: () => {
+    return api.get('/stock-history/categories');
+  },
+
+  /**
+   * Obtener lista de subcategorías para filtros
+   */
+  getSubcategories: (categoryId = null) => {
+    return api.get('/stock-history/subcategories', {
+      params: { category_id: categoryId }
+    });
+  },
+
+  /**
+   * Obtener lista de productos para filtros
+   */
+  getProducts: (categoryId = null, subcategoryId = null) => {
+    const params = {};
+    if (categoryId) params.category_id = categoryId;
+    if (subcategoryId) params.subcategory_id = subcategoryId;
+
+    return api.get('/stock-history/products', { params });
+  },
+
+  /**
+   * Obtener lista de almacenes para filtros
+   */
+  getWarehouses: () => {
+    return api.get('/stock-history/warehouses');
+  }
+};
+
 // Exportar la instancia de axios por defecto
 export default api;

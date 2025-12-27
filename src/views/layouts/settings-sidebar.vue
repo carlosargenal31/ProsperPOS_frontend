@@ -2,7 +2,7 @@
   <div class="settings-sidebar" id="sidebar2">
     <div class="sidebar-inner slimscroll">
       <div id="sidebar-menu5" class="sidebar-menu">
-        <h4 class="fw-bold fs-18 mb-2 pb-2">Settings</h4>
+        <h4 class="fw-bold fs-18 mb-2 pb-2">Configuración</h4>
         <ul>
           <li class="submenu-open">
             <ul>

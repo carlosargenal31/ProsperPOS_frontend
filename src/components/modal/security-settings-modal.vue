@@ -5,463 +5,396 @@
       <div class="modal-content">
         <div class="modal-header">
           <div class="page-title">
-            <h4>Change Password</h4>
+            <h4>Cambiar Contraseña</h4>
           </div>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
+          <!-- Mensajes de error/éxito -->
+          <div v-if="passwordError" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="ti ti-alert-circle me-2"></i>{{ passwordError }}
+            <button type="button" class="btn-close" @click="passwordError = ''"></button>
+          </div>
+          <div v-if="passwordSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="ti ti-check me-2"></i>{{ passwordSuccess }}
+            <button type="button" class="btn-close" @click="passwordSuccess = ''"></button>
+          </div>
+
           <div class="row">
             <div class="col-lg-12">
               <div class="input-blocks">
                 <label class="fw-medium"
-                  >Current Password <span class="text-danger">*</span></label
+                  >Contraseña Actual <span class="text-danger">*</span></label
                 >
                 <div class="pass-group">
-                  <input type="password" class="form-control settings-pass-input" />
-                  <span class="toggle-password ti ti-eye-off"></span>
+                  <input
+                    v-model="passwordForm.currentPassword"
+                    :type="showCurrentPassword ? 'text' : 'password'"
+                    class="form-control settings-pass-input"
+                    :disabled="isLoadingPassword"
+                  />
+                  <span
+                    class="toggle-password"
+                    :class="showCurrentPassword ? 'ti ti-eye' : 'ti ti-eye-off'"
+                    @click="showCurrentPassword = !showCurrentPassword"
+                    style="cursor: pointer;"
+                  ></span>
                 </div>
               </div>
             </div>
             <div class="col-lg-12">
               <div class="input-blocks">
                 <label class="fw-medium"
-                  >New Password <span class="text-danger">*</span></label
+                  >Nueva Contraseña <span class="text-danger">*</span></label
                 >
                 <div class="pass-group" id="passwordInput">
-                  <input type="password" class="form-control settings-pass-inputs" />
-                  <span class="toggle-passwords ti ti-eye-off"></span>
-                  <span class="pass-checked"></span>
+                  <input
+                    v-model="passwordForm.newPassword"
+                    :type="showNewPassword ? 'text' : 'password'"
+                    class="form-control settings-pass-inputs"
+                    :disabled="isLoadingPassword"
+                    @input="checkPasswordStrength"
+                  />
+                  <span
+                    class="toggle-passwords"
+                    :class="showNewPassword ? 'ti ti-eye' : 'ti ti-eye-off'"
+                    @click="showNewPassword = !showNewPassword"
+                    style="cursor: pointer;"
+                  ></span>
                 </div>
-                <div class="password-strength" id="passwordStrength">
-                  <span id="poor"></span>
-                  <span id="weak"></span>
-                  <span id="strong"></span>
-                  <span id="heavy"></span>
+                <!-- Indicador de fuerza de contraseña -->
+                <div v-if="passwordForm.newPassword" class="password-strength mt-2" id="passwordStrength">
+                  <div class="d-flex gap-1 mb-2">
+                    <span class="strength-bar" :class="passwordStrength >= 1 ? 'active-' + getStrengthClass() : ''"></span>
+                    <span class="strength-bar" :class="passwordStrength >= 2 ? 'active-' + getStrengthClass() : ''"></span>
+                    <span class="strength-bar" :class="passwordStrength >= 3 ? 'active-' + getStrengthClass() : ''"></span>
+                    <span class="strength-bar" :class="passwordStrength >= 4 ? 'active-' + getStrengthClass() : ''"></span>
+                  </div>
+                  <p class="mb-2 text-sm" :class="'text-' + getStrengthClass()">
+                    Seguridad: {{ getStrengthText() }}
+                  </p>
+                  <!-- Requisitos de contraseña -->
+                  <div class="password-requirements">
+                    <small class="d-block" :class="passwordForm.newPassword.length >= 6 ? 'text-success' : 'text-muted'">
+                      <i :class="passwordForm.newPassword.length >= 6 ? 'ti ti-check' : 'ti ti-circle'"></i>
+                      Mínimo 6 caracteres
+                    </small>
+                    <small class="d-block" :class="/[A-Z]/.test(passwordForm.newPassword) ? 'text-success' : 'text-muted'">
+                      <i :class="/[A-Z]/.test(passwordForm.newPassword) ? 'ti ti-check' : 'ti ti-circle'"></i>
+                      Al menos una letra mayúscula
+                    </small>
+                    <small class="d-block" :class="/[a-z]/.test(passwordForm.newPassword) ? 'text-success' : 'text-muted'">
+                      <i :class="/[a-z]/.test(passwordForm.newPassword) ? 'ti ti-check' : 'ti ti-circle'"></i>
+                      Al menos una letra minúscula
+                    </small>
+                    <small class="d-block" :class="/\d/.test(passwordForm.newPassword) ? 'text-success' : 'text-muted'">
+                      <i :class="/\d/.test(passwordForm.newPassword) ? 'ti ti-check' : 'ti ti-circle'"></i>
+                      Al menos un número
+                    </small>
+                  </div>
                 </div>
-                <div id="passwordInfo"></div>
               </div>
             </div>
             <div class="col-lg-12">
               <div class="input-blocks mb-0">
                 <label class="fw-medium"
-                  >Confirm Password <span class="text-danger">*</span></label
+                  >Confirmar Contraseña <span class="text-danger">*</span></label
                 >
                 <div class="pass-group">
-                  <input type="password" class="form-control settings-pass-inputa" />
-                  <span class="toggle-passworda ti ti-eye-off"></span>
+                  <input
+                    v-model="passwordForm.confirmPassword"
+                    :type="showConfirmPassword ? 'text' : 'password'"
+                    class="form-control settings-pass-inputa"
+                    :disabled="isLoadingPassword"
+                  />
+                  <span
+                    class="toggle-passworda"
+                    :class="showConfirmPassword ? 'ti ti-eye' : 'ti ti-eye-off'"
+                    @click="showConfirmPassword = !showConfirmPassword"
+                    style="cursor: pointer;"
+                  ></span>
                 </div>
+                <small v-if="passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword" class="text-danger">
+                  Las contraseñas no coinciden
+                </small>
+                <small v-else-if="passwordForm.confirmPassword && passwordForm.newPassword === passwordForm.confirmPassword" class="text-success">
+                  <i class="ti ti-check"></i> Las contraseñas coinciden
+                </small>
               </div>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <a
-            href="javascript:void(0);"
+          <button
+            type="button"
             class="btn btn-secondary me-2"
             data-bs-dismiss="modal"
-            >Cancel</a
+            :disabled="isLoadingPassword"
+            @click="resetPasswordForm"
+            >Cancelar</button
           >
-          <a href="javascript:void(0);" class="btn btn-primary" data-bs-dismiss="modal"
-            >Save Changes</a
+          <button
+            type="button"
+            class="btn btn-primary"
+            @click="handleChangePassword"
+            :disabled="!isPasswordFormValid || isLoadingPassword"
           >
+            <span v-if="isLoadingPassword" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            {{ isLoadingPassword ? 'Guardando...' : 'Guardar Cambios' }}
+          </button>
         </div>
       </div>
     </div>
   </div>
   <!-- /Change Password -->
-
-  <!-- Change Phone Number -->
-  <div class="modal fade" id="phone-verification">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div class="page-title">
-            <h4>Change Phone Number</h4>
-          </div>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-lg-12">
-              <div class="input-blocks">
-                <label class="fw-medium"
-                  >Current Phone Number <span class="text-danger">*</span></label
-                >
-                <input class="form-control" id="phone" name="phone" type="text" />
-              </div>
-            </div>
-            <div class="col-lg-12">
-              <div class="input-blocks">
-                <label class="fw-medium"
-                  >New Phone Number <span class="text-danger">*</span></label
-                >
-                <input class="form-control" id="phone2" name="phone2" type="text" />
-              </div>
-            </div>
-            <div class="col-lg-12">
-              <div class="input-blocks">
-                <p class="fs-14">
-                  <i class="ti ti-info-circle me-1"></i> New phone number only updated
-                  once you verified
-                </p>
-              </div>
-            </div>
-            <div class="col-lg-12">
-              <div class="input-blocks mb-0">
-                <label class="fw-medium"
-                  >Current Password <span class="text-danger">*</span></label
-                >
-                <div class="pass-group">
-                  <input type="password" class="settings-pass-inputa" />
-                  <span class="toggle-passworda ti ti-eye-off"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <a
-            href="javascript:void(0);"
-            class="btn btn-secondary me-2"
-            data-bs-dismiss="modal"
-            >Cancel</a
-          >
-          <a href="javascript:void(0);" class="btn btn-primary" data-bs-dismiss="modal"
-            >Save Changes</a
-          >
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- /Change Phone Number -->
-
-  <!-- Change Email -->
-  <div class="modal fade" id="email-verification">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div class="page-title">
-            <h4>Change Email</h4>
-          </div>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-lg-12">
-              <div class="input-blocks">
-                <label class="fw-medium"
-                  >Current Email <span class="text-danger">*</span></label
-                >
-                <input class="form-control" type="text" />
-              </div>
-            </div>
-            <div class="col-lg-12">
-              <div class="input-blocks">
-                <label class="fw-medium"
-                  >New Email <span class="text-danger">*</span></label
-                >
-                <input class="form-control" type="text" />
-              </div>
-            </div>
-            <div class="col-lg-12">
-              <div class="input-blocks">
-                <p class="fs-14">
-                  <i class="ti ti-info-circle me-1"></i> New email address only updated
-                  once you verified
-                </p>
-              </div>
-            </div>
-            <div class="col-lg-12">
-              <div class="input-blocks mb-0">
-                <label class="fw-medium"
-                  >Current Password <span class="text-danger">*</span></label
-                >
-                <div class="pass-group">
-                  <input type="password" class="settings-pass-inputa" />
-                  <span class="toggle-passworda ti ti-eye-off"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <a
-            href="javascript:void(0);"
-            class="btn btn-secondary me-2"
-            data-bs-dismiss="modal"
-            >Cancel</a
-          >
-          <a href="javascript:void(0);" class="btn btn-primary" data-bs-dismiss="modal"
-            >Save Changes</a
-          >
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- /Change Email -->
-
-  <!-- Device Management -->
-  <div class="modal device-management-modal fade" id="device-management">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div class="page-title">
-            <h4>Device Management</h4>
-          </div>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="device-management-table">
-                <div class="table-responsive">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th>Device</th>
-                        <th>Date</th>
-                        <th>Location</th>
-                        <th>IP Address</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Chrome - Windows</td>
-                        <td>15 May 2025, 10:30 AM</td>
-                        <td>Newyork / USA</td>
-                        <td>232.222.12.72</td>
-                        <td>
-                          <a href="javascript:void(0);" class="btn">
-                            <i class="ti ti-trash"></i>
-                          </a>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Safari Macos</td>
-                        <td>10 Apr 2025, 05:15 PM</td>
-                        <td>Newyork / USA</td>
-                        <td>224.111.12.75</td>
-                        <td>
-                          <a href="javascript:void(0);" class="btn">
-                            <i class="ti ti-trash"></i>
-                          </a>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Firefox Windows</td>
-                        <td>15 Mar 2025, 02:40 PM</td>
-                        <td>Newyork / USA</td>
-                        <td>111.222.13.28</td>
-                        <td>
-                          <a href="javascript:void(0);" class="btn">
-                            <i class="ti ti-trash"></i>
-                          </a>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Safari Macos</td>
-                        <td>15 Jan 2025, 08:00 AM</td>
-                        <td>Newyork / USA</td>
-                        <td>333.555.10.54</td>
-                        <td>
-                          <a href="javascript:void(0);" class="btn">
-                            <i class="ti ti-trash"></i>
-                          </a>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- /Device Management -->
-
-  <!-- Account Activity -->
-  <div class="modal device-management-modal fade" id="account-activity">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div class="page-title">
-            <h4>Account Activity</h4>
-          </div>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="device-management-table">
-                <div class="table-responsive">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Device</th>
-                        <th>Location</th>
-                        <th>IP Address</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>15 May 2025, 10:30 AM</td>
-                        <td>Chrome - Windows</td>
-                        <td>Newyork / USA</td>
-                        <td>232.222.12.72</td>
-                        <td>
-                          <a href="javascript:void(0);" class="btn">
-                            <i class="ti ti-logout"></i>
-                          </a>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>10 Apr 2025, 05:15 PM</td>
-                        <td>Safari Macos</td>
-                        <td>Newyork / USA</td>
-                        <td>224.111.12.75</td>
-                        <td>
-                          <a href="javascript:void(0);" class="btn">
-                            <i class="ti ti-logout"></i>
-                          </a>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>15 Mar 2025, 02:40 PM</td>
-                        <td>Firefox Windows</td>
-                        <td>Newyork / USA</td>
-                        <td>111.222.13.28</td>
-                        <td>
-                          <a href="javascript:void(0);" class="btn">
-                            <i class="ti ti-logout"></i>
-                          </a>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>15 Jan 2025, 08:00 AM</td>
-                        <td>Safari Macos</td>
-                        <td>Newyork / USA</td>
-                        <td>333.555.10.54</td>
-                        <td>
-                          <a href="javascript:void(0);" class="btn">
-                            <i class="ti ti-logout"></i>
-                          </a>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- /Account Activity -->
-
-  <!-- Delete Account -->
-  <div class="modal delete-account-modal fade" id="delete-account">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
-        <div class="modal-header custom-modal-header">
-          <div class="page-title">
-            <h4>Delete Account</h4>
-          </div>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="delete-header">
-            <h4 class="fs-16 fw-medium mb-1">Why Are You Deleting Your Account?</h4>
-            <p class="fs-16">
-              We're sorry to see you go! To help us improve, please let us know your
-              reason for deleting your account
-            </p>
-          </div>
-          <div class="form-check d-flex mb-2">
-            <input class="form-check-input" type="radio" name="delete" id="del-acc1" />
-            <label class="form-check-label fs-14 ms-2" for="del-acc1">
-              <span class="text-gray-9 fw-medium">No longer using the service</span>
-              <span class="d-block text-default"
-                >I no longer need this service and won’t be using it in the future.</span
-              >
-            </label>
-          </div>
-          <div class="form-check d-flex mb-2">
-            <input class="form-check-input" type="radio" name="delete" id="del-acc2" />
-            <label class="form-check-label fs-14 ms-2" for="del-acc2">
-              <span class="text-gray-9 fw-medium">Privacy concerns</span>
-              <span class="d-block text-default"
-                >I am concerned about how my data is handled and want to remove my
-                information.</span
-              >
-            </label>
-          </div>
-          <div class="form-check d-flex mb-2">
-            <input class="form-check-input" type="radio" name="delete" id="del-acc3" />
-            <label class="form-check-label fs-14 ms-2" for="del-acc3">
-              <span class="text-gray-9 fw-medium">Too many notifications/emails</span>
-              <span class="d-block text-default"
-                >I’m overwhelmed by the volume of notifications or emails and would like
-                to reduce them.</span
-              >
-            </label>
-          </div>
-          <div class="form-check d-flex mb-2">
-            <input class="form-check-input" type="radio" name="delete" id="del-acc4" />
-            <label class="form-check-label fs-14 ms-2" for="del-acc4">
-              <span class="text-gray-9 fw-medium">Poor user experience</span>
-              <span class="d-block text-default"
-                >I’ve had difficulty using the platform, and it didn’t meet my
-                expectations.</span
-              >
-            </label>
-          </div>
-          <div class="form-check d-flex mb-2">
-            <input
-              class="form-check-input"
-              type="radio"
-              name="delete"
-              id="del-acc5"
-              checked
-            />
-            <label class="form-check-label fs-14 ms-2" for="del-acc5">
-              <span class="text-gray-9 fw-medium">Other (Please specify)</span>
-            </label>
-          </div>
-          <div class="ms-4">
-            <textarea class="form-control" rows="3"></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <a
-            href="javascript:void(0);"
-            class="btn btn-secondary me-2"
-            data-bs-dismiss="modal"
-            >Cancel</a
-          >
-          <a href="javascript:void(0);" class="btn btn-primary" data-bs-dismiss="modal"
-            >Delete Account</a
-          >
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- /Delete Account -->
 </template>
+
+<script>
+import api from '@/api/config';
+
+export default {
+  name: 'SecuritySettingsModal',
+  data() {
+    return {
+      // Password Form
+      passwordForm: {
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      },
+      showCurrentPassword: false,
+      showNewPassword: false,
+      showConfirmPassword: false,
+      isLoadingPassword: false,
+      passwordError: '',
+      passwordSuccess: '',
+      passwordStrength: 0
+    };
+  },
+  computed: {
+    isPasswordFormValid() {
+      return (
+        this.passwordForm.currentPassword.length > 0 &&
+        this.passwordForm.newPassword.length >= 6 &&
+        this.passwordForm.newPassword === this.passwordForm.confirmPassword
+      );
+    }
+  },
+  methods: {
+    checkPasswordStrength() {
+      const password = this.passwordForm.newPassword;
+      let strength = 0;
+
+      if (password.length >= 6) strength++;
+      if (password.length >= 10) strength++;
+      if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+      if (/\d/.test(password)) strength++;
+      if (/[^a-zA-Z\d]/.test(password)) strength++;
+
+      this.passwordStrength = Math.min(strength, 4);
+    },
+    getStrengthClass() {
+      switch (this.passwordStrength) {
+        case 1:
+          return 'danger';
+        case 2:
+          return 'warning';
+        case 3:
+          return 'info';
+        case 4:
+          return 'success';
+        default:
+          return 'secondary';
+      }
+    },
+    getStrengthText() {
+      switch (this.passwordStrength) {
+        case 1:
+          return 'Muy débil';
+        case 2:
+          return 'Débil';
+        case 3:
+          return 'Buena';
+        case 4:
+          return 'Fuerte';
+        default:
+          return '';
+      }
+    },
+    async handleChangePassword() {
+      this.passwordError = '';
+      this.passwordSuccess = '';
+
+      // Validaciones
+      if (!this.passwordForm.currentPassword) {
+        this.passwordError = 'Por favor ingresa tu contraseña actual';
+        return;
+      }
+
+      if (this.passwordForm.newPassword.length < 6) {
+        this.passwordError = 'La nueva contraseña debe tener al menos 6 caracteres';
+        return;
+      }
+
+      // Validar que contenga mayúscula, minúscula y número
+      if (!/[A-Z]/.test(this.passwordForm.newPassword)) {
+        this.passwordError = 'La contraseña debe contener al menos una letra mayúscula';
+        return;
+      }
+
+      if (!/[a-z]/.test(this.passwordForm.newPassword)) {
+        this.passwordError = 'La contraseña debe contener al menos una letra minúscula';
+        return;
+      }
+
+      if (!/\d/.test(this.passwordForm.newPassword)) {
+        this.passwordError = 'La contraseña debe contener al menos un número';
+        return;
+      }
+
+      if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
+        this.passwordError = 'Las contraseñas no coinciden';
+        return;
+      }
+
+      if (this.passwordForm.currentPassword === this.passwordForm.newPassword) {
+        this.passwordError = 'La nueva contraseña debe ser diferente a la actual';
+        return;
+      }
+
+      try {
+        this.isLoadingPassword = true;
+
+        // Hacer la petición al backend usando el servicio de API configurado
+        const response = await api.post(
+          '/auth/change-password',
+          {
+            current_password: this.passwordForm.currentPassword,
+            new_password: this.passwordForm.newPassword
+          }
+        );
+
+        if (response.data && response.data.success) {
+          this.passwordSuccess = 'Contraseña cambiada exitosamente';
+
+          // Cerrar modal después de 2 segundos
+          setTimeout(() => {
+            const modalElement = document.getElementById('change-password');
+
+            // Usar Bootstrap 5 para cerrar el modal correctamente
+            const bsModal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            bsModal.hide();
+
+            // Limpiar backdrop manualmente
+            setTimeout(() => {
+              const backdrop = document.querySelector('.modal-backdrop');
+              if (backdrop) {
+                backdrop.remove();
+              }
+              document.body.classList.remove('modal-open');
+              document.body.style.overflow = '';
+              document.body.style.paddingRight = '';
+
+              // Limpiar formulario
+              this.resetPasswordForm();
+            }, 300);
+          }, 2000);
+        }
+      } catch (error) {
+        console.error('Error al cambiar contraseña:', error);
+
+        if (error.response?.status === 400) {
+          // Manejar errores de validación
+          if (error.response.data?.errors && Array.isArray(error.response.data.errors)) {
+            // Si hay múltiples errores de validación, mostrar el primero
+            const firstError = error.response.data.errors[0];
+            this.passwordError = firstError.message || 'Error de validación';
+          } else if (error.response.data?.message) {
+            this.passwordError = error.response.data.message;
+          } else {
+            this.passwordError = 'Datos inválidos. Por favor verifica tu información.';
+          }
+        } else if (error.response?.status === 401) {
+          this.passwordError = 'Contraseña actual incorrecta';
+        } else if (error.response?.data?.message) {
+          this.passwordError = error.response.data.message;
+        } else {
+          this.passwordError = 'Error al cambiar la contraseña. Por favor intenta nuevamente.';
+        }
+      } finally {
+        this.isLoadingPassword = false;
+      }
+    },
+    resetPasswordForm() {
+      this.passwordForm.currentPassword = '';
+      this.passwordForm.newPassword = '';
+      this.passwordForm.confirmPassword = '';
+      this.showCurrentPassword = false;
+      this.showNewPassword = false;
+      this.showConfirmPassword = false;
+      this.passwordError = '';
+      this.passwordSuccess = '';
+      this.passwordStrength = 0;
+    }
+  },
+  mounted() {
+    // Limpiar el formulario cuando se cierra el modal
+    const modalElement = document.getElementById('change-password');
+    if (modalElement) {
+      modalElement.addEventListener('hidden.bs.modal', () => {
+        this.resetPasswordForm();
+      });
+    }
+  }
+};
+</script>
+
+<style scoped>
+.strength-bar {
+  height: 4px;
+  flex: 1;
+  background-color: #e0e0e0;
+  border-radius: 2px;
+  transition: background-color 0.3s ease;
+}
+
+.strength-bar.active-danger {
+  background-color: #dc3545;
+}
+
+.strength-bar.active-warning {
+  background-color: #ffc107;
+}
+
+.strength-bar.active-info {
+  background-color: #17a2b8;
+}
+
+.strength-bar.active-success {
+  background-color: #28a745;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.password-requirements {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.password-requirements small {
+  font-size: 0.8rem;
+  line-height: 1.8;
+  transition: color 0.2s ease;
+}
+
+.password-requirements i {
+  font-size: 0.7rem;
+  margin-right: 0.25rem;
+}
+</style>

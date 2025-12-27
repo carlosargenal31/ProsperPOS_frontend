@@ -1,9 +1,18 @@
 <template>
-  <div class="shop-checkout">
-    <div class="container">
-      <div class="page-header">
-        <h1>Finalizar Pedido</h1>
-      </div>
+  <div class="main-wrapper">
+    <layout-header></layout-header>
+    <layout-sidebar></layout-sidebar>
+
+    <div class="page-wrapper">
+      <div class="content">
+        <div class="page-header">
+          <div class="add-item d-flex">
+            <div class="page-title">
+              <h4>Finalizar Pedido</h4>
+              <h6>Complete la información para realizar su pedido</h6>
+            </div>
+          </div>
+        </div>
 
       <div v-if="loading" class="loading">
         <i class="mdi mdi-loading mdi-spin"></i>
@@ -188,6 +197,7 @@
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <script>
@@ -336,22 +346,6 @@ export default {
 </script>
 
 <style scoped>
-.shop-checkout {
-  min-height: 100vh;
-  background: #f5f5f5;
-  padding: 2rem 0;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.page-header h1 {
-  margin: 0 0 2rem 0;
-  color: #333;
-}
 
 .loading {
   text-align: center;

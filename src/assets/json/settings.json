@@ -3,21 +3,11 @@
       "icon": "settings",
       "title": "Ajustes Generales",
       "page": "settings",
-      "subMenu": [
-        { "title": "Perfil", "routes": "/settings/general-settings" },
+      "subMenu": [    
+{ "title": "Ajustes de Factura", "routes": "/website-settings/invoice-settings" },
         { "title": "Seguridad", "routes": "/settings/security-settings" },
-        { "title": "Control de Páginas", "routes": "/page/pages" }
-
-      ]
-    },
-    {
-      "icon": "airplay",
-      "title": "Ajustes del Sitio Web",
-      "page": "website-settings",
-      "subMenu": [
-        { "title": "Ajustes de Factura", "routes": "/website-settings/invoice-settings" },
-        { "title": "POS", "routes": "/app-settings/pos-settings" },
         { "title": "Resoluciones", "routes": "/financial-settings/resolution-settings" }
+      
       ]
     },
     {

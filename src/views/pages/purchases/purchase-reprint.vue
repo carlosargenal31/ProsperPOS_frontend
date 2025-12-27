@@ -234,112 +234,28 @@
 
               <!-- DEVOLUCION COMPRA -->
               <div v-else-if="selectedDocumentType === 'DEVOLUCION COMPRA'" id="purchaseReturnContent">
-                <!-- Header con Logo y Datos de la Empresa -->
-                <div class="row mb-2">
-                  <div class="col-6">
-                    <div style="font-size: 11px;">
-                      <strong style="font-size: 13px; color: #0056b3;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-                      <strong style="font-size: 10px;">{{ companyInfo.business_line || 'Comercio en general' }}</strong><br>
-                      <strong>RTN:</strong> {{ companyInfo.rtn || '00000000000000' }}<br>
-                      <strong>Dirección:</strong> {{ companyInfo.direccion || 'Sin dirección' }}<br>
-                      <strong>Teléfono:</strong> {{ companyInfo.telefono || 'N/A' }}<br>
-                      <strong>Email:</strong> {{ companyInfo.email || 'info@empresa.com' }}
-                    </div>
-                  </div>
-                  <div class="col-6 text-end">
-                    <div style="background-color: #ff8c00; color: white; padding: 8px; border-radius: 4px; font-size: 11px;">
-                      <strong style="font-size: 14px;">DEVOLUCIÓN: {{ selectedDocument.correlative }}</strong><br>
-                      <span style="font-size: 9px;">
-                        #Control Interno: {{ selectedDocument.correlative }}<br>
-                        Doc/Devuelto: {{ selectedDocument.purchase_number }}<br>
-                        Proveedor: {{ selectedDocument.supplier_name }}<br>
-                        Emisión: {{ formatDate(selectedDocument.emission_date) }}<br>
-                        Condiciones de la Transacción: Contado<br>
-                        Entrega: {{ formatDate(selectedDocument.emission_date) }}
-                      </span>
-                    </div>
-                  </div>
+                <div class="text-center mb-2">
+                  <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
+                  <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
+                  <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
                 </div>
 
-                <hr style="border-top: 2px solid #ff8c00; margin: 8px 0;">
+                <h6 class="text-success text-center mb-2" style="font-size: 14px;">DEVOLUCIÓN DE COMPRA</h6>
 
-                <!-- Información del Proveedor -->
+                <div class="d-flex justify-content-around border p-1 mb-2" style="font-size: 10px;">
+                  <span><strong>Nro. Devolución:</strong> {{ selectedDocument.correlative }}</span>
+                  <span><strong>Compra Original:</strong> {{ selectedDocument.purchase_number }}</span>
+                  <span><strong>Fecha:</strong> {{ formatDate(selectedDocument.emission_date) }}</span>
+                </div>
+
                 <div class="mb-2" style="font-size: 10px;">
                   <strong>Proveedor:</strong> {{ selectedDocument.supplier_name }}<br>
-                  <strong>RTN:</strong> {{ selectedDocument.supplier_rtn || '00000000000000' }}
+                  <strong>RTN Proveedor:</strong> {{ selectedDocument.supplier_rtn || '00000000000000' }}
                 </div>
 
-                <!-- Tabla de Detalles de Devolución -->
-                <table class="table table-sm table-bordered mb-2" style="font-size: 9px;">
-                  <thead style="background-color: #ff8c00; color: white;">
-                    <tr>
-                      <th style="padding: 4px;">MOTIVO</th>
-                      <th style="padding: 4px;">OBSERVACIONES</th>
-                      <th class="text-end" style="padding: 4px;">MONTO</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td style="padding: 4px;">{{ selectedDocument.reason || 'Devolución de mercadería' }}</td>
-                      <td style="padding: 4px;">{{ selectedDocument.notes || 'N/A' }}</td>
-                      <td class="text-end" style="padding: 4px;">L {{ formatCurrency(selectedDocument.total) }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <!-- Sección de Totales -->
-                <div class="row" style="font-size: 10px;">
-                  <div class="col-7">
-                    <div class="border p-2" style="background-color: #f8f9fa;">
-                      <strong>TOTAL:</strong> {{ numberToWords(selectedDocument.total) }} LEMPIRAS CON {{ String(Math.floor((selectedDocument.total % 1) * 100)).padStart(2, '0') }}/100
-                    </div>
-                    <div class="text-center mt-2 pt-3" style="border-top: 1px solid #000;">
-                      <strong style="font-size: 9px;">Original Proveedor<br>Copia Obligado Tributario Emisor</strong>
-                    </div>
-                    <div class="mt-2" style="font-size: 9px;">
-                      <strong>Notas:</strong> {{ selectedDocument.notes || 'N/A' }}
-                    </div>
-                  </div>
-                  <div class="col-5">
-                    <table class="table table-sm table-bordered mb-0" style="font-size: 9px;">
-                      <tr>
-                        <td style="padding: 3px; background-color: #f8f9fa;"><strong>Importe Exonerado:</strong></td>
-                        <td class="text-end" style="padding: 3px;">L 0.00</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 3px; background-color: #f8f9fa;"><strong>Importe Exento:</strong></td>
-                        <td class="text-end" style="padding: 3px;">L 0.00</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 3px; background-color: #f8f9fa;"><strong>Gravado 15%:</strong></td>
-                        <td class="text-end" style="padding: 3px;">L {{ formatCurrency(selectedDocument.subtotal_15 || 0) }}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 3px; background-color: #f8f9fa;"><strong>Gravado 18%:</strong></td>
-                        <td class="text-end" style="padding: 3px;">L 0.00</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 3px; background-color: #f8f9fa;"><strong>I.S.V 15%:</strong></td>
-                        <td class="text-end" style="padding: 3px;">L {{ formatCurrency(selectedDocument.tax || 0) }}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 3px; background-color: #f8f9fa;"><strong>I.S.V 18%:</strong></td>
-                        <td class="text-end" style="padding: 3px;">L 0.00</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 3px; background-color: #f8f9fa;"><strong>RECARGOS:</strong></td>
-                        <td class="text-end" style="padding: 3px;">L 0.00</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 3px; background-color: #f8f9fa;"><strong>DESCUENTOS Y REBAJAS:</strong></td>
-                        <td class="text-end" style="padding: 3px;">L 0.00</td>
-                      </tr>
-                      <tr style="background-color: #ff8c00; color: white;">
-                        <td style="padding: 4px;"><strong>TOTAL:</strong></td>
-                        <td class="text-end" style="padding: 4px;"><strong>L {{ formatCurrency(selectedDocument.total) }}</strong></td>
-                      </tr>
-                    </table>
-                  </div>
+                <div class="mb-1" style="font-size: 10px;">
+                  <strong>Monto Devolución:</strong> L {{ formatCurrency(selectedDocument.total) }}<br>
+                  <strong>Observaciones:</strong> {{ selectedDocument.notes || 'N/A' }}
                 </div>
               </div>
 
@@ -659,184 +575,54 @@ export default {
     },
     buildDocumentHTML() {
       const docTitle = this.selectedDocumentType;
+      const docColor = '#28a745'; // Verde para todos los documentos de compras
 
-      // HTML específico para DEVOLUCIÓN DE COMPRA
-      if (this.selectedDocumentType === 'DEVOLUCION COMPRA') {
-        return `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="UTF-8">
-            <title>DEVOLUCIÓN DE COMPRA - ${this.selectedDocument.correlative}</title>
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body {
-                font-family: Arial, sans-serif;
-                color: #000;
-                background: #fff;
-                padding: 20px;
-                font-size: 12px;
-              }
-              .doc-container {
-                max-width: 850px;
-                margin: 0 auto;
-                background: white;
-                padding: 15px;
-              }
-              .orange-box {
-                background-color: #ff8c00;
-                color: white;
-                padding: 10px;
-                border-radius: 5px;
-              }
-              .table-bordered td, .table-bordered th {
-                border: 1px solid #dee2e6;
-              }
-              @media print {
-                body { padding: 10px; }
-                @page { size: letter; margin: 10mm; }
-              }
-            </style>
-          </head>
-          <body>
-            <div class="doc-container">
-              <!-- Header -->
-              <div class="row mb-3">
-                <div class="col-6">
-                  <div style="font-size: 11px;">
-                    <strong style="font-size: 14px; color: #0056b3;">${this.companyInfo.company_name || 'EMPRESA'}</strong><br>
-                    <strong style="font-size: 10px;">${this.companyInfo.business_line || 'Comercio en general'}</strong><br>
-                    <strong>RTN:</strong> ${this.companyInfo.rtn || '00000000000000'}<br>
-                    <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                    <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}<br>
-                    <strong>Email:</strong> ${this.companyInfo.email || 'info@empresa.com'}
-                  </div>
-                </div>
-                <div class="col-6 text-end">
-                  <div class="orange-box" style="font-size: 11px;">
-                    <strong style="font-size: 15px;">DEVOLUCIÓN: ${this.selectedDocument.correlative}</strong><br>
-                    <span style="font-size: 9px;">
-                      #Control Interno: ${this.selectedDocument.correlative}<br>
-                      Doc/Devuelto: ${this.selectedDocument.purchase_number}<br>
-                      Proveedor: ${this.selectedDocument.supplier_name}<br>
-                      Emisión: ${this.formatDate(this.selectedDocument.emission_date)}<br>
-                      Condiciones de la Transacción: Contado<br>
-                      Entrega: ${this.formatDate(this.selectedDocument.emission_date)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <hr style="border-top: 2px solid #ff8c00; margin: 10px 0;">
-
-              <!-- Proveedor -->
-              <div class="mb-2" style="font-size: 11px;">
-                <strong>Proveedor:</strong> ${this.selectedDocument.supplier_name}<br>
-                <strong>RTN:</strong> ${this.selectedDocument.supplier_rtn || '00000000000000'}
-              </div>
-
-              <!-- Tabla de Detalles -->
-              <table class="table table-sm table-bordered mb-2" style="font-size: 10px;">
-                <thead style="background-color: #ff8c00; color: white;">
-                  <tr>
-                    <th style="padding: 5px;">MOTIVO</th>
-                    <th style="padding: 5px;">OBSERVACIONES</th>
-                    <th class="text-end" style="padding: 5px;">MONTO</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="padding: 5px;">${this.selectedDocument.reason || 'Devolución de mercadería'}</td>
-                    <td style="padding: 5px;">${this.selectedDocument.notes || 'N/A'}</td>
-                    <td class="text-end" style="padding: 5px;">L ${this.formatCurrency(this.selectedDocument.total)}</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <!-- Totales -->
-              <div class="row" style="font-size: 10px;">
-                <div class="col-7">
-                  <div class="border p-2" style="background-color: #f8f9fa;">
-                    <strong>TOTAL:</strong> ${this.numberToWords(this.selectedDocument.total)} LEMPIRAS CON ${String(Math.floor((this.selectedDocument.total % 1) * 100)).padStart(2, '0')}/100
-                  </div>
-                  <div class="text-center mt-2 pt-3" style="border-top: 1px solid #000;">
-                    <strong style="font-size: 9px;">Original Proveedor<br>Copia Obligado Tributario Emisor</strong>
-                  </div>
-                  <div class="mt-2" style="font-size: 9px;">
-                    <strong>Notas:</strong> ${this.selectedDocument.notes || 'N/A'}
-                  </div>
-                </div>
-                <div class="col-5">
-                  <table class="table table-sm table-bordered mb-0" style="font-size: 9px;">
-                    <tr>
-                      <td style="padding: 3px; background-color: #f8f9fa;"><strong>Importe Exonerado:</strong></td>
-                      <td class="text-end" style="padding: 3px;">L 0.00</td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 3px; background-color: #f8f9fa;"><strong>Importe Exento:</strong></td>
-                      <td class="text-end" style="padding: 3px;">L 0.00</td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 3px; background-color: #f8f9fa;"><strong>Gravado 15%:</strong></td>
-                      <td class="text-end" style="padding: 3px;">L ${this.formatCurrency(this.selectedDocument.subtotal_15 || 0)}</td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 3px; background-color: #f8f9fa;"><strong>Gravado 18%:</strong></td>
-                      <td class="text-end" style="padding: 3px;">L 0.00</td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 3px; background-color: #f8f9fa;"><strong>I.S.V 15%:</strong></td>
-                      <td class="text-end" style="padding: 3px;">L ${this.formatCurrency(this.selectedDocument.tax || 0)}</td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 3px; background-color: #f8f9fa;"><strong>I.S.V 18%:</strong></td>
-                      <td class="text-end" style="padding: 3px;">L 0.00</td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 3px; background-color: #f8f9fa;"><strong>RECARGOS:</strong></td>
-                      <td class="text-end" style="padding: 3px;">L 0.00</td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 3px; background-color: #f8f9fa;"><strong>DESCUENTOS Y REBAJAS:</strong></td>
-                      <td class="text-end" style="padding: 3px;">L 0.00</td>
-                    </tr>
-                    <tr style="background-color: #ff8c00; color: white;">
-                      <td style="padding: 5px;"><strong>TOTAL:</strong></td>
-                      <td class="text-end" style="padding: 5px;"><strong>L ${this.formatCurrency(this.selectedDocument.total)}</strong></td>
-                    </tr>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </body>
-          </html>
-        `;
-      }
-
-      // HTML para otros tipos de documentos (COMPRA, NOTA CREDITO)
+      // Construir filas de la tabla y calcular totales
       let tableRows = '';
-      let total = 0;
+      let subtotal = 0;
+      let totalDiscount = 0;
+      let totalTax = 0;
 
       if (this.selectedDocument.items && this.selectedDocument.items.length > 0) {
-        this.selectedDocument.items.forEach((item) => {
+        this.selectedDocument.items.forEach((item, index) => {
           const qty = parseFloat(item.quantity) || 0;
           const price = parseFloat(item.unit_price) || 0;
-          const itemTotal = item.total || (qty * price);
-          total += itemTotal;
+          const discount = parseFloat(item.discount) || 0;
+          const tax = parseFloat(item.tax) || 0;
+
+          // Calcular subtotal del item
+          const itemSubtotal = qty * price;
+
+          // Acumular totales
+          subtotal += itemSubtotal;
+          totalDiscount += discount;
+          totalTax += tax;
+
+          // Total del item
+          const itemTotal = item.total || (itemSubtotal - discount + tax);
 
           tableRows += `
             <tr>
-              <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(qty)}</td>
-              <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name}</td>
-              <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(price)}</td>
-              <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemTotal)}</td>
+              <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${String(index + 1).padStart(2, '0')}</td>
+              <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_code || 'N/A'}</td>
+              <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_name}</td>
+              <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${this.formatCurrency(qty)}</td>
+              <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-size: 10px;">L ${this.formatCurrency(price)}</td>
+              <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 10px;">L ${this.formatCurrency(itemTotal)}</td>
             </tr>
           `;
         });
       }
 
-      const finalTotal = this.selectedDocument.total || this.selectedDocument.total_amount || total;
+      // Usar valores del documento si existen, sino usar los calculados
+      const finalTotal = this.selectedDocument.total || this.selectedDocument.total_amount || 0;
+      const finalSubtotal = this.selectedDocument.subtotal || subtotal;
+      const finalDiscount = this.selectedDocument.discount || totalDiscount;
+      const finalSurcharge = this.selectedDocument.surcharge || 0;
+      const finalTax = this.selectedDocument.tax || totalTax;
+
+      // El monto gravado es el subtotal menos descuentos (antes de impuestos)
+      const taxableAmount = finalSubtotal - finalDiscount;
 
       const html = `
         <!DOCTYPE html>
@@ -847,69 +633,153 @@ export default {
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
-              font-family: Arial, sans-serif;
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
               color: #000;
               background: #fff;
               padding: 0;
               margin: 0;
-              font-size: 14px;
             }
             .invoice-container {
-              max-width: 80mm;
+              max-width: 850px;
               margin: 0 auto;
               background: white;
-              padding: 12px 18px;
+              padding: 40px;
             }
             .header {
-              text-align: center;
-              margin-bottom: 10px;
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin-bottom: 25px;
+              padding-bottom: 15px;
+              border-bottom: 3px solid ${docColor};
             }
-            .company-logo img {
-              max-width: 120px;
-              height: auto;
-            }
+            .company-logo { flex: 1; }
             .company-name {
-              font-size: 13px;
+              font-size: 11px;
               font-weight: 700;
               color: #000;
-              margin: 5px 0;
+              margin-bottom: 6px;
+              line-height: 1.5;
             }
-            .doc-title {
-              font-size: 17px;
-              font-weight: 700;
-              text-align: center;
-              margin: 10px 0;
+            .company-details {
+              font-size: 11px;
               color: #000;
+              line-height: 1.5;
             }
-            .info-section {
+            .invoice-header {
+              text-align: right;
+              background: ${docColor};
+              color: white;
+              padding: 15px 18px;
+              border-radius: 8px;
+              min-width: 280px;
+            }
+            .invoice-title {
+              font-size: 22px;
+              font-weight: 700;
+              margin-bottom: 10px;
+              letter-spacing: 0.5px;
+            }
+            .invoice-info {
+              font-size: 11px;
+              line-height: 1.6;
+            }
+            .client-info {
+              background: #f8f9fa;
+              padding: 18px;
+              border-left: 4px solid ${docColor};
+              margin-bottom: 25px;
               font-size: 12px;
-              line-height: 1.4;
-              margin: 10px 0;
+              line-height: 1.8;
             }
             .products-table {
               width: 100%;
-              margin: 10px 0;
               border-collapse: collapse;
+              margin-bottom: 25px;
+              font-size: 11px;
+            }
+            .products-table thead {
+              background: ${docColor};
+              color: white;
             }
             .products-table th {
-              padding: 5px;
+              padding: 12px 8px;
               text-align: left;
-              font-size: 12px;
-              border-bottom: 1px solid #000;
+              font-weight: 600;
+              font-size: 10px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
             }
             .products-table td {
-              padding: 5px;
-              font-size: 12px;
+              padding: 8px;
+              border-bottom: 1px solid #e0e0e0;
             }
             .totals-section {
-              margin-top: 10px;
-              text-align: right;
-              font-size: 14px;
-              font-weight: bold;
+              display: flex;
+              justify-content: space-between;
+              margin-top: 25px;
+            }
+            .totals-left {
+              flex: 1;
+              padding-right: 30px;
+            }
+            .totals-box {
+              background: #f8f9fa;
+              border: 2px solid ${docColor};
+              border-radius: 8px;
+              padding: 15px;
+              min-width: 320px;
+            }
+            .total-row {
+              display: flex;
+              justify-content: space-between;
+              padding: 6px 0;
+              font-size: 11px;
+            }
+            .grand-total {
+              margin-top: 8px;
+              padding-top: 8px;
+              border-top: 2px solid ${docColor};
+              font-size: 13px;
+              background: ${docColor};
+              color: white;
+              margin: 8px -15px -15px -15px;
+              padding: 12px 15px;
+              border-radius: 0 0 6px 6px;
+            }
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 2px solid #dee2e6;
+              text-align: center;
+            }
+            /* Forzar texto negro en todos los elementos */
+            body, p, div, span, td, th, strong, b, label {
+              color: #000 !important;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            /* Excepciones: texto blanco en boxes de color */
+            .invoice-header, .invoice-header *,
+            .invoice-title, .invoice-title *,
+            .invoice-info, .invoice-info *,
+            .grand-total, .grand-total *,
+            .products-table thead, .products-table thead * {
+              color: white !important;
             }
             @media print {
-              body { margin: 0; padding: 0; }
-              @page { size: 80mm auto; margin: 2mm; }
+              body { padding: 0; color: #000 !important; }
+              @page { size: letter; margin: 15mm; }
+              .invoice-container { padding: 20px; }
+              * { color: #000 !important; }
+              /* Excepciones en impresión */
+              .invoice-header, .invoice-header *,
+              .invoice-title, .invoice-title *,
+              .invoice-info, .invoice-info *,
+              .grand-total, .grand-total *,
+              .products-table thead, .products-table thead * {
+                color: white !important;
+              }
             }
           </style>
         </head>
@@ -917,32 +787,46 @@ export default {
           <div class="invoice-container">
             <div class="header">
               <div class="company-logo">
-                <img src="${LOGO_BASE64}" alt="Logo">
+                <img src="${LOGO_BASE64}" alt="Logo" style="max-width: 180px; height: auto; margin-bottom: 15px;">
+                <div class="company-name">${this.companyInfo.company_name || 'EMPRESA'}</div>
+                <div class="company-details">
+                  <strong>RTN:</strong> ${this.companyInfo.rtn || '00000000000000'}<br>
+                  <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
+                  <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}${this.companyInfo.telefono_movil ? '<br><strong>Teléfono Móvil:</strong> ' + this.companyInfo.telefono_movil : ''}<br>
+                  <strong>Email:</strong> ${this.companyInfo.email || 'info@empresa.com'}
+                </div>
               </div>
-              <div class="company-name">${this.companyInfo.company_name || 'EMPRESA'}</div>
-              <div style="font-size: 11px;">
-                ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                Tel: ${this.companyInfo.telefono || 'N/A'}
+              <div class="invoice-header">
+                <div class="invoice-title">${docTitle}</div>
+                <div class="invoice-info">
+                  <strong>#Control Interno:</strong> ${this.selectedDocument.correlative || this.selectedDocument.purchase_number || this.selectedDocument.credit_note_number || 'N/A'}<br>
+                  ${this.selectedDocumentType === 'COMPRA' && this.selectedDocument.invoice_number ? `<strong>Factura Proveedor:</strong> ${this.selectedDocument.invoice_number}<br>` : ''}
+                  ${this.selectedDocumentType === 'DEVOLUCION COMPRA' ? `<strong>Doc/Devuelto:</strong> ${this.selectedDocument.purchase_number || 'N/A'}<br>` : ''}
+                  ${this.selectedDocumentType === 'NOTA CREDITO COMPRA' ? `<strong>Nota de Crédito:</strong> ${this.selectedDocument.credit_note_number || 'N/A'}<br><strong>Compra Original:</strong> ${this.selectedDocument.purchase_number || 'N/A'}<br>` : ''}
+                  <strong>Emisión:</strong> ${this.formatDate(this.selectedDocument.emission_date || this.selectedDocument.purchase_date || this.selectedDocument.credit_note_date)}<br>
+                  <strong>Condiciones de la Transacción:</strong> Contado<br>
+                  <strong>Entrega:</strong> ${this.formatDate(this.selectedDocument.emission_date || this.selectedDocument.purchase_date || this.selectedDocument.credit_note_date)}
+                </div>
               </div>
             </div>
-
-            <div class="doc-title">${docTitle}</div>
-
-            <div class="info-section">
-              <strong>Documento:</strong> ${this.selectedDocument.invoice_number || this.selectedDocument.purchase_number || this.selectedDocument.correlative || 'N/A'}<br>
-              <strong>Proveedor:</strong> ${this.selectedDocument.supplier_name || 'N/A'}<br>
-              <strong>RTN:</strong> ${this.selectedDocument.supplier_rtn || '00000000000000'}<br>
-              <strong>Fecha:</strong> ${this.formatDate(this.selectedDocument.purchase_date || this.selectedDocument.emission_date)}
+            <div class="client-info">
+              <div style="display: flex; justify-content: space-between;">
+                <div style="flex: 1;">
+                  <strong>Proveedor:</strong> ${this.selectedDocument.supplier_name || 'N/A'}<br>
+                  <strong>RTN:</strong> ${this.selectedDocument.supplier_rtn || '00000000000000'}
+                </div>
+              </div>
             </div>
-
             ${tableRows ? `
             <table class="products-table">
               <thead>
                 <tr>
-                  <th style="width: 35px;">Cant</th>
-                  <th>Producto</th>
-                  <th style="width: 60px; text-align: right;">P/Unit</th>
-                  <th style="width: 65px; text-align: right;">Total</th>
+                  <th>NO.</th>
+                  <th>CÓDIGO</th>
+                  <th>DESCRIPCIÓN</th>
+                  <th>CANTIDAD</th>
+                  <th>PRECIO</th>
+                  <th>TOTAL</th>
                 </tr>
               </thead>
               <tbody>
@@ -950,9 +834,60 @@ export default {
               </tbody>
             </table>
             ` : ''}
-
             <div class="totals-section">
-              TOTAL: L ${this.formatCurrency(finalTotal)}
+              <div class="totals-left">
+                <div style="margin-bottom: 15px;">
+                  <strong>TOTAL:</strong> ${this.numberToWords(finalTotal).toUpperCase()} LEMPIRAS ${String(Math.floor((finalTotal % 1) * 100)).padStart(2, '0')}/100
+                </div>
+                <div style="margin-top: auto; padding-top: 40px; text-align: center;">
+                  <div style="border-top: 2px solid #000; width: 250px; margin: 0 auto 10px;"></div>
+                  <div style="margin-bottom: 8px;"><strong>Original Proveedor</strong></div>
+                  <div><strong>Copia Obligado Tributario Emisor</strong></div>
+                </div>
+                ${(this.selectedDocumentType === 'DEVOLUCION COMPRA' || this.selectedDocumentType === 'NOTA CREDITO COMPRA') && this.selectedDocument.notes ? `
+                <div style="margin-top: 30px; text-align: left; font-size: 12px;">
+                  <strong>Notas:</strong> ${this.selectedDocument.notes}
+                </div>
+                ` : ''}
+              </div>
+              <div class="totals-box">
+                <div class="total-row">
+                  <span class="label">Importe Exonerado:</span>
+                  <span class="value">L ${this.formatCurrency(this.selectedDocument.exempt_amount || 0)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Importe Exento:</span>
+                  <span class="value">L ${this.formatCurrency(this.selectedDocument.tax_exempt_amount || 0)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Gravado 15%</span>
+                  <span class="value">L ${this.formatCurrency(taxableAmount)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Gravado 18%</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">I.S.V 15 15%:</span>
+                  <span class="value">L ${this.formatCurrency(finalTax)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">I.S.V 18 18%:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">RECARGOS:</span>
+                  <span class="value">L ${this.formatCurrency(finalSurcharge)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">DESCUENTOS Y REBAJAS OTORGADOS:</span>
+                  <span class="value">L ${this.formatCurrency(finalDiscount)}</span>
+                </div>
+                <div class="total-row grand-total">
+                  <span class="label"><strong>TOTAL:</strong></span>
+                  <span class="value"><strong>L ${this.formatCurrency(finalTotal)}</strong></span>
+                </div>
+              </div>
             </div>
           </div>
         </body>

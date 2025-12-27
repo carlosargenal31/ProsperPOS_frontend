@@ -1,13 +1,28 @@
 <template>
-  <div class="shop-cart">
-    <div class="container">
-      <div class="page-header">
-        <h1>Mi Carrito</h1>
-        <router-link to="/shop" class="btn-continue">
-          <i class="mdi mdi-arrow-left"></i>
-          Continuar Comprando
-        </router-link>
-      </div>
+  <div class="main-wrapper">
+    <layout-header></layout-header>
+    <layout-sidebar></layout-sidebar>
+
+    <div class="page-wrapper">
+      <div class="content">
+        <div class="page-header">
+          <div class="add-item d-flex">
+            <div class="page-title">
+              <h4>Mi Carrito</h4>
+              <h6>Gestiona los productos de tu carrito</h6>
+            </div>
+          </div>
+          <ul class="table-top-head">
+            <li>
+              <div class="page-btn">
+                <router-link to="/ecommerce/catalog" class="btn btn-secondary">
+                  <i class="ti ti-arrow-left me-2"></i>
+                  Continuar Comprando
+                </router-link>
+              </div>
+            </li>
+          </ul>
+        </div>
 
       <div v-if="loading" class="loading">
         <i class="mdi mdi-loading mdi-spin"></i>
@@ -103,6 +118,7 @@
         </div>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -214,47 +230,6 @@ export default {
 </script>
 
 <style scoped>
-.shop-cart {
-  min-height: 100vh;
-  background: #f5f5f5;
-  padding: 2rem 0;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.page-header h1 {
-  margin: 0;
-  color: #333;
-}
-
-.btn-continue {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: white;
-  color: #667eea;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s;
-}
-
-.btn-continue:hover {
-  background: #667eea;
-  color: white;
-}
 
 .loading,
 .empty-cart {

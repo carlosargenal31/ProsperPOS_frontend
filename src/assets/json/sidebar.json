@@ -376,6 +376,21 @@
     ]
   },
   {
+    "tittle": "Tienda en Línea",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Tienda en Línea",
+        "icon": "ti ti-shopping-cart",
+        "route": "/ecommerce/catalog",
+        "active_link": "/ecommerce",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
     "tittle": "Gestión de Usuarios",
     "showAsTab": true,
     "separateRoute": false,
@@ -406,36 +421,6 @@
       {
         "menuValue": "Ajustes Generales",
         "icon": "ti ti-settings",
-        "active_link": "settings",
-        "hasSubRoute": true,
-        "showSubRoute": false,
-        "subMenus": [
-          {
-            "menuValue": "Perfil",
-            "route": "/settings/general-settings",
-            "active_link": "/settings/general-settings",              
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "Seguridad",
-            "route": "/settings/security-settings",
-            "active_link": "/settings/security-settings",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          },
-          {
-            "menuValue": "Control de Páginas",
-            "route": "/page/pages",
-            "active_link": "/page/pages",
-            "hasSubRoute": false,
-            "showSubRoute": false
-          }
-        ]
-      },
-      {
-        "menuValue": "Ajustes de Sitio Web",
-        "icon": "ti ti-world",
         "active_link": "website-settings",
         "hasSubRoute": true,
         "showSubRoute": false,
@@ -448,9 +433,9 @@
             "showSubRoute": false
           },
           {
-            "menuValue": "POS",
-            "route": "/app-settings/pos-settings",
-            "active_link": "/app-settings/pos-settings",
+            "menuValue": "Seguridad",
+            "route": "/settings/security-settings",
+            "active_link": "/settings/security-settings",
             "hasSubRoute": false,
             "showSubRoute": false
           },

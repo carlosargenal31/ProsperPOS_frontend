@@ -30,10 +30,10 @@ ecommerceApi.interceptors.request.use(
 ecommerceApi.interceptors.response.use(
   response => response,
   error => {
+    // Solo limpiar token si es error 401, pero NO redirigir automáticamente
     if (error.response?.status === 401) {
       localStorage.removeItem('ecommerce_token')
       localStorage.removeItem('ecommerce_customer')
-      window.location.href = '/shop/login'
     }
     return Promise.reject(error)
   }

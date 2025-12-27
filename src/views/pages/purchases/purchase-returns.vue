@@ -409,7 +409,7 @@
               type="button"
               class="btn btn-sm"
               :class="currentDocument === 'return' ? 'btn-primary' : 'btn-outline-primary'"
-              @click="currentDocument = 'return'"
+              @click="switchDocument('return')"
             >
               <i class="ti ti-file-text me-1"></i>DEVOLUCIÓN
             </button>
@@ -417,7 +417,7 @@
               type="button"
               class="btn btn-sm"
               :class="currentDocument === 'credit_note' ? 'btn-danger' : 'btn-outline-danger'"
-              @click="currentDocument = 'credit_note'"
+              @click="switchDocument('credit_note')"
             >
               <i class="ti ti-file-invoice me-1"></i>NOTA DE CRÉDITO
             </button>
@@ -426,230 +426,7 @@
 
         <div class="modal-body py-2 px-3" v-if="selectedReturnDetails">
           <!-- Preview del documento -->
-          <div ref="documentContent" class="border p-3 bg-white document-preview" style="max-height: 500px; overflow-y: auto;">
-
-            <!-- DOCUMENTO: DEVOLUCIÓN -->
-            <div v-if="currentDocument === 'return'" id="returnContent">
-              <!-- Encabezado de la Empresa -->
-              <div class="text-center mb-3">
-                <strong style="font-size: 14px;">{{ companyInfo.company_name || 'PROSPERPOS' }}</strong><br>
-                <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sistema de Punto de Venta' }}</small><br>
-                <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
-              </div>
-
-              <h6 class="text-primary text-center mb-3" style="font-size: 15px; border-top: 2px solid #dee2e6; border-bottom: 2px solid #dee2e6; padding: 8px 0;">
-                DEVOLUCIÓN DE COMPRA
-              </h6>
-
-              <!-- Información del Documento -->
-              <div class="row mb-3" style="font-size: 11px;">
-                <div class="col-6">
-                  <div class="border p-2">
-                    <strong>Correlativo:</strong><br>
-                    <span class="text-danger" style="font-size: 18px; font-weight: bold;">{{ selectedReturnDetails.correlative }}</span>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="border p-2">
-                    <strong>Fecha Devolución:</strong><br>
-                    {{ formatDate(selectedReturnDetails.emission_date) }}
-                  </div>
-                </div>
-              </div>
-
-            <div class="row mb-3" style="font-size: 11px;">
-              <div class="col-6">
-                <div class="border p-2">
-                  <strong>Compra Original:</strong><br>
-                  {{ selectedReturnDetails.purchase_number }}
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="border p-2">
-                  <strong>Tipo Devolución:</strong><br>
-                  <span class="badge" :class="selectedReturnDetails.return_type === 'total' ? 'bg-danger' : 'bg-warning'">
-                    {{ selectedReturnDetails.return_type === 'total' ? 'TOTAL' : 'PARCIAL' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Información del Proveedor -->
-            <div class="border p-2 mb-3" style="font-size: 11px; background-color: #f8f9fa;">
-              <strong>PROVEEDOR</strong><br>
-              <strong>Nombre:</strong> {{ selectedReturnDetails.supplier_name }}<br>
-              <strong>RTN:</strong> {{ selectedReturnDetails.supplier_rtn || '00000000000000' }}
-            </div>
-
-            <!-- Desglose de Totales -->
-            <table class="table table-sm table-bordered mb-3" style="font-size: 11px;">
-              <tbody>
-                <tr>
-                  <td style="padding: 6px;" class="bg-light"><strong>Importe Exonerado:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L 0.00</td>
-                  <td style="padding: 6px;" class="bg-light"><strong>Gravado 15%:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(selectedReturnDetails.subtotal) }}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px;" class="bg-light"><strong>Importe Exento:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L 0.00</td>
-                  <td style="padding: 6px;" class="bg-light"><strong>I.S.V 15%:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(selectedReturnDetails.tax) }}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px;" class="bg-light"><strong>Gravado 18%:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L 0.00</td>
-                  <td style="padding: 6px;" class="bg-light"><strong>RECARGOS:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L 0.00</td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px;" class="bg-light"><strong>I.S.V 18%:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L 0.00</td>
-                  <td style="padding: 6px;" class="bg-light"><strong>DESC. Y REBAJAS:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L 0.00</td>
-                </tr>
-                <tr class="table-active">
-                  <td colspan="3" class="text-end" style="padding: 8px;"><strong style="font-size: 14px;">TOTAL:</strong></td>
-                  <td class="text-end" style="padding: 8px;"><strong style="font-size: 14px;" class="text-danger">L {{ formatCurrency(selectedReturnDetails.total) }}</strong></td>
-                </tr>
-              </tbody>
-            </table>
-
-            <!-- Observaciones -->
-            <div v-if="selectedReturnDetails.notes" class="border p-2 mb-3" style="font-size: 10px; background-color: #fff3cd;">
-              <strong>OBSERVACIONES:</strong><br>
-              {{ selectedReturnDetails.notes }}
-            </div>
-
-            <!-- Estado de Nota de Crédito -->
-            <div class="border p-2 mb-2" style="font-size: 10px;" :class="selectedReturnDetails.credit_note_received ? 'bg-success-subtle' : 'bg-warning-subtle'">
-              <strong v-if="selectedReturnDetails.credit_note_received" class="text-success">
-                <i class="ti ti-check-circle me-1"></i>NOTA DE CRÉDITO REGISTRADA
-              </strong>
-              <strong v-else class="text-warning">
-                <i class="ti ti-alert-circle me-1"></i>NOTA DE CRÉDITO PENDIENTE
-              </strong>
-
-              <div v-if="selectedReturnDetails.credit_note_received" class="mt-2" style="font-size: 10px;">
-                <strong>Número NC:</strong> {{ selectedReturnDetails.credit_note_number }}<br>
-                <strong>Fecha NC:</strong> {{ formatDate(selectedReturnDetails.credit_note_date) }}<br>
-                <strong>CAI:</strong> {{ selectedReturnDetails.credit_note_cai || 'N/A' }}
-              </div>
-            </div>
-
-            <!-- Pie de página -->
-            <div class="text-center mt-3" style="font-size: 9px; color: #6c757d;">
-              <p class="mb-0">Original: Archivo | Copia: Proveedor</p>
-              <p class="mb-0">Este documento es una constancia interna de devolución</p>
-            </div>
-          </div>
-
-          <!-- DOCUMENTO: NOTA DE CRÉDITO -->
-          <div v-if="currentDocument === 'credit_note'" id="creditNoteContent">
-            <!-- Encabezado de la Empresa -->
-            <div class="text-center mb-3">
-              <strong style="font-size: 14px;">{{ companyInfo.company_name || 'PROSPERPOS' }}</strong><br>
-              <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sistema de Punto de Venta' }}</small><br>
-              <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
-            </div>
-
-            <h6 class="text-danger text-center mb-3" style="font-size: 15px; border-top: 2px solid #dee2e6; border-bottom: 2px solid #dee2e6; padding: 8px 0;">
-              NOTA DE CRÉDITO DEL PROVEEDOR
-            </h6>
-
-            <!-- Información del Documento -->
-            <div class="row mb-3" style="font-size: 11px;">
-              <div class="col-6">
-                <div class="border p-2">
-                  <strong>Número NC:</strong><br>
-                  <span class="text-danger" style="font-size: 18px; font-weight: bold;">{{ selectedReturnDetails.credit_note_number || 'PENDIENTE' }}</span>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="border p-2">
-                  <strong>Fecha NC:</strong><br>
-                  {{ selectedReturnDetails.credit_note_date ? formatDate(selectedReturnDetails.credit_note_date) : 'N/A' }}
-                </div>
-              </div>
-            </div>
-
-            <div class="row mb-3" style="font-size: 11px;">
-              <div class="col-6">
-                <div class="border p-2">
-                  <strong>Devolución Interna:</strong><br>
-                  {{ selectedReturnDetails.correlative }}
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="border p-2">
-                  <strong>Compra Original:</strong><br>
-                  {{ selectedReturnDetails.purchase_number }}
-                </div>
-              </div>
-            </div>
-
-            <!-- Información del Proveedor -->
-            <div class="border p-2 mb-3" style="font-size: 11px; background-color: #f8f9fa;">
-              <strong>PROVEEDOR</strong><br>
-              <strong>Nombre:</strong> {{ selectedReturnDetails.supplier_name }}<br>
-              <strong>RTN:</strong> {{ selectedReturnDetails.supplier_rtn || '00000000000000' }}
-            </div>
-
-            <!-- Información de Autorización (si existe) -->
-            <div v-if="selectedReturnDetails.credit_note_received && selectedReturnDetails.credit_note_cai" class="border p-2 mb-3" style="font-size: 10px; background-color: #e7f3ff;">
-              <strong>AUTORIZACIÓN</strong><br>
-              <strong>CAI / Resolución:</strong> {{ selectedReturnDetails.credit_note_cai }}<br>
-              <strong>Número Autorización:</strong> {{ selectedReturnDetails.credit_note_authorization || 'N/A' }}
-            </div>
-
-            <!-- Desglose de Totales -->
-            <table class="table table-sm table-bordered mb-3" style="font-size: 11px;">
-              <tbody>
-                <tr>
-                  <td style="padding: 6px;" class="bg-light"><strong>Importe Exonerado:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L 0.00</td>
-                  <td style="padding: 6px;" class="bg-light"><strong>Gravado 15%:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(selectedReturnDetails.subtotal) }}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px;" class="bg-light"><strong>Importe Exento:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L 0.00</td>
-                  <td style="padding: 6px;" class="bg-light"><strong>I.S.V 15%:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(selectedReturnDetails.tax) }}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px;" class="bg-light"><strong>Gravado 18%:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L 0.00</td>
-                  <td style="padding: 6px;" class="bg-light"><strong>RECARGOS:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L 0.00</td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px;" class="bg-light"><strong>I.S.V 18%:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L 0.00</td>
-                  <td style="padding: 6px;" class="bg-light"><strong>DESC. Y REBAJAS:</strong></td>
-                  <td class="text-end" style="padding: 6px;">L 0.00</td>
-                </tr>
-                <tr class="table-active">
-                  <td colspan="3" class="text-end" style="padding: 8px;"><strong style="font-size: 14px;">TOTAL:</strong></td>
-                  <td class="text-end" style="padding: 8px;"><strong style="font-size: 14px;" class="text-danger">L {{ formatCurrency(selectedReturnDetails.total) }}</strong></td>
-                </tr>
-              </tbody>
-            </table>
-
-            <!-- Observaciones de la NC -->
-            <div v-if="selectedReturnDetails.credit_note_notes" class="border p-2 mb-3" style="font-size: 10px; background-color: #fff3cd;">
-              <strong>OBSERVACIONES DE LA NC:</strong><br>
-              {{ selectedReturnDetails.credit_note_notes }}
-            </div>
-
-            <!-- Pie de página -->
-            <div class="text-center mt-3" style="font-size: 9px; color: #6c757d;">
-              <p class="mb-0">Original: Contabilidad | Copia: Archivo</p>
-              <p class="mb-0">Nota de Crédito recibida del proveedor</p>
-            </div>
-          </div>
-
-        </div>
+          <iframe ref="documentPreview" style="width: 100%; height: 500px; border: 1px solid #ddd;"></iframe>
         </div>
 
         <!-- Botones de Acción -->
@@ -683,6 +460,7 @@ import Swal from 'sweetalert2';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
+import { LOGO_BASE64 } from '@/assets/img/logo.js';
 
 export default {
   name: 'PurchaseReturns',
@@ -979,6 +757,28 @@ export default {
       this.selectedReturnDetails = returnRecord;
       this.currentDocument = 'return'; // Siempre iniciar con DEVOLUCIÓN
       this.showDetailsModal = true;
+
+      // Cargar el preview en el iframe después de que el modal esté visible
+      this.$nextTick(() => {
+        this.loadDocumentPreview();
+      });
+    },
+
+    loadDocumentPreview() {
+      const iframe = this.$refs.documentPreview;
+      if (iframe) {
+        const htmlContent = this.generateProfessionalReport();
+        iframe.contentDocument.open();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+      }
+    },
+
+    switchDocument(docType) {
+      this.currentDocument = docType;
+      this.$nextTick(() => {
+        this.loadDocumentPreview();
+      });
     },
 
     closeDetailsModal() {
@@ -1012,95 +812,243 @@ export default {
     printReturn() {
       const reportHTML = this.generateProfessionalReport();
       const printWindow = window.open('', '_blank');
-      const scriptTag = 'script';
-      let htmlContent = '<!DOCTYPE html><html><head><title>Imprimir Documento</title>';
-      htmlContent += '<style>body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }';
-      htmlContent += '@media print { body { margin: 0; padding: 10mm; } }</style></head><body>';
-      htmlContent += reportHTML;
-      htmlContent += '<' + scriptTag + '>window.onload = function() { window.print(); ';
-      htmlContent += 'window.onafterprint = function() { window.close(); }; };</' + scriptTag + '>';
-      htmlContent += '</body></html>';
-      printWindow.document.write(htmlContent);
+      printWindow.document.write(reportHTML);
       printWindow.document.close();
+
+      printWindow.onload = function() {
+        printWindow.focus();
+        printWindow.print();
+      };
     },
 
     generateProfessionalReport() {
-      const docType = this.currentDocument === 'return' ? 'DEVOLUCIÓN DE COMPRA' : 'NOTA DE CRÉDITO DEL PROVEEDOR';
+      const docType = this.currentDocument === 'return' ? 'DEVOLUCIÓN COMPRA' : 'NOTA DE CRÉDITO DEL PROVEEDOR';
+      const docColor = this.currentDocument === 'return' ? '#28a745' : '#dc3545';
       const ret = this.selectedReturnDetails;
-      const parts = [];
 
-      parts.push('<div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">');
-      parts.push('<div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 15px;">');
-      parts.push('<h1 style="margin: 0; font-size: 24px; color: #333;">' + (this.companyInfo.company_name || 'PROSPERPOS') + '</h1>');
-      parts.push('<p style="margin: 5px 0; font-size: 12px; color: #666;">' + (this.companyInfo.direccion || 'Sin dirección') + '</p>');
-      parts.push('<p style="margin: 5px 0; font-size: 12px; color: #666;">Tel: ' + (this.companyInfo.telefono || 'N/A') + ' | RTN: ' + (this.companyInfo.rtn || '00000000000000') + '</p>');
-      parts.push('</div>');
+      const LOGO_BASE64 = 'data:image/png;base64,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';
 
-      parts.push('<div style="text-align: center; margin-bottom: 25px;">');
-      parts.push('<h2 style="margin: 0; font-size: 20px; color: #d9534f; font-weight: bold;">' + docType + '</h2>');
+      const totalAmount = parseFloat(ret?.total || 0);
+      const taxableAmount = parseFloat(ret?.subtotal || 0);
+      const taxAmount = parseFloat(ret?.tax || 0);
 
-      if (this.currentDocument === 'return') {
-        parts.push('<p style="margin: 5px 0; font-size: 14px;"><strong>Correlativo:</strong> ' + (ret?.correlative || 'N/A') + '</p>');
-        parts.push('<p style="margin: 5px 0; font-size: 14px;"><strong>Fecha Devolución:</strong> ' + this.formatDate(ret?.emission_date) + '</p>');
-      } else {
-        parts.push('<p style="margin: 5px 0; font-size: 14px;"><strong>Número NC:</strong> ' + (ret?.credit_note_number || 'PENDIENTE') + '</p>');
-        parts.push('<p style="margin: 5px 0; font-size: 14px;"><strong>Fecha NC:</strong> ' + (ret?.credit_note_date ? this.formatDate(ret?.credit_note_date) : 'N/A') + '</p>');
-      }
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${docType}</title>
+          <style>
+            @page { size: letter; margin: 15mm; }
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+              color: #000;
+            }
+            .invoice-container {
+              max-width: 21cm;
+              margin: 0 auto;
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin-bottom: 25px;
+              padding-bottom: 20px;
+              border-bottom: 3px solid ${docColor};
+            }
+            .company-logo {
+              flex: 1;
+            }
+            .company-name {
+              font-size: 11px;
+              font-weight: 700;
+              color: #000;
+              margin-bottom: 6px;
+              line-height: 1.5;
+            }
+            .company-details {
+              font-size: 11px;
+              color: #000;
+              line-height: 1.5;
+            }
+            .invoice-header {
+              text-align: right;
+              background: ${docColor};
+              color: white;
+              padding: 15px 18px;
+              border-radius: 8px;
+              min-width: 280px;
+            }
+            .invoice-title {
+              font-size: 22px;
+              font-weight: 700;
+              margin-bottom: 10px;
+              letter-spacing: 0.5px;
+            }
+            .invoice-info {
+              font-size: 11px;
+              line-height: 1.6;
+            }
+            .client-info {
+              background: #f8f9fa;
+              padding: 18px;
+              border-left: 4px solid ${docColor};
+              margin-bottom: 25px;
+              font-size: 12px;
+              line-height: 1.8;
+            }
+            .totals-section {
+              display: flex;
+              justify-content: space-between;
+              margin-top: 25px;
+            }
+            .totals-left {
+              flex: 1;
+              padding-right: 30px;
+            }
+            .totals-box {
+              background: #f8f9fa;
+              border: 2px solid ${docColor};
+              border-radius: 8px;
+              padding: 15px;
+              min-width: 320px;
+            }
+            .total-row {
+              display: flex;
+              justify-content: space-between;
+              padding: 6px 0;
+              font-size: 11px;
+            }
+            .grand-total {
+              margin-top: 8px;
+              padding-top: 8px;
+              border-top: 2px solid ${docColor};
+              font-size: 13px;
+              background: ${docColor};
+              color: white;
+              margin: 8px -15px -15px -15px;
+              padding: 12px 15px;
+              border-radius: 0 0 6px 6px;
+            }
+            body, p, div, span, td, th, strong, b, label {
+              color: #000 !important;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            .invoice-header, .invoice-header *,
+            .invoice-title, .invoice-title *,
+            .invoice-info, .invoice-info *,
+            .grand-total, .grand-total * {
+              color: white !important;
+            }
+            @media print {
+              body { padding: 0; color: #000 !important; }
+              * { color: #000 !important; }
+              .invoice-header, .invoice-header *,
+              .invoice-title, .invoice-title *,
+              .invoice-info, .invoice-info *,
+              .grand-total, .grand-total * {
+                color: white !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-container">
+            <div class="header">
+              <div class="company-logo">
+                <img src="${LOGO_BASE64}" alt="Logo" style="max-width: 180px; height: auto; margin-bottom: 15px;">
+                <div class="company-name">${this.companyInfo.company_name || 'EMPRESA'}</div>
+                <div class="company-details">
+                  <strong>RTN:</strong> ${this.companyInfo.rtn || '00000000000000'}<br>
+                  <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
+                  <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}${this.companyInfo.telefono_movil ? '<br><strong>Teléfono Móvil:</strong> ' + this.companyInfo.telefono_movil : ''}<br>
+                  <strong>Email:</strong> ${this.companyInfo.email || 'info@empresa.com'}
+                </div>
+              </div>
+              <div class="invoice-header">
+                <div class="invoice-title">${docType}</div>
+                <div class="invoice-info">
+                  <strong>#Control Interno:</strong> ${ret?.correlative || 'N/A'}<br>
+                  ${this.currentDocument === 'return' ? `<strong>Doc/Devuelto:</strong> ${ret?.purchase_number || 'N/A'}<br>` : ''}
+                  ${this.currentDocument === 'credit_note' ? `<strong>Nota de Crédito:</strong> ${ret?.credit_note_number || 'N/A'}<br><strong>Compra Original:</strong> ${ret?.purchase_number || 'N/A'}<br>` : ''}
+                  <strong>Emisión:</strong> ${this.formatDate(ret?.emission_date || ret?.credit_note_date)}<br>
+                  <strong>Condiciones de la Transacción:</strong> Contado<br>
+                  <strong>Entrega:</strong> ${this.formatDate(ret?.emission_date || ret?.credit_note_date)}
+                </div>
+              </div>
+            </div>
+            <div class="client-info">
+              <div style="display: flex; justify-content: space-between;">
+                <div style="flex: 1;">
+                  <strong>Proveedor:</strong> ${ret?.supplier_name || 'N/A'}<br>
+                  <strong>RTN:</strong> ${ret?.supplier_rtn || '00000000000000'}
+                </div>
+              </div>
+            </div>
+            <div class="totals-section">
+              <div class="totals-left">
+                <div style="margin-bottom: 15px;">
+                  <strong>TOTAL:</strong> ${this.numberToWords(totalAmount).toUpperCase()} LEMPIRAS ${String(Math.floor((totalAmount % 1) * 100)).padStart(2, '0')}/100
+                </div>
+                <div style="margin-top: auto; padding-top: 40px; text-align: center;">
+                  <div style="border-top: 2px solid #000; width: 250px; margin: 0 auto 10px;"></div>
+                  <div style="margin-bottom: 8px;"><strong>Original Proveedor</strong></div>
+                  <div><strong>Copia Obligado Tributario Emisor</strong></div>
+                </div>
+                ${ret?.notes || ret?.credit_note_notes ? `
+                <div style="margin-top: 30px; text-align: left; font-size: 12px;">
+                  <strong>Notas:</strong> ${ret?.notes || ret?.credit_note_notes || ''}
+                </div>
+                ` : ''}
+              </div>
+              <div class="totals-box">
+                <div class="total-row">
+                  <span class="label">Importe Exonerado:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Importe Exento:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Gravado 15%</span>
+                  <span class="value">L ${this.formatCurrency(taxableAmount)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Gravado 18%</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">I.S.V 15 15%:</span>
+                  <span class="value">L ${this.formatCurrency(taxAmount)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">I.S.V 18 18%:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">RECARGOS:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">DESCUENTOS Y REBAJAS OTORGADOS:</span>
+                  <span class="value">L 0.00</span>
+                </div>
+                <div class="total-row grand-total">
+                  <span class="label"><strong>TOTAL:</strong></span>
+                  <span class="value"><strong>L ${this.formatCurrency(totalAmount)}</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
 
-      parts.push('<p style="margin: 5px 0; font-size: 14px;"><strong>Compra Original:</strong> ' + (ret?.purchase_number || 'N/A') + '</p>');
-      if (this.currentDocument === 'return') {
-        parts.push('<p style="margin: 5px 0; font-size: 14px;"><strong>Tipo:</strong> ' + (ret?.return_type === 'total' ? 'TOTAL' : 'PARCIAL') + '</p>');
-      }
-      parts.push('</div>');
-
-      parts.push('<div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">');
-      parts.push('<h3 style="margin: 0 0 10px 0; font-size: 16px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">PROVEEDOR</h3>');
-      parts.push('<table style="width: 100%; font-size: 13px;">');
-      parts.push('<tr><td style="padding: 4px 0;"><strong>Nombre:</strong></td><td style="padding: 4px 0;">' + (ret?.supplier_name || 'N/A') + '</td></tr>');
-      parts.push('<tr><td style="padding: 4px 0;"><strong>RTN:</strong></td><td style="padding: 4px 0;">' + (ret?.supplier_rtn || '00000000000000') + '</td></tr>');
-      parts.push('</table></div>');
-
-      parts.push('<div style="margin-bottom: 20px;">');
-      parts.push('<h3 style="margin: 0 0 10px 0; font-size: 16px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">DETALLE DE IMPORTES</h3>');
-      parts.push('<table style="width: 100%; border-collapse: collapse; font-size: 13px;">');
-      parts.push('<tr style="background-color: #f8f9fa;">');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd; width: 50%;"><strong>Importe Exonerado:</strong></td>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L 0.00</td>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd; width: 50%;"><strong>Gravado 15%:</strong></td>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L ' + this.formatCurrency(ret?.subtotal) + '</td>');
-      parts.push('</tr><tr>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd;"><strong>Importe Exento:</strong></td>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L 0.00</td>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd;"><strong>I.S.V 15%:</strong></td>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L ' + this.formatCurrency(ret?.tax) + '</td>');
-      parts.push('</tr><tr style="background-color: #f8f9fa;">');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd;"><strong>Gravado 18%:</strong></td>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L 0.00</td>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd;"><strong>RECARGOS:</strong></td>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L 0.00</td>');
-      parts.push('</tr><tr>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd;"><strong>I.S.V 18%:</strong></td>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L 0.00</td>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd;"><strong>DESC. Y REBAJAS:</strong></td>');
-      parts.push('<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">L 0.00</td>');
-      parts.push('</tr></table></div>');
-
-      parts.push('<div style="background-color: #dc3545; color: white; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px;">');
-      parts.push('<h2 style="margin: 0; font-size: 24px; font-weight: bold;">TOTAL A DEVOLVER: L ' + this.formatCurrency(ret?.total) + '</h2>');
-      parts.push('</div>');
-
-      if (ret?.notes || ret?.credit_note_notes) {
-        parts.push('<div style="margin-bottom: 20px;">');
-        parts.push('<h3 style="margin: 0 0 10px 0; font-size: 16px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">OBSERVACIONES</h3>');
-        parts.push('<p style="font-size: 13px; padding: 10px; background-color: #f8f9fa; border-radius: 5px; margin: 0;">' + (ret?.notes || ret?.credit_note_notes) + '</p>');
-        parts.push('</div>');
-      }
-
-      parts.push('<div style="text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 11px; color: #666;">');
-      parts.push('<p style="margin: 0;">Documento generado por ProsperPOS - ' + new Date().toLocaleDateString('es-HN') + '</p>');
-      parts.push('</div></div>');
-
-      return parts.join('');
+      return html;
     },
 
     async exportCurrentDocument(format) {
@@ -1278,6 +1226,58 @@ export default {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       });
+    },
+
+    numberToWords(num) {
+      const units = ['', 'UNO', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+      const tens = ['', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+      const teens = ['DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISÉIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE'];
+      const hundreds = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+
+      const integer = Math.floor(num);
+
+      if (integer === 0) return 'CERO';
+      if (integer < 10) return units[integer];
+      if (integer < 20) return teens[integer - 10];
+      if (integer < 100) {
+        const ten = Math.floor(integer / 10);
+        const unit = integer % 10;
+        return tens[ten] + (unit ? ' Y ' + units[unit] : '');
+      }
+      if (integer < 1000) {
+        const hundred = Math.floor(integer / 100);
+        const remainder = integer % 100;
+        let result = integer === 100 ? 'CIEN' : hundreds[hundred];
+        if (remainder > 0) {
+          if (remainder < 10) result += ' ' + units[remainder];
+          else if (remainder < 20) result += ' ' + teens[remainder - 10];
+          else {
+            const ten = Math.floor(remainder / 10);
+            const unit = remainder % 10;
+            result += ' ' + tens[ten] + (unit ? ' Y ' + units[unit] : '');
+          }
+        }
+        return result;
+      }
+      if (integer < 1000000) {
+        const thousands = Math.floor(integer / 1000);
+        const remainder = integer % 1000;
+        let result = thousands === 1 ? 'MIL' : this.numberToWords(thousands) + ' MIL';
+        if (remainder > 0) {
+          result += ' ' + this.numberToWords(remainder);
+        }
+        return result;
+      }
+      if (integer < 1000000000) {
+        const millions = Math.floor(integer / 1000000);
+        const remainder = integer % 1000000;
+        let result = millions === 1 ? 'UN MILLÓN' : this.numberToWords(millions) + ' MILLONES';
+        if (remainder > 0) {
+          result += ' ' + this.numberToWords(remainder);
+        }
+        return result;
+      }
+      return 'NÚMERO DEMASIADO GRANDE';
     }
   }
 };

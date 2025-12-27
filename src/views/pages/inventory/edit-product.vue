@@ -36,29 +36,6 @@
           </li>
         </ul>
         <div class="page-btn d-flex gap-2">
-          <div class="dropdown">
-            <button
-              class="btn btn-primary dropdown-toggle"
-              type="button"
-              id="dropdownNuevo"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              <i class="ti ti-plus me-2"></i>NUEVO
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownNuevo">
-              <li>
-                <a class="dropdown-item" href="javascript:void(0);" @click="setFormMode('full')">
-                  <i class="ti ti-file-plus me-2"></i>Nuevo
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item" href="javascript:void(0);" @click="setFormMode('quick')">
-                  <i class="ti ti-bolt me-2"></i>Registro Rápido
-                </a>
-              </li>
-            </ul>
-          </div>
           <router-link to="/inventory/product-list" class="btn btn-secondary">
             <i class="ti ti-arrow-left me-2"></i>Volver a Productos
           </router-link>
@@ -112,12 +89,15 @@
               <div class="col-md-6">
                 <div class="mb-3">
                   <label class="form-label">Grupo <span class="text-danger">*</span></label>
-                  <vue-select
-                    :options="categories"
+                  <Multiselect
                     v-model="formData.category_id"
+                    :options="categories"
+                    :searchable="true"
+                    :create-option="false"
+                    valueProp="id"
                     label="name"
-                    :reduce="cat => cat.id"
                     placeholder="GRUPOS"
+                    @change="loadSubcategories"
                   />
                 </div>
               </div>
@@ -126,11 +106,13 @@
               <div class="col-md-6">
                 <div class="mb-3">
                   <label class="form-label">SubGrupo</label>
-                  <vue-select
-                    :options="subcategories"
+                  <Multiselect
                     v-model="formData.subcategory_id"
+                    :options="subcategories"
+                    :searchable="true"
+                    :create-option="false"
+                    valueProp="id"
                     label="name"
-                    :reduce="sub => sub.id"
                     placeholder="SUBGRUPOS"
                     :disabled="!formData.category_id"
                   />
@@ -195,12 +177,15 @@
               <div class="col-md-6">
                 <div class="mb-3">
                   <label class="form-label">Impuesto <span class="text-danger">*</span></label>
-                  <vue-select
+                  <Multiselect
+                    v-model="formData.activeTaxId"
                     :options="taxes"
-                    v-model="selectedQuickTax"
+                    :searchable="true"
+                    :create-option="false"
+                    valueProp="id"
                     label="name"
-                    :reduce="tax => tax.id"
                     placeholder="SELECCIONE UN IMPUESTO"
+                    @change="handleTaxChange"
                   />
                 </div>
               </div>
@@ -278,19 +263,6 @@
               <li class="nav-item" role="presentation">
                 <a
                   class="nav-link"
-                  id="tab-campos"
-                  data-bs-toggle="tab"
-                  href="#campos"
-                  role="tab"
-                  aria-controls="campos"
-                  aria-selected="false"
-                >
-                  <i class="ti ti-list-check me-2"></i>Campos Adicionales
-                </a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a
-                  class="nav-link"
                   id="tab-imagenes"
                   data-bs-toggle="tab"
                   href="#imagenes"
@@ -310,7 +282,7 @@
                 <div class="row">
                   <!-- Código -->
                   <div class="col-md-4">
-                    <div class="mb-3 position-relative">
+                    <div class="mb-3">
                       <label class="form-label">Código <span class="text-danger">*</span></label>
                       <input
                         type="text"
@@ -319,26 +291,6 @@
                         placeholder="Ej: C-0001-9"
                         required
                       >
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-primary position-absolute"
-                        style="right: 10px; top: 32px;"
-                        @click="generateCode"
-                      >
-                        Generar
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Tipo de Item -->
-                  <div class="col-md-4">
-                    <div class="mb-3">
-                      <label class="form-label">Tipo de Item <span class="text-danger">*</span></label>
-                      <vue-select
-                        :options="itemTypes"
-                        v-model="formData.item_type"
-                        placeholder="Seleccione"
-                      />
                     </div>
                   </div>
 
@@ -346,10 +298,14 @@
                   <div class="col-md-4">
                     <div class="mb-3">
                       <label class="form-label">Unidad <span class="text-danger">*</span></label>
-                      <vue-select
+                      <Multiselect
+                        v-model="formData.unit_id"
                         :options="units"
-                        v-model="formData.unit"
-                        placeholder="Seleccione"
+                        :searchable="true"
+                        :create-option="false"
+                        valueProp="id"
+                        label="name"
+                        placeholder="Seleccione una unidad"
                       />
                     </div>
                   </div>
@@ -385,162 +341,114 @@
                   <div class="col-md-12">
                     <div class="mb-3">
                       <label class="form-label">Imagen Principal</label>
-                      <div class="image-upload">
-                        <input
-                          type="file"
-                          ref="mainImageInput"
-                          @change="handleMainImage"
-                          accept="image/*"
-                        >
-                        <div class="image-uploads" v-if="!formData.imagePreview">
-                          <i class="ti ti-upload me-2"></i>
-                          <h6>Subir Imagen</h6>
+                      <div class="d-flex align-items-center gap-3">
+                        <div v-if="formData.imagePreview || formData.currentImageUrl" class="position-relative">
+                          <img
+                            :src="formData.imagePreview || formData.currentImageUrl"
+                            alt="Producto"
+                            style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px; border: 2px solid #dee2e6;"
+                          >
                         </div>
-                        <div v-else class="position-relative d-inline-block">
-                          <img :src="formData.imagePreview" alt="Preview" style="max-height: 150px;">
+                        <div v-else class="d-flex align-items-center justify-content-center bg-light"
+                             style="width: 150px; height: 150px; border-radius: 8px; border: 2px dashed #dee2e6;">
+                          <i class="ti ti-photo" style="font-size: 48px; color: #adb5bd;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                          <input
+                            type="file"
+                            ref="mainImageInput"
+                            @change="handleMainImage"
+                            accept="image/*"
+                            class="d-none"
+                            id="mainImageUpload"
+                          >
                           <button
                             type="button"
-                            class="btn btn-sm btn-danger position-absolute"
-                            style="top: 5px; right: 5px;"
+                            class="btn btn-primary"
+                            @click="$refs.mainImageInput.click()"
+                          >
+                            <i class="ti ti-upload me-2"></i>
+                            {{ formData.imagePreview || formData.currentImageUrl ? 'Cambiar Imagen' : 'Subir Imagen' }}
+                          </button>
+                          <button
+                            v-if="formData.imagePreview || formData.currentImageUrl"
+                            type="button"
+                            class="btn btn-danger ms-2"
                             @click="removeMainImage"
                           >
-                            <i class="ti ti-x"></i>
+                            <i class="ti ti-trash me-2"></i>Eliminar
                           </button>
+                          <div class="mt-2">
+                            <small class="text-muted">Formatos: JPG, PNG, GIF (Max. 5MB)</small>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Grupo (Categoría) -->
+                  <!-- Categoría -->
                   <div class="col-md-6">
                     <div class="mb-3">
-                      <label class="form-label">Grupo (Categoría) <span class="text-danger">*</span></label>
-                      <vue-select
-                        :options="categories"
+                      <label class="form-label">Categoría <span class="text-danger">*</span></label>
+                      <Multiselect
                         v-model="formData.category_id"
+                        :options="categories"
+                        :searchable="true"
+                        :create-option="false"
+                        valueProp="id"
                         label="name"
-                        :reduce="cat => cat.id"
                         placeholder="Seleccione categoría"
-                        @input="loadSubcategories"
+                        @change="loadSubcategories"
                       />
                     </div>
                   </div>
 
-                  <!-- Subgrupo (Subcategoría) -->
+                  <!-- Subcategoría -->
                   <div class="col-md-6">
                     <div class="mb-3">
-                      <label class="form-label">Subgrupo (Subcategoría)</label>
-                      <vue-select
-                        :options="subcategories"
+                      <label class="form-label">Subcategoría</label>
+                      <Multiselect
                         v-model="formData.subcategory_id"
+                        :options="subcategories"
+                        :searchable="true"
+                        :create-option="false"
+                        valueProp="id"
                         label="name"
-                        :reduce="sub => sub.id"
                         placeholder="Seleccione subcategoría"
                         :disabled="!formData.category_id"
                       />
                     </div>
                   </div>
 
-                  <!-- Peso -->
-                  <div class="col-md-3">
-                    <div class="mb-3">
-                      <label class="form-label">Peso (kg)</label>
-                      <input
-                        type="number"
-                        step="0.001"
-                        class="form-control"
-                        v-model="formData.weight"
-                        placeholder="0.000"
-                      >
-                    </div>
-                  </div>
-
-                  <!-- Miligramos -->
-                  <div class="col-md-3">
-                    <div class="mb-3">
-                      <label class="form-label">Miligramos (mg)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        class="form-control"
-                        v-model="formData.milligrams"
-                        placeholder="0.0"
-                      >
-                    </div>
-                  </div>
-
-                  <!-- Grados de Alcohol -->
-                  <div class="col-md-3">
-                    <div class="mb-3">
-                      <label class="form-label">Grados de Alcohol (%)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        class="form-control"
-                        v-model="formData.alcohol_percentage"
-                        placeholder="0.0"
-                      >
-                    </div>
-                  </div>
-
-                  <!-- Garantía -->
-                  <div class="col-md-3">
-                    <div class="mb-3">
-                      <label class="form-label">Garantía</label>
-                      <div class="input-group">
-                        <input
-                          type="number"
-                          class="form-control"
-                          v-model="formData.warranty_value"
-                          placeholder="0"
-                        >
-                        <vue-select
-                          :options="warrantyUnits"
-                          v-model="formData.warranty_unit"
-                          class="flex-grow-1"
-                          style="min-width: 100px;"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
                   <!-- Marca -->
-                  <div class="col-md-4">
+                  <div class="col-md-6">
                     <div class="mb-3">
                       <label class="form-label">Marca</label>
-                      <vue-select
-                        :options="brands"
+                      <Multiselect
                         v-model="formData.brand_id"
+                        :options="brands"
+                        :searchable="true"
+                        :create-option="false"
+                        valueProp="id"
                         label="name"
-                        :reduce="brand => brand.id"
                         placeholder="Seleccione marca"
                       />
                     </div>
                   </div>
 
-                  <!-- Modelo -->
-                  <div class="col-md-4">
+                  <!-- Proveedor -->
+                  <div class="col-md-6">
                     <div class="mb-3">
-                      <label class="form-label">Modelo</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.model"
-                        placeholder="Modelo del producto"
-                      >
-                    </div>
-                  </div>
-
-                  <!-- Referencia -->
-                  <div class="col-md-4">
-                    <div class="mb-3">
-                      <label class="form-label">Referencia</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.reference"
-                        placeholder="Referencia"
-                      >
+                      <label class="form-label">Proveedor</label>
+                      <Multiselect
+                        v-model="formData.supplier_id"
+                        :options="suppliers"
+                        :searchable="true"
+                        :create-option="false"
+                        valueProp="id"
+                        label="nombre"
+                        placeholder="Seleccione proveedor"
+                      />
                     </div>
                   </div>
 
@@ -562,38 +470,55 @@
                     </div>
                   </div>
 
-                  <!-- Costo Anterior -->
+                  <!-- Peso -->
                   <div class="col-md-4">
                     <div class="mb-3">
-                      <label class="form-label">Costo Anterior</label>
+                      <label class="form-label">Peso (KG)</label>
                       <div class="input-group">
-                        <span class="input-group-text">L</span>
                         <input
                           type="number"
                           step="0.01"
                           class="form-control"
-                          v-model="formData.previous_cost"
+                          v-model="formData.weight"
                           placeholder="0.00"
-                          readonly
                         >
+                        <span class="input-group-text">KG</span>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Costo Promedio -->
+                  <!-- Mostrar en Tienda en Línea -->
                   <div class="col-md-4">
                     <div class="mb-3">
-                      <label class="form-label">Costo Promedio</label>
-                      <div class="input-group">
-                        <span class="input-group-text">L</span>
+                      <label class="form-label">Mostrar en Tienda en Línea</label>
+                      <div class="form-check form-switch" style="margin-top: 10px;">
                         <input
-                          type="number"
-                          step="0.01"
-                          class="form-control"
-                          v-model="formData.average_cost"
-                          placeholder="0.00"
-                          readonly
+                          class="form-check-input"
+                          type="checkbox"
+                          id="showInOnlineStore"
+                          v-model="formData.show_in_online_store"
                         >
+                        <label class="form-check-label" for="showInOnlineStore">
+                          {{ formData.show_in_online_store ? 'Sí' : 'No' }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Estado: Activo/Inactivo -->
+                  <div class="col-md-4">
+                    <div class="mb-3">
+                      <label class="form-label">Estado del Producto</label>
+                      <div class="form-check form-switch" style="margin-top: 10px;">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="isActive"
+                          v-model="formData.is_active"
+                        >
+                        <label class="form-check-label" for="isActive">
+                          {{ formData.is_active ? 'Activo' : 'Inactivo' }}
+                        </label>
                       </div>
                     </div>
                   </div>
@@ -605,7 +530,7 @@
                       <div class="alert alert-info d-flex align-items-center">
                         <i class="ti ti-calculator me-2"></i>
                         <span>L {{ valuedInventory.toFixed(2) }}</span>
-                        <small class="ms-3 text-muted">({{ formData.stock }} unidades × L {{ formData.cost }})</small>
+                        <small class="ms-3 text-muted">({{ totalStock.current }} unidades × L {{ formData.cost }})</small>
                       </div>
                     </div>
                   </div>
@@ -622,20 +547,6 @@
                       ></textarea>
                     </div>
                   </div>
-
-                  <!-- Hashtags -->
-                  <div class="col-md-12">
-                    <div class="mb-3">
-                      <label class="form-label">Hashtags</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="formData.hashtags"
-                        placeholder="#etiqueta1 #etiqueta2 #etiqueta3"
-                      >
-                      <small class="text-muted">Separar con espacios o comas</small>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -649,26 +560,18 @@
                         <thead>
                           <tr>
                             <th>Bodega</th>
-                            <th width="120">Existencia Actual</th>
-                            <th width="120">Mínimo</th>
-                            <th width="120">Máximo</th>
-                            <th width="120">Comprometido</th>
-                            <th width="120">Disponible</th>
+                            <th width="150">Existencia Actual</th>
+                            <th width="150">Mínimo</th>
+                            <th width="150">Máximo</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr v-for="warehouse in warehouses" :key="warehouse.id">
                             <td>
-                              <strong>{{ warehouse.code }}</strong> - {{ warehouse.name }}
+                              <strong>{{ warehouse.nombre }}</strong>
                             </td>
-                            <td>
-                              <input
-                                type="number"
-                                step="0.01"
-                                class="form-control form-control-sm text-end"
-                                v-model="getWarehouseStock(warehouse.id).current"
-                                @input="calculateAvailable(warehouse.id)"
-                              >
+                            <td class="text-end">
+                              {{ formatQuantity(getWarehouseStock(warehouse.id).current) }}
                             </td>
                             <td>
                               <input
@@ -686,32 +589,12 @@
                                 v-model="getWarehouseStock(warehouse.id).max"
                               >
                             </td>
-                            <td>
-                              <input
-                                type="number"
-                                step="0.01"
-                                class="form-control form-control-sm text-end"
-                                v-model="getWarehouseStock(warehouse.id).committed"
-                                @input="calculateAvailable(warehouse.id)"
-                              >
-                            </td>
-                            <td>
-                              <input
-                                type="number"
-                                step="0.01"
-                                class="form-control form-control-sm text-end bg-light"
-                                :value="getWarehouseStock(warehouse.id).available"
-                                readonly
-                              >
-                            </td>
                           </tr>
                           <tr class="table-active fw-bold">
                             <td>TOTAL</td>
-                            <td class="text-end">{{ totalStock.current }}</td>
-                            <td class="text-end">{{ totalStock.min }}</td>
-                            <td class="text-end">{{ totalStock.max }}</td>
-                            <td class="text-end">{{ totalStock.committed }}</td>
-                            <td class="text-end">{{ totalStock.available }}</td>
+                            <td class="text-end">{{ formatQuantity(totalStock.current) }}</td>
+                            <td class="text-end">{{ formatQuantity(totalStock.min) }}</td>
+                            <td class="text-end">{{ formatQuantity(totalStock.max) }}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -724,19 +607,7 @@
               <div class="tab-pane fade" id="precios" role="tabpanel" aria-labelledby="tab-precios">
                 <div class="row">
                   <div class="col-md-12">
-                    <div class="mb-3">
-                      <div class="form-check form-switch">
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          id="usePercentageProfit"
-                          v-model="formData.use_percentage_profit"
-                        >
-                        <label class="form-check-label" for="usePercentageProfit">
-                          Usar porcentaje de utilidad para calcular precios automáticamente
-                        </label>
-                      </div>
-                    </div>
+                    <h5 class="mb-3">Lista de Precios</h5>
 
                     <div class="table-responsive">
                       <table class="table table-bordered">
@@ -744,9 +615,8 @@
                           <tr>
                             <th>Nivel</th>
                             <th width="150">% Utilidad</th>
-                            <th width="150">Neto</th>
-                            <th width="150">Total (Venta)</th>
-                            <th width="150">% Comisión</th>
+                            <th width="150">Bruto</th>
+                            <th width="150">Total Venta</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -758,9 +628,8 @@
                                   type="number"
                                   step="0.01"
                                   class="form-control text-end"
-                                  v-model="formData.prices[i-1].profit_percentage"
-                                  @input="calculatePrice(i-1)"
-                                  :disabled="!formData.use_percentage_profit"
+                                  :value="formatPrice(formData.prices[i-1].profit_percentage)"
+                                  @input="e => updateProfitPercentage(i-1, e.target.value)"
                                 >
                                 <span class="input-group-text">%</span>
                               </div>
@@ -772,8 +641,8 @@
                                   type="number"
                                   step="0.01"
                                   class="form-control text-end"
-                                  v-model="formData.prices[i-1].net"
-                                  readonly
+                                  :value="formatPrice(formData.prices[i-1].net)"
+                                  @input="e => updateBruto(i-1, e.target.value)"
                                 >
                               </div>
                             </td>
@@ -784,53 +653,14 @@
                                   type="number"
                                   step="0.01"
                                   class="form-control text-end"
-                                  v-model="formData.prices[i-1].total"
-                                  @input="calculateProfitFromPrice(i-1)"
-                                  :readonly="formData.use_percentage_profit"
+                                  :value="formatPrice(formData.prices[i-1].total)"
+                                  @input="e => updateTotal(i-1, e.target.value)"
                                 >
-                              </div>
-                            </td>
-                            <td>
-                              <div class="input-group input-group-sm">
-                                <input
-                                  type="number"
-                                  step="0.01"
-                                  class="form-control text-end"
-                                  v-model="formData.prices[i-1].commission"
-                                >
-                                <span class="input-group-text">%</span>
                               </div>
                             </td>
                           </tr>
                         </tbody>
                       </table>
-                    </div>
-
-                    <div class="alert alert-info mt-3">
-                      <div class="form-check">
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          id="groupCommission"
-                          v-model="formData.use_group_commission"
-                        >
-                        <label class="form-check-label" for="groupCommission">
-                          Usar comisión grupal (aplicar el mismo % a todos los niveles)
-                        </label>
-                      </div>
-                      <div v-if="formData.use_group_commission" class="mt-2">
-                        <label class="form-label">% Comisión Grupal</label>
-                        <div class="input-group" style="max-width: 200px;">
-                          <input
-                            type="number"
-                            step="0.01"
-                            class="form-control"
-                            v-model="formData.group_commission"
-                            @input="applyGroupCommission"
-                          >
-                          <span class="input-group-text">%</span>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -847,8 +677,7 @@
                           <tr>
                             <th>Impuesto</th>
                             <th width="100">Tasa (%)</th>
-                            <th width="100" class="text-center">Ventas</th>
-                            <th width="100" class="text-center">Compras</th>
+                            <th width="100" class="text-center">Activo</th>
                             <th width="150">Monto (L)</th>
                           </tr>
                         </thead>
@@ -860,172 +689,29 @@
                               <div class="form-check d-flex justify-content-center">
                                 <input
                                   class="form-check-input"
-                                  type="checkbox"
-                                  :id="'tax-sales-' + tax.id"
-                                  v-model="getTaxConfig(tax.id).applies_to_sales"
-                                  @change="calculateTaxAmount(tax.id)"
-                                >
-                              </div>
-                            </td>
-                            <td class="text-center">
-                              <div class="form-check d-flex justify-content-center">
-                                <input
-                                  class="form-check-input"
-                                  type="checkbox"
-                                  :id="'tax-purchases-' + tax.id"
-                                  v-model="getTaxConfig(tax.id).applies_to_purchases"
-                                  @change="calculateTaxAmount(tax.id)"
+                                  type="radio"
+                                  :id="'tax-' + tax.id"
+                                  :value="tax.id"
+                                  v-model="formData.activeTaxId"
+                                  @change="handleTaxChange"
                                 >
                               </div>
                             </td>
                             <td class="text-end">
-                              L {{ getTaxConfig(tax.id).amount.toFixed(2) }}
+                              L {{ formData.activeTaxId === tax.id ? calculateTaxAmountForDisplay(tax) : '0.00' }}
                             </td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
                     <div class="alert alert-success mt-3">
-                      <strong>Total Impuestos:</strong> L {{ totalTaxes.toFixed(2) }}
+                      <strong>Total Impuestos:</strong> L {{ totalTaxAmount.toFixed(2) }}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- TAB 5: CAMPOS ADICIONALES -->
-              <div class="tab-pane fade" id="campos" role="tabpanel" aria-labelledby="tab-campos">
-                <div class="row">
-                  <div class="col-md-12">
-                    <h5 class="mb-3">Opciones y Configuraciones Adicionales</h5>
-                  </div>
-
-                  <div class="col-md-4">
-                    <div class="card bg-light mb-3">
-                      <div class="card-body">
-                        <h6 class="card-title">Control de Inventario</h6>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="usesStock" v-model="formData.additionalFields.uses_stock">
-                          <label class="form-check-label" for="usesStock">Usa Existencias</label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="fractional" v-model="formData.additionalFields.fractional">
-                          <label class="form-check-label" for="fractional">Fraccionable</label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="usesLots" v-model="formData.additionalFields.uses_lots">
-                          <label class="form-check-label" for="usesLots">Usa Lotes</label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="usesExpiration" v-model="formData.additionalFields.uses_expiration">
-                          <label class="form-check-label" for="usesExpiration">Es Vencimientos</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="usesSerials" v-model="formData.additionalFields.uses_serials">
-                          <label class="form-check-label" for="usesSerials">Usa Seriales</label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-md-4">
-                    <div class="card bg-light mb-3">
-                      <div class="card-body">
-                        <h6 class="card-title">Tipo de Producto</h6>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="integrated" v-model="formData.additionalFields.is_integrated">
-                          <label class="form-check-label" for="integrated">Es Integrado</label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="grouped" v-model="formData.additionalFields.is_grouped">
-                          <label class="form-check-label" for="grouped">Es Agrupado</label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="usesBarcode" v-model="formData.additionalFields.uses_barcode">
-                          <label class="form-check-label" for="usesBarcode">Usa Código de Barra</label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="usesProduction" v-model="formData.additionalFields.uses_production">
-                          <label class="form-check-label" for="usesProduction">Usa Producción</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="usesSizesColors" v-model="formData.additionalFields.uses_sizes_colors">
-                          <label class="form-check-label" for="usesSizesColors">Usa Tallas y Colores</label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-md-4">
-                    <div class="card bg-light mb-3">
-                      <div class="card-body">
-                        <h6 class="card-title">Ventas y E-Commerce</h6>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="multiVendors" v-model="formData.additionalFields.uses_multi_vendors">
-                          <label class="form-check-label" for="multiVendors">Usa Múltiples Vendedores</label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="onDiscount" v-model="formData.additionalFields.on_discount">
-                          <label class="form-check-label" for="onDiscount">En Descuento</label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="giftCard" v-model="formData.additionalFields.gift_card">
-                          <label class="form-check-label" for="giftCard">Tarjeta Regalo</label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="onlineOrder" v-model="formData.additionalFields.is_online_order">
-                          <label class="form-check-label" for="onlineOrder">Es Pedido en Línea</label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="hideEshop" v-model="formData.additionalFields.hide_from_eshop">
-                          <label class="form-check-label" for="hideEshop">No mostrar en E-SHOP</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="featuredEshop" v-model="formData.additionalFields.featured_eshop">
-                          <label class="form-check-label" for="featuredEshop">Destacar en E-SHOP</label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-md-6">
-                    <div class="card bg-light mb-3">
-                      <div class="card-body">
-                        <h6 class="card-title">Recordatorio</h6>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="usesReminder" v-model="formData.additionalFields.uses_reminder">
-                          <label class="form-check-label" for="usesReminder">Usa Recordatorio</label>
-                        </div>
-                        <div v-if="formData.additionalFields.uses_reminder" class="mt-2">
-                          <label class="form-label">Días de Recordatorio</label>
-                          <input
-                            type="number"
-                            class="form-control"
-                            v-model="formData.additionalFields.reminder_days"
-                            placeholder="Días"
-                          >
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-md-6">
-                    <div class="card bg-light mb-3">
-                      <div class="card-body">
-                        <h6 class="card-title">Estado</h6>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="suspended" v-model="formData.additionalFields.suspended">
-                          <label class="form-check-label" for="suspended">
-                            <span class="text-danger">Suspendido</span>
-                          </label>
-                        </div>
-                        <small class="text-muted">El producto no estará disponible para venta si está suspendido</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB 6: IMÁGENES -->
+              <!-- TAB 5: IMÁGENES -->
               <div class="tab-pane fade" id="imagenes" role="tabpanel" aria-labelledby="tab-imagenes">
                 <div class="row">
                   <div class="col-md-12">
@@ -1109,10 +795,10 @@
               <div>
                 <button
                   type="button"
-                  class="btn btn-danger me-2"
-                  @click="clearForm"
+                  class="btn btn-warning me-2"
+                  @click="suspendProduct"
                 >
-                  <i class="ti ti-trash me-2"></i>ELIMINAR
+                  <i class="ti ti-ban me-2"></i>SUSPENDER
                 </button>
                 <button
                   type="submit"
@@ -1142,11 +828,16 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '@/utils/axios';
 import Swal from 'sweetalert2';
+import Multiselect from '@vueform/multiselect';
+import '@vueform/multiselect/themes/default.css';
 
 export default {
   name: 'EditProduct',
+  components: {
+    Multiselect
+  },
   data() {
     return {
       productId: null,
@@ -1158,9 +849,10 @@ export default {
         name: '',
         short_name: '',
         item_type: null,
-        unit: 'Unidad',
+        unit_id: null,
         image: null,
         imagePreview: null,
+        currentImageUrl: null,
         category_id: null,
         subcategory_id: null,
         weight: null,
@@ -1169,33 +861,30 @@ export default {
         warranty_value: null,
         warranty_unit: 'Días',
         brand_id: null,
+        supplier_id: null,
         model: '',
         reference: '',
         cost: 0,
-        previous_cost: 0,
-        average_cost: 0,
-        stock: 0,
         description: '',
-        hashtags: '',
+        show_in_online_store: false,
+        weight: null,
+        is_active: true,
 
         // Existencias por bodega
         warehouseStock: {},
 
         // Precios
-        use_percentage_profit: false,
-        use_group_commission: false,
-        group_commission: 0,
         prices: [
-          { profit_percentage: 0, net: 0, total: 0, commission: 0 },
-          { profit_percentage: 0, net: 0, total: 0, commission: 0 },
-          { profit_percentage: 0, net: 0, total: 0, commission: 0 },
-          { profit_percentage: 0, net: 0, total: 0, commission: 0 },
-          { profit_percentage: 0, net: 0, total: 0, commission: 0 },
-          { profit_percentage: 0, net: 0, total: 0, commission: 0 }
+          { profit_percentage: 0, net: 0, total: 0 },
+          { profit_percentage: 0, net: 0, total: 0 },
+          { profit_percentage: 0, net: 0, total: 0 },
+          { profit_percentage: 0, net: 0, total: 0 },
+          { profit_percentage: 0, net: 0, total: 0 },
+          { profit_percentage: 0, net: 0, total: 0 }
         ],
 
-        // Impuestos
-        taxConfig: {},
+        // Impuesto activo (solo uno)
+        activeTaxId: null,
 
         // Campos Adicionales
         additionalFields: {
@@ -1217,7 +906,8 @@ export default {
           featured_eshop: false,
           uses_reminder: false,
           reminder_days: 0,
-          suspended: false
+          suspended: false,
+          show_in_online_store: false
         },
 
         // Galería
@@ -1230,16 +920,7 @@ export default {
         { label: 'Servicio', value: 'service' },
         { label: 'Combo', value: 'combo' }
       ],
-      units: [
-        { label: 'Unidad', value: 'Unidad' },
-        { label: 'Caja', value: 'Caja' },
-        { label: 'Kilogramo', value: 'Kilogramo' },
-        { label: 'Gramo', value: 'Gramo' },
-        { label: 'Litro', value: 'Litro' },
-        { label: 'Mililitro', value: 'Mililitro' },
-        { label: 'Metro', value: 'Metro' },
-        { label: 'Centímetro', value: 'Centímetro' }
-      ],
+      units: [],
       warrantyUnits: [
         { label: 'Días', value: 'Días' },
         { label: 'Meses', value: 'Meses' },
@@ -1248,56 +929,52 @@ export default {
       categories: [],
       subcategories: [],
       brands: [],
+      suppliers: [],
       warehouses: [],
       taxes: [],
       useConsecutive: false,
       quickProfitPercent: 0,
-      selectedQuickTax: null,
       usePercentageCalc: true
     };
   },
 
   computed: {
     valuedInventory() {
-      return (this.formData.stock || 0) * (this.formData.cost || 0);
+      return (this.totalStock.current || 0) * (this.formData.cost || 0);
     },
 
     totalStock() {
       const totals = {
         current: 0,
         min: 0,
-        max: 0,
-        committed: 0,
-        available: 0
+        max: 0
       };
 
       Object.values(this.formData.warehouseStock).forEach(stock => {
         totals.current += parseFloat(stock.current || 0);
         totals.min += parseFloat(stock.min || 0);
         totals.max += parseFloat(stock.max || 0);
-        totals.committed += parseFloat(stock.committed || 0);
-        totals.available += parseFloat(stock.available || 0);
       });
 
       return totals;
     },
 
-    totalTaxes() {
-      let total = 0;
-      Object.values(this.formData.taxConfig).forEach(taxConf => {
-        if (taxConf.applies_to_sales) {
-          total += parseFloat(taxConf.amount || 0);
-        }
-      });
-      return total;
+    totalTaxAmount() {
+      if (!this.formData.activeTaxId) return 0;
+
+      const activeTax = this.taxes.find(t => t.id === this.formData.activeTaxId);
+      if (!activeTax) return 0;
+
+      const brutoPrice = parseFloat(this.formData.prices[0].net) || 0;
+      return (brutoPrice * activeTax.rate) / 100;
     }
   },
 
-  mounted() {
+  async mounted() {
     this.productId = this.$route.params.id;
-    this.loadCatalogs();
+    await this.loadCatalogs();  // Wait for catalogs (including warehouses) to load first
     this.initializeWarehouses();
-    this.initializeTaxes();
+    await this.initializeTaxes();
     this.loadProductData();
   },
 
@@ -1310,10 +987,8 @@ export default {
 
       try {
         this.isLoading = true;
-        const token = localStorage.getItem('token');
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        const response = await axios.get(`http://localhost:3000/api/v1/products/${this.productId}`, { headers });
+        const response = await api.get(`/products/${this.productId}`);
         const product = response.data.data;
 
         // Cargar datos del producto
@@ -1323,21 +998,47 @@ export default {
         this.formData.category_id = product.category_id;
         this.formData.subcategory_id = product.subcategory_id;
         this.formData.brand_id = product.brand_id;
+        this.formData.supplier_id = product.supplier_id;
         this.formData.cost = product.cost;
         this.formData.description = product.description;
         this.formData.weight = product.weight;
-        this.formData.unit = product.unit || 'Unidad';
-        this.formData.stock = product.stock;
+        this.formData.unit_id = product.unit_id;
+        this.formData.show_in_online_store = product.show_in_online_store || false;
+        this.formData.is_active = product.is_active !== undefined ? Boolean(product.is_active) : true;
+        this.formData.currentImageUrl = product.image || null;
 
-        // Cargar precios
+        // Cargar precios (el precio en BD es el bruto, sin impuesto)
         for (let i = 0; i < 6; i++) {
-          this.formData.prices[i].total = product[`price_${i + 1}`] || 0;
+          this.formData.prices[i].net = product[`price_${i + 1}`] || 0;
+
+          // Calcular porcentaje de utilidad basado en costo y precio bruto
+          const cost = parseFloat(this.formData.cost) || 0;
+          const net = parseFloat(this.formData.prices[i].net) || 0;
+          if (cost > 0 && net > 0) {
+            this.formData.prices[i].profit_percentage = ((net - cost) / cost) * 100;
+          } else {
+            this.formData.prices[i].profit_percentage = 0;
+          }
         }
+
+        // Cargar impuesto activo si existe
+        if (product.tax_id) {
+          this.formData.activeTaxId = product.tax_id;
+        }
+
+        // Recalcular totales con impuesto
+        this.recalculateAllPriceTotals();
 
         // Cargar subcategorías si hay categoría
         if (product.category_id) {
           await this.loadSubcategories();
         }
+
+        // Cargar existencias por bodega desde la tabla stock
+        await this.loadWarehouseStock();
+
+        // Cargar imágenes de galería
+        await this.loadGalleryImages();
 
         this.isLoading = false;
       } catch (error) {
@@ -1353,24 +1054,25 @@ export default {
 
     async loadCatalogs() {
       try {
-        const token = localStorage.getItem('token');
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
         // Cargar categorías
-        const categoriesRes = await axios.get('http://localhost:3000/api/v1/categories', { headers });
+        const categoriesRes = await api.get('/categories');
         this.categories = categoriesRes.data.data || [];
 
         // Cargar marcas
-        const brandsRes = await axios.get('http://localhost:3000/api/v1/brands', { headers });
+        const brandsRes = await api.get('/brands');
         this.brands = brandsRes.data.data || [];
 
-        // Cargar bodegas (warehouses)
-        this.warehouses = [
-          { id: 1, code: 'BODEGA 101', name: 'TIENDA' },
-          { id: 2, code: 'BODEGA 102', name: '14 CALLE' },
-          { id: 3, code: 'BODEGA 103', name: 'AVENIDA RAMON ROSA' },
-          { id: 4, code: 'BODEGA 104', name: '15 CALLE ESQUINA' }
-        ];
+        // Cargar proveedores
+        const suppliersRes = await api.get('/suppliers');
+        this.suppliers = suppliersRes.data.data || [];
+
+        // Cargar unidades
+        const unitsRes = await api.get('/units');
+        this.units = unitsRes.data.data || [];
+
+        // Cargar bodegas desde la base de datos
+        const warehousesRes = await api.get('/warehouses');
+        this.warehouses = warehousesRes.data.data || [];
 
         this.initializeWarehouseStock();
       } catch (error) {
@@ -1387,9 +1089,7 @@ export default {
       }
 
       try {
-        const token = localStorage.getItem('token');
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await axios.get(`http://localhost:3000/api/v1/subcategories?category_id=${this.formData.category_id}`, { headers });
+        const res = await api.get(`/subcategories?category_id=${this.formData.category_id}`);
         this.subcategories = res.data.data || [];
       } catch (error) {
         console.error('Error loading subcategories:', error);
@@ -1397,15 +1097,45 @@ export default {
       }
     },
 
+    async loadWarehouseStock() {
+      try {
+        const res = await api.get(`/products/stock/current?product_id=${this.productId}`);
+
+        let stockData = [];
+
+        if (res.data.data && res.data.data.stock) {
+          if (Array.isArray(res.data.data.stock)) {
+            stockData = res.data.data.stock;
+          }
+          else if (typeof res.data.data.stock === 'object') {
+            stockData = Object.values(res.data.data.stock);
+          }
+        }
+
+        // Actualizar las existencias de cada bodega
+        if (Array.isArray(stockData) && stockData.length > 0) {
+          stockData.forEach(stock => {
+            if (this.formData.warehouseStock[stock.warehouse_id]) {
+              this.formData.warehouseStock[stock.warehouse_id].current = stock.quantity || 0;
+              this.formData.warehouseStock[stock.warehouse_id].min = stock.min_stock || 0;
+              this.formData.warehouseStock[stock.warehouse_id].max = stock.max_stock || 1000;
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error loading warehouse stock:', error);
+      }
+    },
+
     initializeWarehouseStock() {
       this.warehouses.forEach(warehouse => {
-        this.formData.warehouseStock[warehouse.id] = {
-          current: 0,
-          min: 0,
-          max: 1000,
-          committed: 0,
-          available: 0
-        };
+        if (!this.formData.warehouseStock[warehouse.id]) {
+          this.formData.warehouseStock[warehouse.id] = {
+            current: 0,
+            min: 0,
+            max: 1000
+          };
+        }
       });
     },
 
@@ -1413,20 +1143,14 @@ export default {
       // Ya se inicializan en loadCatalogs
     },
 
-    initializeTaxes() {
-      this.taxes = [
-        { id: 1, name: 'EXENTO', rate: 0 },
-        { id: 2, name: 'I.S.V 18', rate: 18 },
-        { id: 3, name: 'I.S.V 15', rate: 15 }
-      ];
-
-      this.taxes.forEach(tax => {
-        this.formData.taxConfig[tax.id] = {
-          applies_to_sales: false,
-          applies_to_purchases: false,
-          amount: 0
-        };
-      });
+    async initializeTaxes() {
+      try {
+        const res = await api.get('/tax-rates');
+        this.taxes = res.data.data || [];
+      } catch (error) {
+        console.error('Error loading taxes:', error);
+        this.taxes = [];
+      }
     },
 
     getWarehouseStock(warehouseId) {
@@ -1434,84 +1158,126 @@ export default {
         this.formData.warehouseStock[warehouseId] = {
           current: 0,
           min: 0,
-          max: 1000,
-          committed: 0,
-          available: 0
+          max: 1000
         };
       }
       return this.formData.warehouseStock[warehouseId];
     },
 
-    calculateAvailable(warehouseId) {
-      const stock = this.getWarehouseStock(warehouseId);
-      stock.available = (parseFloat(stock.current) || 0) - (parseFloat(stock.committed) || 0);
+    // Calcular el monto de impuesto para mostrar en la tabla
+    calculateTaxAmountForDisplay(tax) {
+      const brutoPrice = parseFloat(this.formData.prices[0].net) || 0;
+      const amount = (brutoPrice * tax.rate) / 100;
+      return amount.toFixed(2);
     },
 
-    getTaxConfig(taxId) {
-      if (!this.formData.taxConfig[taxId]) {
-        this.formData.taxConfig[taxId] = {
-          applies_to_sales: false,
-          applies_to_purchases: false,
-          amount: 0
-        };
-      }
-      return this.formData.taxConfig[taxId];
+    // Cuando cambia el impuesto activo, recalcular todos los totales
+    handleTaxChange() {
+      this.recalculateAllPriceTotals();
     },
 
-    calculateTaxAmount(taxId) {
-      const tax = this.taxes.find(t => t.id === taxId);
-      const config = this.getTaxConfig(taxId);
-
-      if (config.applies_to_sales && this.formData.prices[0].total > 0) {
-        config.amount = (this.formData.prices[0].total * tax.rate) / 100;
-      } else {
-        config.amount = 0;
-      }
-    },
-
-    calculatePrice(index) {
-      if (!this.formData.use_percentage_profit) return;
-
+    // Cuando cambia el porcentaje de utilidad, calcular bruto y total
+    calculatePriceFromProfit(index) {
       const price = this.formData.prices[index];
       const cost = parseFloat(this.formData.cost) || 0;
       const profit = parseFloat(price.profit_percentage) || 0;
 
-      price.net = cost * (1 + profit / 100);
-      price.total = price.net;
-
-      // Recalcular impuestos si es el primer precio
-      if (index === 0) {
-        this.taxes.forEach(tax => {
-          this.calculateTaxAmount(tax.id);
-        });
+      if (cost <= 0) {
+        return;
       }
+
+      // Calcular precio bruto (sin impuesto)
+      price.net = cost * (1 + profit / 100);
+
+      // Calcular precio total con impuesto
+      const activeTax = this.taxes.find(t => t.id === this.formData.activeTaxId);
+      const taxRate = activeTax ? activeTax.rate : 0;
+      price.total = price.net * (1 + taxRate / 100);
     },
 
-    calculateProfitFromPrice(index) {
-      if (this.formData.use_percentage_profit) return;
+    // Cuando cambia el precio bruto, calcular porcentaje de utilidad y total
+    calculateProfitFromBruto(index) {
+      const price = this.formData.prices[index];
+      const cost = parseFloat(this.formData.cost) || 0;
+      const net = parseFloat(price.net) || 0;
 
+      if (cost > 0 && net > 0) {
+        // Calcular porcentaje de utilidad
+        price.profit_percentage = ((net - cost) / cost) * 100;
+      } else {
+        price.profit_percentage = 0;
+      }
+
+      // Calcular precio total con impuesto
+      const activeTax = this.taxes.find(t => t.id === this.formData.activeTaxId);
+      const taxRate = activeTax ? activeTax.rate : 0;
+      price.total = net * (1 + taxRate / 100);
+    },
+
+    // Cuando cambia el total venta, calcular bruto (quitando impuesto) y porcentaje de utilidad
+    calculateFromTotal(index) {
       const price = this.formData.prices[index];
       const cost = parseFloat(this.formData.cost) || 0;
       const total = parseFloat(price.total) || 0;
 
-      if (cost > 0) {
-        price.profit_percentage = ((total - cost) / cost) * 100;
+      // Obtener la tasa de impuesto
+      const activeTax = this.taxes.find(t => t.id === this.formData.activeTaxId);
+      const taxRate = activeTax ? activeTax.rate : 0;
+
+      // Calcular bruto (precio sin impuesto) = total / (1 + tasa)
+      if (taxRate > 0) {
+        price.net = total / (1 + taxRate / 100);
+      } else {
         price.net = total;
       }
 
-      // Recalcular impuestos si es el primer precio
-      if (index === 0) {
-        this.taxes.forEach(tax => {
-          this.calculateTaxAmount(tax.id);
-        });
+      // Calcular porcentaje de utilidad
+      if (cost > 0 && price.net > 0) {
+        price.profit_percentage = ((price.net - cost) / cost) * 100;
+      } else {
+        price.profit_percentage = 0;
       }
     },
 
-    applyGroupCommission() {
-      const commission = parseFloat(this.formData.group_commission) || 0;
+    // Wrapper methods para limitar a 2 decimales
+    updateProfitPercentage(index, value) {
+      const parsed = parseFloat(value) || 0;
+      const rounded = Math.round(parsed * 100) / 100;
+      this.formData.prices[index].profit_percentage = rounded;
+      this.calculatePriceFromProfit(index);
+    },
+
+    updateBruto(index, value) {
+      const parsed = parseFloat(value) || 0;
+      const rounded = Math.round(parsed * 100) / 100;
+      this.formData.prices[index].net = rounded;
+      this.calculateProfitFromBruto(index);
+    },
+
+    updateTotal(index, value) {
+      const parsed = parseFloat(value) || 0;
+      const rounded = Math.round(parsed * 100) / 100;
+      this.formData.prices[index].total = rounded;
+      this.calculateFromTotal(index);
+    },
+
+    recalculateAllPriceTotals() {
+      // Obtener el impuesto activo
+      const activeTax = this.taxes.find(t => t.id === this.formData.activeTaxId);
+      const taxRate = activeTax ? activeTax.rate : 0;
+
+      // Recalcular el total con impuesto para todos los precios
       this.formData.prices.forEach(price => {
-        price.commission = commission;
+        const net = parseFloat(price.net) || 0;
+        price.total = net * (1 + taxRate / 100);
       });
+    },
+
+    // Formatear precio a 2 decimales
+    formatPrice(value) {
+      const num = parseFloat(value);
+      if (isNaN(num)) return '0.00';
+      return num.toFixed(2);
     },
 
     handleMainImage(event) {
@@ -1561,6 +1327,33 @@ export default {
       this.formData.gallery.splice(index, 1);
     },
 
+    async loadGalleryImages() {
+      try {
+        const response = await api.get(`/products/${this.productId}/gallery`);
+        const images = response.data.data || [];
+
+        // Convertir las URLs de las imágenes existentes a objetos de galería
+        this.formData.gallery = images.map(img => ({
+          file: null, // No hay archivo local, es una URL remota
+          name: img.image_url.split('/').pop(), // Extraer nombre del archivo de la URL
+          preview: img.image_url,
+          existing: true, // Marcar como imagen existente
+          id: img.id
+        }));
+
+      } catch (error) {
+        console.error('Error loading gallery images:', error);
+        this.formData.gallery = [];
+      }
+    },
+
+    formatQuantity(value) {
+      const num = parseFloat(value);
+      if (isNaN(num)) return '0.00';
+      // Siempre mostrar 2 decimales
+      return num.toFixed(2);
+    },
+
     async generateCode() {
       try {
         // Generar código automático basado en categoría
@@ -1593,51 +1386,52 @@ export default {
       this.isSaving = true;
 
       try {
-        const token = localStorage.getItem('token');
         const formDataToSend = new FormData();
 
         // Datos básicos
         formDataToSend.append('code', this.formData.code);
         formDataToSend.append('name', this.formData.name);
         formDataToSend.append('short_name', this.formData.short_name || '');
-        formDataToSend.append('unit', this.formData.unit);
+        formDataToSend.append('unit_id', this.formData.unit_id || '');
         formDataToSend.append('category_id', this.formData.category_id || '');
         formDataToSend.append('subcategory_id', this.formData.subcategory_id || '');
         formDataToSend.append('brand_id', this.formData.brand_id || '');
+        formDataToSend.append('supplier_id', this.formData.supplier_id || '');
         formDataToSend.append('cost', this.formData.cost);
         formDataToSend.append('description', this.formData.description || '');
         formDataToSend.append('weight', this.formData.weight || '');
-        formDataToSend.append('fractional', this.formData.additionalFields.fractional ? 1 : 0);
+        formDataToSend.append('show_in_online_store', this.formData.show_in_online_store ? 1 : 0);
+        formDataToSend.append('is_active', this.formData.is_active ? 1 : 0);
 
-        // Precios
+        // Precios (guardar el bruto, sin impuesto)
         for (let i = 0; i < 6; i++) {
-          formDataToSend.append(`price_${i + 1}`, this.formData.prices[i].total || 0);
+          formDataToSend.append(`price_${i + 1}`, this.formData.prices[i].net || 0);
         }
 
-        // Stock total
-        formDataToSend.append('stock', this.totalStock.current);
-        formDataToSend.append('min_stock', this.totalStock.min);
-        formDataToSend.append('max_stock', this.totalStock.max);
-
-        // Imagen principal
-        if (this.formData.image) {
+        // Imagen principal (archivo nuevo)
+        if (this.formData.image && this.formData.image instanceof File) {
           formDataToSend.append('image', this.formData.image);
         }
 
-        // Galería (guardar como JSON por ahora)
-        formDataToSend.append('gallery', JSON.stringify(this.formData.gallery.map(img => img.name)));
-        formDataToSend.append('warehouse_stock', JSON.stringify(this.formData.warehouseStock));
-        formDataToSend.append('tax_config', JSON.stringify(this.formData.taxConfig));
-        formDataToSend.append('additional_fields', JSON.stringify(this.formData.additionalFields));
-
-        const headers = {
-          'Content-Type': 'multipart/form-data'
-        };
-        if (token) {
-          headers.Authorization = `Bearer ${token}`;
+        // Galería de imágenes (archivos nuevos)
+        if (this.formData.gallery && this.formData.gallery.length > 0) {
+          this.formData.gallery.forEach((item, index) => {
+            // item tiene la estructura { file: File, name: string, preview: string }
+            if (item.file && item.file instanceof File) {
+              formDataToSend.append(`gallery_${index}`, item.file);
+            }
+          });
         }
 
-        await axios.put(`http://localhost:3000/api/v1/products/${this.productId}`, formDataToSend, { headers });
+        formDataToSend.append('warehouse_stock', JSON.stringify(this.formData.warehouseStock));
+        formDataToSend.append('tax_id', this.formData.activeTaxId || '');
+        formDataToSend.append('additional_fields', JSON.stringify(this.formData.additionalFields));
+
+        await api.put(`/products/${this.productId}`, formDataToSend, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
 
         Swal.fire({
           icon: 'success',
@@ -1700,6 +1494,46 @@ export default {
 
     toggleQuickPriceCalc() {
       this.usePercentageCalc = !this.usePercentageCalc;
+    },
+
+    async suspendProduct() {
+      Swal.fire({
+        title: '¿Suspender producto?',
+        text: 'El producto se marcará como inactivo y no estará disponible para venta',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, suspender',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#ffc107',
+        cancelButtonColor: '#6c757d'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await api.put(
+              `/products/${this.productId}`,
+              { status: 'inactive', is_active: false }
+            );
+
+            Swal.fire({
+              icon: 'success',
+              title: 'Producto Suspendido',
+              text: 'El producto ha sido suspendido exitosamente',
+              timer: 2000
+            });
+
+            setTimeout(() => {
+              this.$router.push('/inventory/product-list');
+            }, 2000);
+          } catch (error) {
+            console.error('Error suspending product:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: error.response?.data?.message || 'Error al suspender el producto'
+            });
+          }
+        }
+      });
     }
   }
 };

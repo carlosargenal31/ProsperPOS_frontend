@@ -1,5 +1,9 @@
 <template>
-  <ul>
+  <!-- Usar sidebar de ecommerce si estamos en rutas de ecommerce -->
+  <ecommerce-sidebar v-if="isEcommercePage"></ecommerce-sidebar>
+
+  <!-- Usar sidebar normal del POS -->
+  <ul v-else>
     <li class="submenu-open" v-for="item in side_bar_data" :key="item.tittle">
         <h6 class="submenu-hdr">{{ item.tittle }}</h6> <!-- Correct typo if needed -->
         <ul>
@@ -62,8 +66,12 @@
 <script>
 import side_bar_data from "@/assets/json/sidebar.json";
 import { canAccessModule } from '@/utils/permissions';
+import EcommerceSidebar from './ecommerce-sidebar.vue';
 
 export default {
+  components: {
+    EcommerceSidebar
+  },
   data() {
       return {
           side_bar_data: side_bar_data, // Temporalmente sin filtrar para mostrar todos los menús
@@ -72,6 +80,9 @@ export default {
       }
   },
   computed: {
+      isEcommercePage() {
+          return this.$route.path.startsWith('/ecommerce');
+      },
       isMenuActive() {
           return (menu) => {
               return this.$route.path === menu.route ||
