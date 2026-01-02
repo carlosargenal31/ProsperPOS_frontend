@@ -674,7 +674,7 @@
           <div class="content">
             <div class="modal-header">
               <div class="page-title">
-                <h4>Detalles de la cup�n</h4>
+                <h4>Detalles del cupón</h4>
               </div>
               <button
                 type="button"

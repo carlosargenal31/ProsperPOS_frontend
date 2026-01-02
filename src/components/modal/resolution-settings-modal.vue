@@ -244,7 +244,7 @@
     <div class="modal-dialog modal-dialog-centered modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title">Registro de Resoluciones</h4>
+          <h4 class="modal-title">Edición de Resoluciones</h4>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>

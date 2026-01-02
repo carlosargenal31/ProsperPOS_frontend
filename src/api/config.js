@@ -434,5 +434,46 @@ export const stockHistoryService = {
   }
 };
 
+/**
+ * Servicio de Códigos de Barra
+ */
+export const barcodeService = {
+  /**
+   * Obtener productos para códigos de barra
+   */
+  getProducts: (categoryId = null, subcategoryId = null) => {
+    const params = {};
+    if (categoryId) params.category_id = categoryId;
+    if (subcategoryId) params.subcategory_id = subcategoryId;
+
+    return api.get('/barcodes/products', { params });
+  },
+
+  /**
+   * Obtener lista de categorías
+   */
+  getCategories: () => {
+    return api.get('/barcodes/categories');
+  },
+
+  /**
+   * Obtener lista de subcategorías
+   */
+  getSubcategories: (categoryId = null) => {
+    return api.get('/barcodes/subcategories', {
+      params: { category_id: categoryId }
+    });
+  },
+
+  /**
+   * Generar PDF con códigos de barra
+   */
+  generatePDF: (data) => {
+    return api.post('/barcodes/generate-pdf', data, {
+      responseType: 'blob'
+    });
+  }
+};
+
 // Exportar la instancia de axios por defecto
 export default api;

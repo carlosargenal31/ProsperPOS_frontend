@@ -6,8 +6,8 @@
       <div class="page-header settings-pg-header">
         <div class="add-item d-flex">
           <div class="page-title">
-            <h4>Settings</h4>
-            <h6>Manage your settings on portal</h6>
+            <h4>Ajustes</h4>
+            <h6>Administrar su configuración en el portal</h6>
           </div>
         </div>
         <ul class="table-top-head">

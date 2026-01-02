@@ -55,6 +55,14 @@
                 <template v-if="column.key === 'id'">
                   <span class="badge bg-light text-dark">{{ record.id }}</span>
                 </template>
+                <template v-else-if="column.key === 'image_url'">
+                  <div class="text-center">
+                    <img v-if="record.image_url" :src="record.image_url" alt="Categoría" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;" />
+                    <span v-else class="text-muted">
+                      <i class="ti ti-photo-off"></i>
+                    </span>
+                  </div>
+                </template>
                 <template v-else-if="column.key === 'name'">
                   <a href="javascript:void(0);">{{ record.name }}</a>
                 </template>
@@ -100,6 +108,7 @@ import CategoryModals from '@/components/modals/CategoryModals.vue';
 
 const columns = [
   { title: 'Código', dataIndex: 'id', key: 'id', sorter: true, width: 120 },
+  { title: 'Imagen', dataIndex: 'image_url', key: 'image_url', sorter: false, width: 100 },
   { title: 'Categoría', dataIndex: 'name', key: 'name', sorter: true },
   { title: 'Subcategorías', dataIndex: 'subcategories_count', key: 'subcategories_count', sorter: true, width: 120 },
   { title: 'Estado', dataIndex: 'is_active', key: 'is_active', sorter: true, width: 100 },

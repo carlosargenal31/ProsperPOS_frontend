@@ -470,7 +470,7 @@ import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import { LOGO_BASE64 } from '@/assets/img/logo.js';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 
 export default {
   data() {

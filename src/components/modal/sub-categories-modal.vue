@@ -45,12 +45,20 @@
               <div class="mb-3">
                 <label class="form-label">Imagen</label>
                 <input
-                  type="text"
+                  type="file"
                   class="form-control"
-                  v-model="form.image_url"
-                  placeholder="Nombre del archivo (ej: laptops.jpg)"
+                  @change="handleImageSelect"
+                  accept="image/jpeg,image/png,image/jpg,image/webp"
                 />
-                <small class="text-muted">Solo el nombre del archivo, sin ruta completa</small>
+                <small class="text-muted">Formatos permitidos: JPEG, PNG, WEBP (Máx. 5MB)</small>
+
+                <!-- Vista previa -->
+                <div v-if="imagePreview" class="mt-2">
+                  <img :src="imagePreview" alt="Vista previa" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" />
+                  <button type="button" class="btn btn-sm btn-danger ms-2" @click="clearImage">
+                    <i class="ti ti-x"></i> Eliminar
+                  </button>
+                </div>
               </div>
 
               <div class="mb-3">
@@ -111,13 +119,31 @@
 
               <div class="mb-3">
                 <label class="form-label">Imagen</label>
+
+                <!-- Imagen actual -->
+                <div v-if="formEdit.current_image_url && !imagePreviewEdit" class="mb-2">
+                  <img :src="formEdit.current_image_url" alt="Imagen actual" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" />
+                  <button type="button" class="btn btn-sm btn-danger ms-2" @click="deleteCurrentImage">
+                    <i class="ti ti-trash"></i> Eliminar imagen actual
+                  </button>
+                </div>
+
+                <!-- Subir nueva imagen -->
                 <input
-                  type="text"
+                  type="file"
                   class="form-control"
-                  v-model="formEdit.image_url"
-                  placeholder="Nombre del archivo (ej: laptops.jpg)"
+                  @change="handleImageSelectEdit"
+                  accept="image/jpeg,image/png,image/jpg,image/webp"
                 />
-                <small class="text-muted">Solo el nombre del archivo, sin ruta completa</small>
+                <small class="text-muted">Formatos permitidos: JPEG, PNG, WEBP (Máx. 5MB)</small>
+
+                <!-- Vista previa de nueva imagen -->
+                <div v-if="imagePreviewEdit" class="mt-2">
+                  <img :src="imagePreviewEdit" alt="Vista previa" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" />
+                  <button type="button" class="btn btn-sm btn-danger ms-2" @click="clearImageEdit">
+                    <i class="ti ti-x"></i> Cancelar
+                  </button>
+                </div>
               </div>
 
               <div class="mb-3">
@@ -138,6 +164,55 @@
               <span v-if="savingEdit" class="spinner-border spinner-border-sm me-2"></span>
               {{ savingEdit ? 'Guardando...' : 'Actualizar' }}
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Ver Subcategoría -->
+    <div class="modal fade" id="view-subcategory" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Detalles de la Subcategoría</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row" v-if="subcategory">
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">ID:</label>
+                <p class="form-control-plaintext">{{ subcategory.id || '-' }}</p>
+              </div>
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">Nombre:</label>
+                <p class="form-control-plaintext">{{ subcategory.name || '-' }}</p>
+              </div>
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">Categoría Padre:</label>
+                <p class="form-control-plaintext">{{ subcategory.category_name || '-' }}</p>
+              </div>
+              <div class="col-lg-12 mb-3" v-if="subcategory.image_url">
+                <label class="form-label fw-bold">Imagen:</label>
+                <div>
+                  <img :src="subcategory.image_url" alt="Subcategoría" class="img-thumbnail" style="max-width: 300px; max-height: 300px;" />
+                </div>
+              </div>
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">Productos:</label>
+                <p class="form-control-plaintext">{{ subcategory.products_count || 0 }}</p>
+              </div>
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">Estado:</label>
+                <p class="form-control-plaintext">
+                  <span :class="subcategory.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                    {{ subcategory.is_active ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
           </div>
         </div>
       </div>
@@ -193,16 +268,21 @@ export default {
       form: {
         name: '',
         category_id: '',
-        image_url: '',
         is_active: 1
       },
       // Formulario para editar
       formEdit: {
         name: '',
         category_id: '',
-        image_url: '',
-        is_active: 1
+        is_active: 1,
+        current_image_url: null
       },
+      // Imágenes
+      selectedImage: null,
+      imagePreview: null,
+      selectedImageEdit: null,
+      imagePreviewEdit: null,
+      // Estados
       saving: false,
       savingEdit: false,
       deleting: false,
@@ -220,25 +300,103 @@ export default {
           this.formEdit = {
             name: newVal.name || '',
             category_id: newVal.category_id || '',
-            image_url: newVal.image_url || '',
-            is_active: newVal.is_active ? 1 : 0
+            is_active: newVal.is_active !== undefined ? Number(newVal.is_active) : 1,
+            current_image_url: newVal.image_url || null
           };
+          this.selectedImageEdit = null;
+          this.imagePreviewEdit = null;
         }
       },
       immediate: true,
       deep: true
     }
   },
-  async mounted() {
-    await this.loadCategories();
+  mounted() {
+    this.loadCategories();
   },
   methods: {
     async loadCategories() {
       try {
         const response = await categoryService.getActiveCategories();
-        this.categories = response.data || response;
-      } catch (error) {
-        console.error('Error al cargar categorías:', error);
+        if (response.success) {
+          this.categories = response.data || [];
+        }
+      } catch (err) {
+        console.error('Error loading categories:', err);
+      }
+    },
+
+    // Manejar selección de imagen (crear)
+    handleImageSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Validar tamaño (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          this.error = 'La imagen no puede superar los 5MB';
+          event.target.value = '';
+          return;
+        }
+
+        this.selectedImage = file;
+
+        // Crear vista previa
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.imagePreview = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+
+    // Limpiar imagen seleccionada (crear)
+    clearImage() {
+      this.selectedImage = null;
+      this.imagePreview = null;
+      const fileInput = document.querySelector('#add-subcategory input[type="file"]');
+      if (fileInput) fileInput.value = '';
+    },
+
+    // Manejar selección de imagen (editar)
+    handleImageSelectEdit(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Validar tamaño (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          this.errorEdit = 'La imagen no puede superar los 5MB';
+          event.target.value = '';
+          return;
+        }
+
+        this.selectedImageEdit = file;
+
+        // Crear vista previa
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.imagePreviewEdit = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+
+    // Limpiar imagen seleccionada (editar)
+    clearImageEdit() {
+      this.selectedImageEdit = null;
+      this.imagePreviewEdit = null;
+      const fileInput = document.querySelector('#edit-subcategory input[type="file"]');
+      if (fileInput) fileInput.value = '';
+    },
+
+    // Eliminar imagen actual
+    async deleteCurrentImage() {
+      if (!this.subcategory) return;
+
+      try {
+        await subcategoryService.deleteSubcategoryImage(this.subcategory.id);
+        this.formEdit.current_image_url = null;
+        this.successEdit = 'Imagen eliminada exitosamente';
+        setTimeout(() => this.successEdit = null, 3000);
+      } catch (err) {
+        this.errorEdit = err.response?.data?.message || 'Error al eliminar la imagen';
       }
     },
 
@@ -252,14 +410,19 @@ export default {
         const payload = {
           name: this.form.name,
           category_id: this.form.category_id,
-          image_url: this.form.image_url || null,
-          is_active: this.form.is_active === 1 || this.form.is_active === true
+          is_active: Number(this.form.is_active)
         };
 
-        await subcategoryService.createSubcategory(payload);
+        const response = await subcategoryService.createSubcategory(payload);
+        const subcategoryId = response.data.id;
+
+        // Si hay imagen, subirla
+        if (this.selectedImage && subcategoryId) {
+          await subcategoryService.uploadSubcategoryImage(subcategoryId, this.selectedImage);
+        }
 
         // Cerrar modal inmediatamente
-        this.$emit('saved');
+        this.$emit('success');
         this.closeModalAdd();
 
       } catch (err) {
@@ -281,14 +444,20 @@ export default {
         const payload = {
           name: this.formEdit.name,
           category_id: this.formEdit.category_id,
-          image_url: this.formEdit.image_url || null,
-          is_active: this.formEdit.is_active === 1 || this.formEdit.is_active === true
+          is_active: Number(this.formEdit.is_active),
+          // Preservar la imagen actual si no hay una nueva
+          image_url: this.formEdit.current_image_url
         };
 
         await subcategoryService.updateSubcategory(this.subcategory.id, payload);
 
+        // Si hay nueva imagen, subirla
+        if (this.selectedImageEdit) {
+          await subcategoryService.uploadSubcategoryImage(this.subcategory.id, this.selectedImageEdit);
+        }
+
         // Cerrar modal inmediatamente
-        this.$emit('saved');
+        this.$emit('success');
         this.closeModalEdit();
 
       } catch (err) {
@@ -346,6 +515,16 @@ export default {
             }
             modal.hide();
           }
+        } else {
+          // Cerrar todos los modales abiertos
+          const modalElements = document.querySelectorAll('.modal.show');
+          modalElements.forEach(modalElement => {
+            let modal = window.bootstrap.Modal.getInstance(modalElement);
+            if (!modal) {
+              modal = new window.bootstrap.Modal(modalElement);
+            }
+            modal.hide();
+          });
         }
       }
 
@@ -365,11 +544,10 @@ export default {
     resetFormAdd() {
       this.form = {
         name: '',
-        description: '',
         category_id: '',
-        image_url: '',
         is_active: 1
       };
+      this.clearImage();
       this.error = null;
       this.success = null;
     },
@@ -377,11 +555,11 @@ export default {
     resetFormEdit() {
       this.formEdit = {
         name: '',
-        description: '',
         category_id: '',
-        image_url: '',
-        is_active: 1
+        is_active: 1,
+        current_image_url: null
       };
+      this.clearImageEdit();
       this.errorEdit = null;
       this.successEdit = null;
     }

@@ -5,7 +5,7 @@
 import axios from 'axios';
 
 // Configuración base
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 
 // Crear instancia de axios
 const apiClient = axios.create({
@@ -315,6 +315,23 @@ export const categoryService = {
     return response.data;
   },
 
+  async uploadCategoryImage(id, file) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await apiClient.post(`/categories/${id}/image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+
+  async deleteCategoryImage(id) {
+    const response = await apiClient.delete(`/categories/${id}/image`);
+    return response.data;
+  },
+
   async getStats() {
     const response = await apiClient.get('/categories/stats');
     return response.data;
@@ -357,6 +374,23 @@ export const subcategoryService = {
     return response.data;
   },
 
+  async uploadSubcategoryImage(id, file) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await apiClient.post(`/subcategories/${id}/image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+
+  async deleteSubcategoryImage(id) {
+    const response = await apiClient.delete(`/subcategories/${id}/image`);
+    return response.data;
+  },
+
   async getStats() {
     const response = await apiClient.get('/subcategories/stats');
     return response.data;
@@ -395,6 +429,22 @@ export const brandService = {
 
   async deleteBrand(id) {
     const response = await apiClient.delete(`/brands/${id}`);
+    return response.data;
+  },
+
+  async uploadBrandLogo(id, imageFile) {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    const response = await apiClient.post(`/brands/${id}/logo`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+
+  async deleteBrandLogo(id) {
+    const response = await apiClient.delete(`/brands/${id}/logo`);
     return response.data;
   },
 
@@ -472,6 +522,43 @@ export const supplierReportService = {
 
   async getCompanyInfo() {
     const response = await apiClient.get('/supplier-reports/company-info');
+    return response.data;
+  }
+};
+
+// ===================================================================
+// SERVICIO DE BANNERS
+// ===================================================================
+
+export const bannerService = {
+  async getBanners() {
+    const response = await apiClient.get('/banners');
+    return response.data;
+  },
+
+  async getActiveBanners() {
+    const response = await apiClient.get('/banners/active');
+    return response.data;
+  },
+
+  async uploadBannerImage(id, file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await apiClient.post(`/banners/${id}/image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+
+  async deleteBannerImage(id) {
+    const response = await apiClient.delete(`/banners/${id}/image`);
+    return response.data;
+  },
+
+  async updateBanners(banners) {
+    const response = await apiClient.put('/banners', { banners });
     return response.data;
   }
 };

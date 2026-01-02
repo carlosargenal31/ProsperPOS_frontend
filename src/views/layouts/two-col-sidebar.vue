@@ -96,9 +96,9 @@
                                 <li><router-link to="/inventory/sub-categories"><span>Sub Category</span></router-link></li>
                                 <li><router-link to="/inventory/brand-list"><span>Brands</span></router-link></li>
                                 <li><router-link to="/inventory/units"><span>Units</span></router-link></li>
+                                <li><router-link to="/inventory/barcode"><span>Print Barcode</span></router-link></li>
                                 <li><router-link to="/inventory/varriant-attributes"><span>Variant Attributes</span></router-link></li>
                                 <li><router-link to="/inventory/warranty"><span>Warranties</span></router-link></li>
-                                <li><router-link to="/inventory/barcode"><span>Print Barcode</span></router-link></li>
                                 <li><router-link to="/inventory/qrcode"><span>Print QR Code</span></router-link></li>
                             </ul>
                         </div>

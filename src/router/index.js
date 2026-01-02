@@ -217,7 +217,7 @@ const routes = [
       { path: "units", component: () => import('@/views/pages/inventory/units-list.vue') },
       { path: "varriant-attributes", component: () => import('@/views/pages/inventory/varriant-attributes.vue') },
       { path: "warranty", component: () => import('@/views/pages/inventory/pos-warranty.vue') },
-      { path: "barcode", component: () => import('@/views/pages/inventory/pos-barcode.vue') },
+      { path: "barcode", component: () => import('@/views/pages/inventory/barcodes.vue') },
       { path: "qrcode", component: () => import('@/views/pages/inventory/pos-qrcode.vue') },
       { path: "product-details", component: () => import('@/views/pages/inventory/product-details.vue') },
       { path: "cargo-descargo", name: "cargo-descargo-list", component: () => import('@/views/pages/inventory/cargo-descargo-list.vue') },
@@ -746,6 +746,39 @@ const routes = [
     path: '/shop/orders',
     name: 'shop-orders',
     component: () => import('@/views/shop/orders.vue')
+  },
+  // ===================================================================
+  // RUTAS DE GESTIÓN DE TIENDA ONLINE
+  // ===================================================================
+  {
+    path: '/tienda-online',
+    component: () => import('@/views/pages/tienda-online/tienda-online-layout.vue'),
+    children: [
+      {
+        path: '',
+        redirect: '/tienda-online/categorias'
+      },
+      {
+        path: 'categorias',
+        name: 'tienda-online-categorias',
+        component: () => import('@/views/pages/tienda-online/categorias.vue')
+      },
+      {
+        path: 'banner',
+        name: 'tienda-online-banner',
+        component: () => import('@/views/pages/tienda-online/banner.vue')
+      },
+      {
+        path: 'destacados',
+        name: 'tienda-online-destacados',
+        component: () => import('@/views/pages/tienda-online/destacados.vue')
+      },
+      {
+        path: 'configuracion',
+        name: 'tienda-online-configuracion',
+        component: () => import('@/views/pages/tienda-online/configuracion.vue')
+      }
+    ]
   },
   // Legacy routes for backward compatibility
   {

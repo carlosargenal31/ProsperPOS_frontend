@@ -12,6 +12,8 @@ import FlagIcon from "vue-flag-icon";
 import VueEasyLightbox from "vue-easy-lightbox"
 import VueSweetalert2 from 'vue-sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 
 /********* Layout component**********/
 import Header from "@/views/layouts/layouts-header.vue";
@@ -357,5 +359,6 @@ app.use(VueApexCharts);
 app.use(FlagIcon);
 app.use(VueEasyLightbox);
 app.use(VueSweetalert2);
+app.use(Toast);
 app.use(Antd);
 app.use(router).mount('#app');

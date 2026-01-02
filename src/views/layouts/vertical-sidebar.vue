@@ -199,6 +199,7 @@ export default {
               '/inventory-report/inventory-report': 'reports',
               '/inventory-report/stock-history': 'reports',
               '/inventory-report/sold-stock': 'reports',
+              '/inventory/barcode': 'inventory',
           };
 
           return moduleMapping[route] || null;

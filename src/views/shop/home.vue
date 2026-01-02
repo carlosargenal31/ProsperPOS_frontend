@@ -287,28 +287,7 @@ export default {
       }
     ]
 
-    const featuredCategories = [
-      {
-        id: 1,
-        name: 'Muebles de baño',
-        image: '/placeholder-bathroom.jpg'
-      },
-      {
-        id: 2,
-        name: 'Pisos y Muros',
-        image: '/placeholder-floors.jpg'
-      },
-      {
-        id: 3,
-        name: 'Baños',
-        image: '/placeholder-bath.jpg'
-      },
-      {
-        id: 4,
-        name: 'Adhesivos y repellos',
-        image: '/placeholder-adhesives.jpg'
-      }
-    ]
+    const featuredCategories = ref([])
 
     const ambientes = [
       {
@@ -376,6 +355,23 @@ export default {
       cartCount.value = cart.reduce((sum, item) => sum + item.quantity, 0)
     }
 
+    const loadFeaturedCategories = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/v1/ecommerce/categories')
+        const data = await response.json()
+        if (data.success) {
+          // Tomar solo las primeras 4 categorías
+          featuredCategories.value = (data.data || []).slice(0, 4).map(cat => ({
+            id: cat.id,
+            name: cat.name,
+            image: cat.image_url || '/placeholder-category.jpg'
+          }))
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error)
+      }
+    }
+
     const loadFeaturedProducts = async () => {
       try {
         const response = await fetch('http://localhost:3000/api/v1/ecommerce/products?limit=8&featured=true')
@@ -397,6 +393,7 @@ export default {
 
     onMounted(() => {
       loadCartCount()
+      loadFeaturedCategories()
       loadFeaturedProducts()
 
       // Auto-advance carousel
@@ -551,7 +548,7 @@ export default {
 /* Hero Section */
 .hero-section {
   position: relative;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #FFB84D 0%, #FF9F43 100%);
   min-height: 600px;
   overflow: hidden;
 }
@@ -570,7 +567,7 @@ export default {
   height: 100%;
   opacity: 0;
   transition: opacity 1s ease-in-out;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #FFB84D 0%, #FF9F43 100%);
 }
 
 .hero-slide.active {
@@ -585,7 +582,7 @@ export default {
 }
 
 .hero-text {
-  color: white;
+  color: #2d3436;
 }
 
 .hero-title {
@@ -594,18 +591,20 @@ export default {
   margin-bottom: 1.5rem;
   letter-spacing: 2px;
   line-height: 1.1;
+  color: #2d3436;
 }
 
 .hero-subtitle {
   font-size: 1.5rem;
   margin-bottom: 2rem;
-  opacity: 0.95;
+  opacity: 0.85;
   font-weight: 300;
+  color: #2d3436;
 }
 
 .btn-hero {
   background: white;
-  color: #667eea;
+  color: #FF9F43;
   padding: 1rem 3rem;
   border-radius: 50px;
   text-decoration: none;
@@ -617,8 +616,9 @@ export default {
 }
 
 .btn-hero:hover {
-  background: transparent;
+  background: #2d3436;
   color: white;
+  border-color: #2d3436;
   transform: translateY(-3px);
   box-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }

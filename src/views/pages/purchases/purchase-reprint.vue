@@ -424,7 +424,15 @@ export default {
     async selectDocument(doc) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`/api/v1/purchase-reprint/${this.selectedDocumentType}/${doc.id}`, {
+        // Codificar el tipo de documento para manejar espacios correctamente
+        const encodedDocType = encodeURIComponent(this.selectedDocumentType);
+        console.log('Requesting document details:', {
+          documentType: this.selectedDocumentType,
+          encodedDocType,
+          docId: doc.id
+        });
+
+        const response = await axios.get(`/api/v1/purchase-reprint/${encodedDocType}/${doc.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -434,7 +442,8 @@ export default {
         }
       } catch (error) {
         console.error('Error loading document details:', error);
-        alert('Error al cargar los detalles del documento');
+        console.error('Error response:', error.response?.data);
+        alert('Error al cargar los detalles del documento: ' + (error.response?.data?.message || error.message));
       }
     },
     closeDocumentModal() {

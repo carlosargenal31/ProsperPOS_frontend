@@ -24,8 +24,22 @@
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label">URL del Logo</label>
-                  <input type="url" class="form-control" v-model="formAdd.logo_url" placeholder="https://ejemplo.com/logo.png" />
+                  <label class="form-label">Logo</label>
+                  <input
+                    type="file"
+                    class="form-control"
+                    @change="handleImageSelect"
+                    accept="image/jpeg,image/png,image/jpg,image/webp"
+                  />
+                  <small class="text-muted">Formatos permitidos: JPEG, PNG, WEBP (Máx. 5MB)</small>
+
+                  <!-- Vista previa -->
+                  <div v-if="imagePreview" class="mt-2">
+                    <img :src="imagePreview" alt="Vista previa" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" />
+                    <button type="button" class="btn btn-sm btn-danger ms-2" @click="clearImage">
+                      <i class="ti ti-x"></i> Eliminar
+                    </button>
+                  </div>
                 </div>
 
                 <div class="mb-3">
@@ -76,8 +90,32 @@
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label">URL del Logo</label>
-                  <input type="url" class="form-control" v-model="formEdit.logo_url" />
+                  <label class="form-label">Logo</label>
+
+                  <!-- Logo actual -->
+                  <div v-if="formEdit.current_logo_url && !imagePreviewEdit" class="mb-2">
+                    <img :src="formEdit.current_logo_url" alt="Logo actual" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" />
+                    <button type="button" class="btn btn-sm btn-danger ms-2" @click="deleteCurrentLogo">
+                      <i class="ti ti-trash"></i> Eliminar logo actual
+                    </button>
+                  </div>
+
+                  <!-- Subir nuevo logo -->
+                  <input
+                    type="file"
+                    class="form-control"
+                    @change="handleImageSelectEdit"
+                    accept="image/jpeg,image/png,image/jpg,image/webp"
+                  />
+                  <small class="text-muted">Formatos permitidos: JPEG, PNG, WEBP (Máx. 5MB)</small>
+
+                  <!-- Vista previa de nuevo logo -->
+                  <div v-if="imagePreviewEdit" class="mt-2">
+                    <img :src="imagePreviewEdit" alt="Vista previa" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" />
+                    <button type="button" class="btn btn-sm btn-danger ms-2" @click="clearImageEdit">
+                      <i class="ti ti-x"></i> Cancelar
+                    </button>
+                  </div>
                 </div>
 
                 <div class="mb-3">
@@ -132,9 +170,11 @@
                   <label class="form-label fw-bold">Nombre:</label>
                   <p class="form-control-plaintext">{{ brand.name || '-' }}</p>
                 </div>
-                <div class="col-lg-6 mb-3">
-                  <label class="form-label fw-bold">URL del Logo:</label>
-                  <p class="form-control-plaintext">{{ brand.logo_url || '-' }}</p>
+                <div class="col-lg-12 mb-3" v-if="brand.logo_url">
+                  <label class="form-label fw-bold">Logo:</label>
+                  <div>
+                    <img :src="brand.logo_url" alt="Logo de marca" class="img-thumbnail" style="max-width: 300px; max-height: 300px;" />
+                  </div>
                 </div>
                 <div class="col-lg-6 mb-3">
                   <label class="form-label fw-bold">Productos:</label>
@@ -217,15 +257,20 @@ export default {
     return {
       formAdd: {
         name: '',
-        logo_url: '',
         is_active: true
       },
       formEdit: {
         id: null,
         name: '',
-        logo_url: '',
-        is_active: true
+        is_active: true,
+        current_logo_url: null
       },
+      // Imágenes
+      selectedImage: null,
+      imagePreview: null,
+      selectedImageEdit: null,
+      imagePreviewEdit: null,
+      // Estados
       saving: false,
       updating: false,
       deleting: false,
@@ -243,12 +288,15 @@ export default {
           this.formEdit = {
             id: newBrand.id,
             name: newBrand.name || '',
-            logo_url: newBrand.logo_url || '',
-            is_active: newBrand.is_active !== undefined ? Boolean(newBrand.is_active) : true
+            is_active: newBrand.is_active !== undefined ? Boolean(newBrand.is_active) : true,
+            current_logo_url: newBrand.logo_url || null
           };
+          this.selectedImageEdit = null;
+          this.imagePreviewEdit = null;
         }
       },
-      immediate: true
+      immediate: true,
+      deep: true
     }
   },
   methods: {
@@ -258,7 +306,19 @@ export default {
       this.successAdd = null;
 
       try {
-        await brandService.createBrand(this.formAdd);
+        const payload = {
+          name: this.formAdd.name,
+          is_active: this.formAdd.is_active
+        };
+
+        const response = await brandService.createBrand(payload);
+        const brandId = response.data.id;
+
+        // Si hay imagen, subirla
+        if (this.selectedImage && brandId) {
+          await brandService.uploadBrandLogo(brandId, this.selectedImage);
+        }
+
         this.successAdd = `La marca "${this.formAdd.name}" ha sido creada exitosamente`;
 
         setTimeout(() => {
@@ -279,7 +339,19 @@ export default {
       this.successEdit = null;
 
       try {
-        await brandService.updateBrand(this.formEdit.id, this.formEdit);
+        const payload = {
+          name: this.formEdit.name,
+          is_active: this.formEdit.is_active,
+          logo_url: this.formEdit.current_logo_url
+        };
+
+        await brandService.updateBrand(this.formEdit.id, payload);
+
+        // Si hay nueva imagen, subirla
+        if (this.selectedImageEdit) {
+          await brandService.uploadBrandLogo(this.formEdit.id, this.selectedImageEdit);
+        }
+
         this.successEdit = `La marca "${this.formEdit.name}" ha sido actualizada exitosamente`;
 
         setTimeout(() => {
@@ -310,6 +382,80 @@ export default {
         this.deleteError = err.response?.data?.message || 'Error al eliminar la marca';
       } finally {
         this.deleting = false;
+      }
+    },
+
+    // Manejar selección de imagen (crear)
+    handleImageSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Validar tamaño (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          this.errorAdd = 'La imagen no puede superar los 5MB';
+          event.target.value = '';
+          return;
+        }
+
+        this.selectedImage = file;
+
+        // Crear vista previa
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.imagePreview = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+
+    // Limpiar imagen seleccionada (crear)
+    clearImage() {
+      this.selectedImage = null;
+      this.imagePreview = null;
+      const fileInput = document.querySelector('#add-brand input[type="file"]');
+      if (fileInput) fileInput.value = '';
+    },
+
+    // Manejar selección de imagen (editar)
+    handleImageSelectEdit(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Validar tamaño (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          this.errorEdit = 'La imagen no puede superar los 5MB';
+          event.target.value = '';
+          return;
+        }
+
+        this.selectedImageEdit = file;
+
+        // Crear vista previa
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.imagePreviewEdit = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+
+    // Limpiar imagen seleccionada (editar)
+    clearImageEdit() {
+      this.selectedImageEdit = null;
+      this.imagePreviewEdit = null;
+      const fileInput = document.querySelector('#edit-brand input[type="file"]');
+      if (fileInput) fileInput.value = '';
+    },
+
+    // Eliminar logo actual
+    async deleteCurrentLogo() {
+      if (!this.brand) return;
+
+      try {
+        await brandService.deleteBrandLogo(this.brand.id);
+        this.formEdit.current_logo_url = null;
+        this.successEdit = 'Logo eliminado exitosamente';
+        setTimeout(() => this.successEdit = null, 3000);
+      } catch (err) {
+        this.errorEdit = err.response?.data?.message || 'Error al eliminar el logo';
       }
     },
 
@@ -380,9 +526,9 @@ export default {
     resetFormAdd() {
       this.formAdd = {
         name: '',
-        logo_url: '',
         is_active: true
       };
+      this.clearImage();
       this.errorAdd = null;
       this.successAdd = null;
     },
@@ -391,9 +537,10 @@ export default {
       this.formEdit = {
         id: null,
         name: '',
-        logo_url: '',
-        is_active: true
+        is_active: true,
+        current_logo_url: null
       };
+      this.clearImageEdit();
       this.errorEdit = null;
       this.successEdit = null;
     }

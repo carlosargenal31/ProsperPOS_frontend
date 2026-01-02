@@ -383,8 +383,8 @@
       {
         "menuValue": "Tienda en Línea",
         "icon": "ti ti-shopping-cart",
-        "route": "/ecommerce/catalog",
-        "active_link": "/ecommerce",
+        "route": "/tienda-online",
+        "active_link": "/tienda-online",
         "hasSubRoute": false,
         "showSubRoute": false
       }
