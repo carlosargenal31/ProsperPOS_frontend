@@ -62,6 +62,15 @@ export const authService = {
     return response.data
   },
 
+  async googleLogin(googleToken) {
+    const response = await axios.post(`${API_URL}/auth/google`, { token: googleToken })
+    if (response.data.success && response.data.data.token) {
+      localStorage.setItem('ecommerce_token', response.data.data.token)
+      localStorage.setItem('ecommerce_customer', JSON.stringify(response.data.data.user))
+    }
+    return response.data
+  },
+
   async getProfile() {
     const response = await ecommerceApi.get('/auth/profile')
     return response.data

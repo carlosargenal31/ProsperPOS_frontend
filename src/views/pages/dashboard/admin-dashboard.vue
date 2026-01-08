@@ -511,7 +511,6 @@ export default {
     });
 
     const topProducts = ref([]);
-    const lowStockProducts = ref([]);
     const topCategories = ref([]);
     const topCustomers = ref([]);
     let dateFrom = ref(null);
@@ -835,17 +834,6 @@ export default {
       showTopCategoriesDropdown.value = false;
     };
 
-    // Cargar productos con bajo stock
-    const loadLowStockProducts = async () => {
-      try {
-        const response = await DashboardService.getLowStockProducts({ limit: 5 });
-        if (response.success) {
-          lowStockProducts.value = response.data;
-        }
-      } catch (error) {
-        console.error('Error al cargar productos con bajo stock:', error);
-      }
-    };
 
     // Cargar mejores clientes
     const loadTopCustomers = async () => {
@@ -982,7 +970,6 @@ export default {
         loadOverallInfo(),
         loadChartData(savedPeriod),
         loadTopProducts(savedTopProductsPeriod),
-        loadLowStockProducts(),
         loadTopCategories(savedTopCategoriesPeriod),
         loadTopCustomers(),
         loadCustomersOverview(savedCustomersPeriod)
@@ -1004,7 +991,6 @@ export default {
       chartData,
       salesDaychart,
       topProducts,
-      lowStockProducts,
       topCategories,
       topCustomers,
       customersOverview,

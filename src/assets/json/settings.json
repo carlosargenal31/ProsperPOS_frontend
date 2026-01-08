@@ -3,11 +3,11 @@
       "icon": "settings",
       "title": "Ajustes Generales",
       "page": "settings",
-      "subMenu": [    
-{ "title": "Ajustes de Factura", "routes": "/website-settings/invoice-settings" },
+      "subMenu": [
+{ "title": "Ajustes de Empresa", "routes": "/website-settings/companies" },
         { "title": "Seguridad", "routes": "/settings/security-settings" },
         { "title": "Resoluciones", "routes": "/financial-settings/resolution-settings" }
-      
+
       ]
     },
     {

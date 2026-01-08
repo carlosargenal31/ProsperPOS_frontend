@@ -58,19 +58,6 @@ const DashboardService = {
   },
 
   /**
-   * Obtener productos con bajo stock
-   */
-  async getLowStockProducts(params = { limit: 5 }) {
-    try {
-      const response = await api.get('/dashboard/low-stock-products', { params });
-      return response.data;
-    } catch (error) {
-      console.error('Error al obtener productos con bajo stock:', error);
-      throw error;
-    }
-  },
-
-  /**
    * Obtener ventas recientes
    */
   async getRecentSales(params = { limit: 5, period: 'week' }) {

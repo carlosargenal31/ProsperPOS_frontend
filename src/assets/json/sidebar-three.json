@@ -880,9 +880,9 @@
         "activeRoute": "users",
         "subMenus": [
           {
-            "menuValue": "Invoice",
-            "route": "/app-settings/invoice-settings",
-            "active_link": "/app-settings/invoice-settings",
+            "menuValue": "Ajustes de Empresa",
+            "route": "/website-settings/companies",
+            "active_link": "/website-settings/companies",
             "hasSubRoute": false,
             "showSubRoute": false
           },

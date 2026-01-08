@@ -225,7 +225,7 @@
                 <template v-if="column.key === 'image'">
                   <a href="javascript:void(0);" class="avatar avatar-md">
                     <img
-                      :src="record.image || getDefaultImage()"
+                      :src="getImageUrl(record.image)"
                       alt="producto"
                       @error="handleImageError"
                     />
@@ -1013,7 +1013,7 @@ export default {
     };
 
     const viewProduct = (id) => {
-      window.location.href = `/inventory/product-details?id=${id}`;
+      router.push({ name: 'ViewProduct', params: { id } });
     };
 
     const editProduct = (id) => {
@@ -1373,6 +1373,12 @@ export default {
       return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNMjAgMTBDMTUgMTAgMTEgMTQgMTEgMTlDMTEgMjQgMTUgMjggMjAgMjhDMjUgMjggMjkgMjQgMjkgMTlDMjkgMTQgMjUgMTAgMjAgMTBaTTIwIDI2QzE2IDI2IDEzIDIzIDEzIDE5QzEzIDE1IDE2IDEyIDIwIDEyQzI0IDEyIDI3IDE1IDI3IDE5QzI3IDIzIDI0IDI2IDIwIDI2WiIgZmlsbD0iIzlDQTNCMCIvPjxwYXRoIGQ9Ik0yNyAzMEgxM0MxMiAzMCAxMSAzMSAxMSAzMlYzM0MxMSAzNCAxMiAzNSAxMyAzNUgyN0MyOCAzNSAyOSAzNCAyOSAzM1YzMkMyOSAzMSAyOCAzMCAyNyAzMFoiIGZpbGw9IiM5Q0EzQjAiLz48L3N2Zz4=';
     };
 
+    const getImageUrl = (imageUrl) => {
+      if (!imageUrl) return getDefaultImage();
+      // Agregar timestamp para evitar caché
+      return `${imageUrl}?t=${Date.now()}`;
+    };
+
     const handleImageError = (event) => {
       // Prevenir loop infinito: solo intentar una vez
       if (!event.target.dataset.errorHandled) {
@@ -1468,6 +1474,7 @@ export default {
       getBrandName,
       getStatusLabel,
       getDefaultImage,
+      getImageUrl,
       handleImageError
     };
   }

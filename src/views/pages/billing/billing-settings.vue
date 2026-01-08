@@ -3,7 +3,7 @@
     <div class="settings-header">
       <h1>
         <i class="ti ti-settings"></i>
-        Configuración de Facturación
+        Ajustes de Empresa
       </h1>
       <button @click="saveSettings" class="btn-save" :disabled="loading">
         <i class="ti ti-check"></i>
@@ -186,6 +186,43 @@
         </div>
       </div>
 
+      <!-- Company Logo -->
+      <div class="settings-card">
+        <h3>
+          <i class="ti ti-photo"></i>
+          Logo de la Empresa
+        </h3>
+        <div class="form-group full-width">
+          <label>Logo de la Empresa</label>
+          <div class="logo-upload-container">
+            <div v-if="settings.company_logo_path || logoPreview" class="logo-preview">
+              <img :src="logoPreview || settings.company_logo_path" alt="Logo de la empresa" />
+              <button type="button" @click="removeLogo" class="btn-remove-logo">
+                <i class="ti ti-trash"></i>
+              </button>
+            </div>
+            <div v-else class="logo-placeholder">
+              <i class="ti ti-photo"></i>
+              <p>Sin logo</p>
+            </div>
+            <div class="logo-upload-actions">
+              <input
+                ref="logoInput"
+                type="file"
+                accept="image/*"
+                @change="handleLogoUpload"
+                style="display: none"
+              />
+              <button type="button" @click="logoInput.click()" class="btn-upload" :disabled="uploading">
+                <i class="ti ti-upload"></i>
+                {{ uploading ? 'Subiendo...' : 'Subir Logo' }}
+              </button>
+              <small>Formatos: JPG, PNG, GIF. Tamaño máximo: 2MB</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Display Options -->
       <div class="settings-card">
         <h3>
@@ -291,6 +328,7 @@ const settings = ref({
   company_phone: '',
   company_email: '',
   company_website: '',
+  company_logo_path: '',
   invoice_prefix: 'FAC',
   last_invoice_number: 0,
   invoice_number_length: 6,
@@ -308,6 +346,9 @@ const settings = ref({
 });
 
 const loading = ref(false);
+const uploading = ref(false);
+const logoPreview = ref(null);
+const logoInput = ref(null);
 
 const loadSettings = async () => {
   loading.value = true;
@@ -333,6 +374,78 @@ const saveSettings = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const handleLogoUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Validar tipo de archivo
+  if (!file.type.startsWith('image/')) {
+    Swal.fire('Error', 'Por favor seleccione un archivo de imagen válido', 'error');
+    return;
+  }
+
+  // Validar tamaño (2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    Swal.fire('Error', 'La imagen no debe superar los 2MB', 'error');
+    return;
+  }
+
+  uploading.value = true;
+
+  try {
+    // Crear preview local
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      logoPreview.value = e.target.result;
+    };
+    reader.readAsDataURL(file);
+
+    // Subir a Google Cloud Storage
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', 'company-logos');
+
+    const response = await axios.post('/api/v1/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    // Actualizar la configuración con la nueva ruta
+    settings.value.company_logo_path = response.data.data.url;
+
+    Swal.fire('¡Éxito!', 'Logo subido correctamente', 'success');
+  } catch (error) {
+    console.error('Error uploading logo:', error);
+    Swal.fire('Error', error.response?.data?.message || 'Error al subir el logo', 'error');
+    logoPreview.value = null;
+  } finally {
+    uploading.value = false;
+  }
+};
+
+const removeLogo = () => {
+  Swal.fire({
+    title: '¿Está seguro?',
+    text: 'Se eliminará el logo de la empresa',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      settings.value.company_logo_path = '';
+      logoPreview.value = null;
+      if (logoInput.value) {
+        logoInput.value.value = '';
+      }
+      Swal.fire('Eliminado', 'El logo ha sido eliminado', 'success');
+    }
+  });
 };
 
 onMounted(() => {
@@ -509,5 +622,104 @@ small {
 .checkbox-label span {
   font-weight: 500;
   color: #374151;
+}
+
+.logo-upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.logo-preview {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f9fafb;
+}
+
+.logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 1rem;
+}
+
+.btn-remove-logo {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-remove-logo:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.logo-placeholder {
+  width: 200px;
+  height: 200px;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #9ca3af;
+  background: #f9fafb;
+}
+
+.logo-placeholder i {
+  font-size: 3rem;
+}
+
+.logo-placeholder p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.logo-upload-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.btn-upload {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+  width: fit-content;
+}
+
+.btn-upload:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.btn-upload:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

@@ -23,8 +23,12 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      localStorage.clear();
-      router.push('/sign-in');
+      // Solo limpiar localStorage y redirigir si NO estamos en la página de login
+      const currentPath = router.currentRoute.value.path;
+      if (currentPath !== '/' && !currentPath.includes('sign-in')) {
+        localStorage.clear();
+        router.push('/');
+      }
     }
     return Promise.reject(error);
   }

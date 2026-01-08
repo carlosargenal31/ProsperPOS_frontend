@@ -107,6 +107,7 @@ const routes = [
       { path: "language-settings-web", component: () => import('@/views/pages/settings/website-settings/language-settings-web.vue') },
       { path: "invoice-settings", component: () => import('@/views/pages/settings/website-settings/invoice-settings.vue') },
       { path: "invoice-template", component: () => import('@/views/pages/settings/website-settings/invoice-template.vue') },
+      { path: "companies", component: () => import('@/views/pages/settings/website-settings/companies-list.vue') },
     ]
   },
   {
@@ -207,6 +208,7 @@ const routes = [
       { path: "product-list", component: () => import('@/views/pages/inventory/product-list/product-list.vue') },
       { path: "add-product", component: () => import('@/views/pages/inventory/add-product.vue') },
       { path: "edit-product/:id?", name: "EditProduct", component: () => import('@/views/pages/inventory/edit-product.vue') },
+      { path: "view-product/:id", name: "ViewProduct", component: () => import('@/views/pages/inventory/view-product.vue') },
       { path: "expired-products", component: () => import('@/views/pages/inventory/expired-products.vue') },
       { path: "low-stocks", component: () => import('@/views/pages/inventory/low-stocks/low-stocks.vue') },
       { path: "category-list", component: () => import('@/views/pages/inventory/category-list.vue') },
@@ -804,6 +806,10 @@ const routes = [
   {
     path: '/ecommerce/orders',
     redirect: '/shop/orders'
+  },
+  {
+    path: '/ecommerce/customers',
+    redirect: '/people/pos-customers'
   }
 ];
 

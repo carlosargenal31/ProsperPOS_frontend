@@ -27,7 +27,7 @@
             <settings-sidebar></settings-sidebar>
             <div class="card flex-fill mb-0">
               <div class="card-header">
-                <h4 class="fs-18 fw-bold">Ajustes de Factura</h4>
+                <h4 class="fs-18 fw-bold">Ajustes de Empresa</h4>
               </div>
               <div class="card-body">
                 <form @submit.prevent="submitForm">
@@ -164,19 +164,19 @@
                     <div class="row">
                       <div class="col-md-6">
                         <div class="mb-3">
-                          <label class="form-label">Timezone</label>
-                          <p class="text-muted small">Select Time zone in website</p>
+                          <label class="form-label">Zona Horaria</label>
+                          <p class="text-muted small">Seleccionar zona horaria del sitio web</p>
                           <vue-select
                             :options="timezones"
                             v-model="settings.timezone"
-                            placeholder="Seleccionar timezone"
+                            placeholder="Seleccionar zona horaria"
                           />
                         </div>
                       </div>
                       <div class="col-md-6">
                         <div class="mb-3">
-                          <label class="form-label">Date format</label>
-                          <p class="text-muted small">Select date format to display in website</p>
+                          <label class="form-label">Formato de Fecha</label>
+                          <p class="text-muted small">Seleccionar formato de fecha para mostrar en el sitio web</p>
                           <vue-select
                             :options="dateFormats"
                             v-model="settings.date_format"
@@ -186,8 +186,8 @@
                       </div>
                       <div class="col-md-4">
                         <div class="mb-3">
-                          <label class="form-label">Time Format</label>
-                          <p class="text-muted small">Select time format to display in website</p>
+                          <label class="form-label">Formato de Hora</label>
+                          <p class="text-muted small">Seleccionar formato de hora para mostrar en el sitio web</p>
                           <vue-select
                             :options="timeFormats"
                             v-model="settings.time_format"
@@ -197,15 +197,15 @@
                       </div>
                       <div class="col-md-4">
                         <div class="mb-3">
-                          <label class="form-label">Financial Year</label>
-                          <p class="text-muted small">Select year for finance</p>
+                          <label class="form-label">Año Fiscal</label>
+                          <p class="text-muted small">Seleccionar año para finanzas</p>
                           <input type="number" class="form-control" v-model.number="settings.financial_year" min="2020" max="2030" />
                         </div>
                       </div>
                       <div class="col-md-4">
                         <div class="mb-3">
-                          <label class="form-label">Starting Month</label>
-                          <p class="text-muted small">Select starting month to display</p>
+                          <label class="form-label">Mes de Inicio</label>
+                          <p class="text-muted small">Seleccionar mes de inicio para mostrar</p>
                           <vue-select
                             :options="months"
                             v-model="settings.starting_month"
@@ -382,20 +382,20 @@ export default {
         { label: "2025-07-22", value: "YYYY-MM-DD" }
       ],
       timeFormats: [
-        { label: "12 Hours", value: "12" },
-        { label: "24 Hours", value: "24" }
+        { label: "12 Horas", value: "12" },
+        { label: "24 Horas", value: "24" }
       ],
       months: [
         { label: "Enero", value: 1 },
         { label: "Febrero", value: 2 },
         { label: "Marzo", value: 3 },
         { label: "Abril", value: 4 },
-        { label: "May", value: 5 },
-        { label: "June", value: 6 },
-        { label: "July", value: 7 },
-        { label: "August", value: 8 },
-        { label: "September", value: 9 },
-        { label: "October", value: 10 },
+        { label: "Mayo", value: 5 },
+        { label: "Junio", value: 6 },
+        { label: "Julio", value: 7 },
+        { label: "Agosto", value: 8 },
+        { label: "Septiembre", value: 9 },
+        { label: "Octubre", value: 10 },
         { label: "Noviembre", value: 11 },
         { label: "Diciembre", value: 12 }
       ]
@@ -408,14 +408,37 @@ export default {
     async loadSettings() {
       this.loading = true;
       try {
-        const response = await api.get('/billing/settings');
+        const response = await api.get('/companies/default');
         if (response.data && response.data.data) {
-          // Merge con los datos por defecto para mantener valores si algo falla
-          this.settings = { ...this.settings, ...response.data.data };
+          // Mapear los campos de la BD al formato del componente
+          const company = response.data.data;
+          this.settings = {
+            id: company.id,
+            company_name: company.name,
+            commercial_name: company.commercial_name,
+            company_rtn: company.rtn,
+            company_address: company.address,
+            company_phone: company.phone,
+            company_email: company.email,
+            website: company.website,
+            facebook: company.facebook,
+            instagram: company.instagram,
+            whatsapp: company.whatsapp,
+            tiktok: company.tiktok,
+            country: company.country,
+            state: company.state,
+            city: company.city,
+            company_logo_path: company.logo_url,
+            timezone: company.timezone,
+            date_format: company.date_format,
+            time_format: company.time_format,
+            financial_year: company.financial_year,
+            starting_month: company.starting_month
+          };
         }
       } catch (error) {
         console.error('Error loading settings:', error);
-        // No mostrar error, usar datos por defecto
+        Swal.fire('Error', 'Error al cargar la configuración de la empresa', 'error');
       } finally {
         this.loading = false;
       }
@@ -423,7 +446,57 @@ export default {
     async submitForm() {
       this.loading = true;
       try {
-        await api.put('/billing/settings', this.settings);
+        // Limpiar los datos antes de enviar (evitar objetos anidados de vue-select)
+        const cleanSettings = { ...this.settings };
+
+        // Si timezone, country, state, city son objetos, extraer solo el value
+        if (typeof cleanSettings.timezone === 'object' && cleanSettings.timezone !== null) {
+          cleanSettings.timezone = cleanSettings.timezone.value || cleanSettings.timezone;
+        }
+        if (typeof cleanSettings.country === 'object' && cleanSettings.country !== null) {
+          cleanSettings.country = cleanSettings.country.value || cleanSettings.country;
+        }
+        if (typeof cleanSettings.state === 'object' && cleanSettings.state !== null) {
+          cleanSettings.state = cleanSettings.state.value || cleanSettings.state;
+        }
+        if (typeof cleanSettings.city === 'object' && cleanSettings.city !== null) {
+          cleanSettings.city = cleanSettings.city.value || cleanSettings.city;
+        }
+        if (typeof cleanSettings.date_format === 'object' && cleanSettings.date_format !== null) {
+          cleanSettings.date_format = cleanSettings.date_format.value || cleanSettings.date_format;
+        }
+        if (typeof cleanSettings.time_format === 'object' && cleanSettings.time_format !== null) {
+          cleanSettings.time_format = cleanSettings.time_format.value || cleanSettings.time_format;
+        }
+        if (typeof cleanSettings.starting_month === 'object' && cleanSettings.starting_month !== null) {
+          cleanSettings.starting_month = cleanSettings.starting_month.value || cleanSettings.starting_month;
+        }
+
+        // Mapear los campos al formato de la API
+        const companyData = {
+          name: cleanSettings.company_name,
+          commercial_name: cleanSettings.commercial_name,
+          rtn: cleanSettings.company_rtn,
+          address: cleanSettings.company_address,
+          phone: cleanSettings.company_phone,
+          email: cleanSettings.company_email,
+          website: cleanSettings.website,
+          facebook: cleanSettings.facebook,
+          instagram: cleanSettings.instagram,
+          whatsapp: cleanSettings.whatsapp,
+          tiktok: cleanSettings.tiktok,
+          country: cleanSettings.country,
+          state: cleanSettings.state,
+          city: cleanSettings.city,
+          logo_url: cleanSettings.company_logo_path,
+          timezone: cleanSettings.timezone,
+          date_format: cleanSettings.date_format,
+          time_format: cleanSettings.time_format,
+          financial_year: cleanSettings.financial_year,
+          starting_month: cleanSettings.starting_month
+        };
+
+        await api.put(`/companies/${cleanSettings.id}`, companyData);
         Swal.fire('¡Éxito!', 'Configuración guardada correctamente', 'success');
       } catch (error) {
         console.error('Error saving settings:', error);
@@ -432,18 +505,63 @@ export default {
         this.loading = false;
       }
     },
-    handleLogoUpload(event) {
+    async handleLogoUpload(event) {
       const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.settings.company_logo_path = e.target.result;
-        };
-        reader.readAsDataURL(file);
+      if (!file) return;
+
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        Swal.fire('Error', 'Por favor seleccione un archivo de imagen válido', 'error');
+        return;
+      }
+
+      // Validar tamaño (5MB como dice el hint)
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire('Error', 'La imagen no debe superar los 5MB', 'error');
+        return;
+      }
+
+      this.loading = true;
+
+      try {
+        // Subir a Google Cloud Storage
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'companylogos');
+
+        const response = await api.post('/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+
+        // Actualizar la configuración con la nueva ruta
+        this.settings.company_logo_path = response.data.data.url;
+
+        Swal.fire('¡Éxito!', 'Logo subido correctamente', 'success');
+      } catch (error) {
+        console.error('Error uploading logo:', error);
+        Swal.fire('Error', error.response?.data?.message || 'Error al subir el logo', 'error');
+      } finally {
+        this.loading = false;
       }
     },
     removeLogo() {
-      this.settings.company_logo_path = '';
+      Swal.fire({
+        title: '¿Está seguro?',
+        text: 'Se eliminará el logo de la empresa',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.settings.company_logo_path = '';
+          Swal.fire('Eliminado', 'El logo ha sido eliminado', 'success');
+        }
+      });
     },
     toggleHeader() {
       document.getElementById("collapse-header").classList.toggle("active");

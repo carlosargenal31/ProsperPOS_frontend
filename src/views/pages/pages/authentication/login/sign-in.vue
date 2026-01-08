@@ -154,7 +154,7 @@
 <script>
 import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import api from '@/utils/axios';
 
 export default {
   name: 'SignIn',
@@ -167,7 +167,7 @@ export default {
     const showPassword = ref(false);
     const errorMessage = ref(null);
     const successMessage = ref(null);
-    
+
     const formData = reactive({
       email: '',
       password: '',
@@ -186,14 +186,6 @@ export default {
 
     const allowRegistration = computed(() => {
       return import.meta.env.VITE_ALLOW_REGISTRATION === 'true';
-    });
-
-    // Configuración de axios
-    const api = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1',
-      headers: {
-        'Content-Type': 'application/json'
-      }
     });
 
     // Métodos
@@ -252,7 +244,7 @@ export default {
 
           // Redirigir al dashboard después de 1 segundo
           setTimeout(() => {
-            router.push('/dashboard');
+            router.push('/dashboard/admin-dashboard');
           }, 1000);
         } else {
           errorMessage.value = response.data.message || 'Error al iniciar sesión';
@@ -313,7 +305,7 @@ export default {
     // Auto-llenar en desarrollo
     if (isDevelopment.value) {
       formData.email = 'admin@prosperpos.com';
-      formData.password = 'admin123';
+      formData.password = 'Admin1234';
     }
 
     return {

@@ -35,9 +35,9 @@
         "hasSubRoute": true,
         "showSubRoute": false,
         "subRoutes": [
-          { "tittle": "Ajustes de Factura", "route": "/app-settings/invoice-settings" },
+          { "tittle": "Ajustes de Empresa", "route": "/website-settings/companies" },
           { "tittle": "POS", "route": "/app-settings/pos-settings" },
-          { "tittle": "Resoluciones", "route": "/app-settings/invoice-templates" }
+          { "tittle": "Resoluciones", "route": "/financial-settings/resolution-settings" }
         ]
       },
       {

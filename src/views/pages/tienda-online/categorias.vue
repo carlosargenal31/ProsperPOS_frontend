@@ -28,7 +28,7 @@
       <!-- Información -->
       <div class="alert alert-info mb-4">
         <i class="ti ti-info-circle me-2"></i>
-        Selecciona hasta 4 categorías para mostrar en la página principal de tu tienda online.
+        Selecciona hasta 8 categorías para mostrar en la página principal de tu tienda online.
         Asegúrate de que tengan imágenes para una mejor presentación.
       </div>
 
@@ -104,7 +104,7 @@
         <div class="card-header">
           <h5>
             <i class="ti ti-eye me-2"></i>
-            Categorías Visibles en la Tienda ({{ visibleCategories.length }}/4)
+            Categorías Visibles en la Tienda ({{ visibleCategories.length }}/8)
           </h5>
         </div>
         <div class="card-body">
@@ -196,10 +196,10 @@ export default {
         return
       }
 
-      // Validar que no haya más de 4 categorías visibles
+      // Validar que no haya más de 8 categorías visibles
       const visibleCount = categories.value.filter(c => c.show_in_ecommerce).length
-      if (visibleCount > 4) {
-        toast.warning('Solo puedes mostrar hasta 4 categorías en la tienda')
+      if (visibleCount > 8) {
+        toast.warning('Solo puedes mostrar hasta 8 categorías en la tienda')
         return
       }
 

@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <form @submit.prevent="submitForm" class="add-product-form">
+      <form @submit.prevent="submitForm" class="add-product-form" novalidate>
         <!-- Registro Rápido -->
         <div v-if="formMode === 'quick'" class="card">
           <div class="card-header bg-primary text-white">
@@ -97,7 +97,6 @@
                     valueProp="id"
                     label="name"
                     placeholder="GRUPOS"
-                    @change="loadSubcategories"
                   />
                 </div>
               </div>
@@ -128,8 +127,10 @@
                       type="number"
                       step="0.01"
                       class="form-control text-end"
-                      v-model="formData.cost"
+                      v-model.number="formData.cost"
+                      @blur="handleBlur(formData, 'cost')"
                       placeholder="Costo"
+                      min="0"
                     >
                     <span class="input-group-text">L</span>
                   </div>
@@ -145,9 +146,11 @@
                       type="number"
                       step="0.01"
                       class="form-control text-end"
-                      v-model="quickProfitPercent"
+                      v-model.number="quickProfitPercent"
+                      @blur="handleBlur(this, 'quickProfitPercent')"
                       @input="calculateQuickPrice"
                       placeholder="Utilidad"
+                      min="0"
                     >
                     <span class="input-group-text">
                       <i class="ti ti-percentage" style="cursor: pointer;" @click="toggleQuickPriceCalc"></i>
@@ -165,8 +168,10 @@
                       type="number"
                       step="0.01"
                       class="form-control text-end"
-                      v-model="formData.prices[0].total"
+                      v-model.number="formData.prices[0].total"
+                      @blur="handleBlur(formData.prices[0], 'total')"
                       placeholder="Precio Neto"
+                      min="0"
                     >
                     <span class="input-group-text">L</span>
                   </div>
@@ -398,7 +403,6 @@
                         valueProp="id"
                         label="name"
                         placeholder="Seleccione categoría"
-                        @change="loadSubcategories"
                       />
                     </div>
                   </div>
@@ -462,9 +466,11 @@
                           type="number"
                           step="0.01"
                           class="form-control"
-                          v-model="formData.cost"
+                          v-model.number="formData.cost"
+                          @blur="handleBlur(formData, 'cost')"
                           placeholder="0.00"
                           required
+                          min="0"
                         >
                       </div>
                     </div>
@@ -479,8 +485,10 @@
                           type="number"
                           step="0.01"
                           class="form-control"
-                          v-model="formData.weight"
+                          v-model.number="formData.weight"
+                          @blur="handleBlur(formData, 'weight')"
                           placeholder="0.00"
+                          min="0"
                         >
                         <span class="input-group-text">KG</span>
                       </div>
@@ -547,6 +555,80 @@
                       ></textarea>
                     </div>
                   </div>
+
+                  <!-- Sección de Atributos del Producto -->
+                  <div class="col-md-12">
+                    <hr class="my-4">
+                    <h5 class="mb-3">
+                      <i class="ti ti-palette me-2"></i>Atributos del Producto
+                    </h5>
+                  </div>
+
+                  <!-- Color -->
+                  <div class="col-md-4">
+                    <div class="mb-3">
+                      <label class="form-label">Color</label>
+                      <div class="color-selector d-flex flex-wrap gap-2 mt-2">
+                        <div
+                          v-for="colorOption in colorOptions"
+                          :key="colorOption.value"
+                          class="color-option"
+                          :class="{ 'selected': formData.color === colorOption.value }"
+                          :style="{ backgroundColor: colorOption.hex }"
+                          @click="formData.color = colorOption.value"
+                          :title="colorOption.label"
+                        >
+                          <i v-if="formData.color === colorOption.value" class="ti ti-check"></i>
+                        </div>
+                      </div>
+                      <small class="text-muted d-block mt-2" v-if="formData.color">
+                        Seleccionado: {{ getColorLabel(formData.color) }}
+                      </small>
+                    </div>
+                  </div>
+
+                  <!-- Acabado -->
+                  <div class="col-md-4">
+                    <div class="mb-3">
+                      <label class="form-label">Acabado</label>
+                      <select class="form-select" v-model="formData.acabado">
+                        <option value="">Seleccionar acabado...</option>
+                        <option value="mate">Mate</option>
+                        <option value="rustico">Rústico</option>
+                        <option value="brillante">Brillante</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Estilo (múltiple selección) -->
+                  <div class="col-md-4">
+                    <div class="mb-3">
+                      <label class="form-label">Estilo / Tipología</label>
+                      <Multiselect
+                        v-model="formData.estilo"
+                        :options="estilosOptions"
+                        mode="tags"
+                        :searchable="true"
+                        :create-option="false"
+                        :close-on-select="false"
+                        placeholder="Seleccionar estilos..."
+                      >
+                        <template v-slot:tag="{ option, handleTagRemove, disabled }">
+                          <div class="multiselect-tag is-user">
+                            {{ option.label }}
+                            <span
+                              v-if="!disabled"
+                              class="multiselect-tag-remove"
+                              @click="handleTagRemove(option, $event)"
+                            >
+                              <span class="multiselect-tag-remove-icon"></span>
+                            </span>
+                          </div>
+                        </template>
+                      </Multiselect>
+                      <small class="text-muted">Puedes seleccionar múltiples estilos</small>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -578,7 +660,8 @@
                                 type="number"
                                 step="0.01"
                                 class="form-control form-control-sm text-end"
-                                v-model="getWarehouseStock(warehouse.id).min"
+                                v-model.number="getWarehouseStock(warehouse.id).min"
+                                @blur="handleBlur(getWarehouseStock(warehouse.id), 'min')"
                               >
                             </td>
                             <td>
@@ -586,7 +669,8 @@
                                 type="number"
                                 step="0.01"
                                 class="form-control form-control-sm text-end"
-                                v-model="getWarehouseStock(warehouse.id).max"
+                                v-model.number="getWarehouseStock(warehouse.id).max"
+                                @blur="handleBlur(getWarehouseStock(warehouse.id), 'max')"
                               >
                             </td>
                           </tr>
@@ -628,8 +712,9 @@
                                   type="number"
                                   step="0.01"
                                   class="form-control text-end"
-                                  :value="formatPrice(formData.prices[i-1].profit_percentage)"
-                                  @input="e => updateProfitPercentage(i-1, e.target.value)"
+                                  v-model.number="formData.prices[i-1].profit_percentage"
+                                  @blur="handleBlur(formData.prices[i-1], 'profit_percentage')"
+                                  @input="() => updateProfitPercentage(i-1, formData.prices[i-1].profit_percentage)"
                                 >
                                 <span class="input-group-text">%</span>
                               </div>
@@ -641,8 +726,9 @@
                                   type="number"
                                   step="0.01"
                                   class="form-control text-end"
-                                  :value="formatPrice(formData.prices[i-1].net)"
-                                  @input="e => updateBruto(i-1, e.target.value)"
+                                  v-model.number="formData.prices[i-1].net"
+                                  @blur="handleBlur(formData.prices[i-1], 'net')"
+                                  @input="() => updateBruto(i-1, formData.prices[i-1].net)"
                                 >
                               </div>
                             </td>
@@ -653,8 +739,9 @@
                                   type="number"
                                   step="0.01"
                                   class="form-control text-end"
-                                  :value="formatPrice(formData.prices[i-1].total)"
-                                  @input="e => updateTotal(i-1, e.target.value)"
+                                  v-model.number="formData.prices[i-1].total"
+                                  @blur="handleBlur(formData.prices[i-1], 'total')"
+                                  @input="() => updateTotal(i-1, formData.prices[i-1].total)"
                                 >
                               </div>
                             </td>
@@ -794,13 +881,6 @@
 
               <div>
                 <button
-                  type="button"
-                  class="btn btn-warning me-2"
-                  @click="suspendProduct"
-                >
-                  <i class="ti ti-ban me-2"></i>SUSPENDER
-                </button>
-                <button
                   type="submit"
                   class="btn btn-primary"
                   :disabled="isSaving"
@@ -844,6 +924,7 @@ export default {
       formMode: 'full', // 'full' o 'quick'
       isSaving: false,
       isLoading: true,
+      isInitialLoad: true, // Bandera para controlar la carga inicial
       formData: {
         code: '',
         name: '',
@@ -869,6 +950,11 @@ export default {
         show_in_online_store: false,
         weight: null,
         is_active: true,
+
+        // Nuevos atributos del producto
+        color: '',
+        acabado: '',
+        estilo: [],
 
         // Existencias por bodega
         warehouseStock: {},
@@ -934,7 +1020,29 @@ export default {
       taxes: [],
       useConsecutive: false,
       quickProfitPercent: 0,
-      usePercentageCalc: true
+      usePercentageCalc: true,
+
+      // Opciones para el campo de estilos
+      estilosOptions: [
+        { value: 'marmoleado', label: 'Marmoleado' },
+        { value: 'piedra', label: 'Piedra' },
+        { value: 'madera', label: 'Madera' },
+        { value: 'geometrico', label: 'Geométrico' }
+      ],
+
+      // Opciones de colores con sus códigos hexadecimales
+      colorOptions: [
+        { value: 'azul', label: 'Azul', hex: '#2563eb' },
+        { value: 'beige', label: 'Beige', hex: '#d4b896' },
+        { value: 'blanco', label: 'Blanco', hex: '#ffffff' },
+        { value: 'cafe', label: 'Café', hex: '#6b3410' },
+        { value: 'gris', label: 'Gris', hex: '#6b7280' },
+        { value: 'gris_claro', label: 'Gris Claro', hex: '#d1d5db' },
+        { value: 'marron', label: 'Marrón', hex: '#92400e' },
+        { value: 'negro', label: 'Negro', hex: '#000000' },
+        { value: 'verde', label: 'Verde', hex: '#059669' },
+        { value: 'dorado', label: 'Dorado', hex: '#ffd700' }
+      ]
     };
   },
 
@@ -979,6 +1087,21 @@ export default {
   },
 
   methods: {
+    // Redondear a 2 decimales
+    roundToTwo(value) {
+      if (value === null || value === undefined || value === '') return value;
+      const num = parseFloat(value);
+      if (isNaN(num)) return value;
+      return Math.round(num * 100) / 100;
+    },
+
+    // Método helper para blur que solo actualiza si hay valor
+    handleBlur(obj, field) {
+      if (obj[field] !== null && obj[field] !== undefined && obj[field] !== '') {
+        obj[field] = this.roundToTwo(obj[field]);
+      }
+    },
+
     async loadProductData() {
       if (!this.productId) {
         this.$router.push('/inventory/product-list');
@@ -1005,7 +1128,13 @@ export default {
         this.formData.unit_id = product.unit_id;
         this.formData.show_in_online_store = product.show_in_online_store || false;
         this.formData.is_active = product.is_active !== undefined ? Boolean(product.is_active) : true;
-        this.formData.currentImageUrl = product.image || null;
+        // Agregar timestamp para evitar caché de imagen
+        this.formData.currentImageUrl = product.image ? `${product.image}?t=${Date.now()}` : null;
+
+        // Cargar nuevos atributos del producto
+        this.formData.color = product.color || '';
+        this.formData.acabado = product.acabado || '';
+        this.formData.estilo = product.estilo ? (Array.isArray(product.estilo) ? product.estilo : JSON.parse(product.estilo || '[]')) : [];
 
         // Cargar precios (el precio en BD es el bruto, sin impuesto)
         for (let i = 0; i < 6; i++) {
@@ -1029,9 +1158,9 @@ export default {
         // Recalcular totales con impuesto
         this.recalculateAllPriceTotals();
 
-        // Cargar subcategorías si hay categoría
+        // Cargar subcategorías si hay categoría (sin limpiar la subcategoría seleccionada)
         if (product.category_id) {
-          await this.loadSubcategories();
+          await this.loadSubcategories(product.category_id, false);
         }
 
         // Cargar existencias por bodega desde la tabla stock
@@ -1041,6 +1170,11 @@ export default {
         await this.loadGalleryImages();
 
         this.isLoading = false;
+
+        // Marcar que la carga inicial ha terminado (debe hacerse al final)
+        this.$nextTick(() => {
+          this.isInitialLoad = false;
+        });
       } catch (error) {
         console.error('Error loading product:', error);
         Swal.fire({
@@ -1081,15 +1215,22 @@ export default {
       }
     },
 
-    async loadSubcategories() {
-      if (!this.formData.category_id) {
-        this.subcategories = [];
+    async loadSubcategories(newCategoryId, clearSubcategory = true) {
+      // Usar el parámetro si se proporciona, sino usar formData.category_id
+      const categoryId = newCategoryId !== undefined ? newCategoryId : this.formData.category_id;
+
+      // Limpiar subcategoría seleccionada cuando cambia la categoría (solo si clearSubcategory es true)
+      if (clearSubcategory) {
         this.formData.subcategory_id = null;
+      }
+
+      if (!categoryId) {
+        this.subcategories = [];
         return;
       }
 
       try {
-        const res = await api.get(`/subcategories?category_id=${this.formData.category_id}`);
+        const res = await api.get(`/subcategories?category_id=${categoryId}`);
         this.subcategories = res.data.data || [];
       } catch (error) {
         console.error('Error loading subcategories:', error);
@@ -1187,12 +1328,12 @@ export default {
       }
 
       // Calcular precio bruto (sin impuesto)
-      price.net = cost * (1 + profit / 100);
+      price.net = this.roundToTwo(cost * (1 + profit / 100));
 
       // Calcular precio total con impuesto
       const activeTax = this.taxes.find(t => t.id === this.formData.activeTaxId);
       const taxRate = activeTax ? activeTax.rate : 0;
-      price.total = price.net * (1 + taxRate / 100);
+      price.total = this.roundToTwo(price.net * (1 + taxRate / 100));
     },
 
     // Cuando cambia el precio bruto, calcular porcentaje de utilidad y total
@@ -1203,7 +1344,7 @@ export default {
 
       if (cost > 0 && net > 0) {
         // Calcular porcentaje de utilidad
-        price.profit_percentage = ((net - cost) / cost) * 100;
+        price.profit_percentage = this.roundToTwo(((net - cost) / cost) * 100);
       } else {
         price.profit_percentage = 0;
       }
@@ -1211,7 +1352,7 @@ export default {
       // Calcular precio total con impuesto
       const activeTax = this.taxes.find(t => t.id === this.formData.activeTaxId);
       const taxRate = activeTax ? activeTax.rate : 0;
-      price.total = net * (1 + taxRate / 100);
+      price.total = this.roundToTwo(net * (1 + taxRate / 100));
     },
 
     // Cuando cambia el total venta, calcular bruto (quitando impuesto) y porcentaje de utilidad
@@ -1226,14 +1367,14 @@ export default {
 
       // Calcular bruto (precio sin impuesto) = total / (1 + tasa)
       if (taxRate > 0) {
-        price.net = total / (1 + taxRate / 100);
+        price.net = this.roundToTwo(total / (1 + taxRate / 100));
       } else {
-        price.net = total;
+        price.net = this.roundToTwo(total);
       }
 
       // Calcular porcentaje de utilidad
       if (cost > 0 && price.net > 0) {
-        price.profit_percentage = ((price.net - cost) / cost) * 100;
+        price.profit_percentage = this.roundToTwo(((price.net - cost) / cost) * 100);
       } else {
         price.profit_percentage = 0;
       }
@@ -1269,15 +1410,8 @@ export default {
       // Recalcular el total con impuesto para todos los precios
       this.formData.prices.forEach(price => {
         const net = parseFloat(price.net) || 0;
-        price.total = net * (1 + taxRate / 100);
+        price.total = this.roundToTwo(net * (1 + taxRate / 100));
       });
-    },
-
-    // Formatear precio a 2 decimales
-    formatPrice(value) {
-      const num = parseFloat(value);
-      if (isNaN(num)) return '0.00';
-      return num.toFixed(2);
     },
 
     handleMainImage(event) {
@@ -1323,14 +1457,70 @@ export default {
       });
     },
 
-    removeGalleryImage(index) {
-      this.formData.gallery.splice(index, 1);
+    async removeGalleryImage(index) {
+      const image = this.formData.gallery[index];
+
+      // Si es una imagen existente (de la base de datos), hacer DELETE request
+      if (image.existing && image.id) {
+        try {
+          const result = await Swal.fire({
+            title: '¿Eliminar imagen?',
+            text: 'Esta acción no se puede deshacer',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+          });
+
+          if (result.isConfirmed) {
+            await api.delete(`/products/${this.productId}/gallery/${image.id}`);
+
+            // Remover del array local
+            this.formData.gallery.splice(index, 1);
+
+            Swal.fire({
+              icon: 'success',
+              title: 'Imagen eliminada',
+              text: 'La imagen se ha eliminado exitosamente',
+              timer: 2000,
+              showConfirmButton: false
+            });
+          }
+        } catch (error) {
+          console.error('Error deleting gallery image:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.response?.data?.message || 'Error al eliminar la imagen'
+          });
+        }
+      } else {
+        // Si es una imagen nueva (no guardada aún), solo remover del array
+        this.formData.gallery.splice(index, 1);
+      }
+    },
+
+    getColorLabel(colorValue) {
+      const color = this.colorOptions.find(c => c.value === colorValue);
+      return color ? color.label : '';
     },
 
     async loadGalleryImages() {
       try {
         const response = await api.get(`/products/${this.productId}/gallery`);
-        const images = response.data.data || [];
+        console.log('Gallery API Response:', response.data);
+
+        let images = response.data.data || [];
+
+        // Asegurar que images sea un array
+        if (!Array.isArray(images)) {
+          console.warn('Images is not an array:', typeof images, images);
+          images = [];
+        }
+
+        console.log(`Found ${images.length} gallery images`);
 
         // Convertir las URLs de las imágenes existentes a objetos de galería
         this.formData.gallery = images.map(img => ({
@@ -1403,25 +1593,50 @@ export default {
         formDataToSend.append('show_in_online_store', this.formData.show_in_online_store ? 1 : 0);
         formDataToSend.append('is_active', this.formData.is_active ? 1 : 0);
 
+        // Nuevos atributos del producto
+        formDataToSend.append('color', this.formData.color || '');
+        formDataToSend.append('acabado', this.formData.acabado || '');
+        formDataToSend.append('estilo', JSON.stringify(this.formData.estilo || []));
+
         // Precios (guardar el bruto, sin impuesto)
         for (let i = 0; i < 6; i++) {
           formDataToSend.append(`price_${i + 1}`, this.formData.prices[i].net || 0);
         }
 
         // Imagen principal (archivo nuevo)
+        console.log('Image check:', {
+          hasImage: !!this.formData.image,
+          isFile: this.formData.image instanceof File,
+          imageType: typeof this.formData.image,
+          imageName: this.formData.image?.name
+        });
+
         if (this.formData.image && this.formData.image instanceof File) {
+          console.log('Appending main image to FormData:', this.formData.image.name);
           formDataToSend.append('image', this.formData.image);
+        } else {
+          console.log('Main image NOT appended - conditions not met');
         }
 
         // Galería de imágenes (archivos nuevos)
+        const existingGalleryIds = [];
+        let newImageIndex = 0;
+
         if (this.formData.gallery && this.formData.gallery.length > 0) {
-          this.formData.gallery.forEach((item, index) => {
-            // item tiene la estructura { file: File, name: string, preview: string }
-            if (item.file && item.file instanceof File) {
-              formDataToSend.append(`gallery_${index}`, item.file);
+          this.formData.gallery.forEach((item) => {
+            if (item.existing && item.id) {
+              // Imagen existente - guardar su ID para mantenerla
+              existingGalleryIds.push(item.id);
+            } else if (item.file && item.file instanceof File) {
+              // Imagen nueva - agregar al FormData
+              formDataToSend.append(`gallery_${newImageIndex}`, item.file);
+              newImageIndex++;
             }
           });
         }
+
+        // Enviar lista de IDs de imágenes existentes a mantener
+        formDataToSend.append('existing_gallery_ids', JSON.stringify(existingGalleryIds));
 
         formDataToSend.append('warehouse_stock', JSON.stringify(this.formData.warehouseStock));
         formDataToSend.append('tax_id', this.formData.activeTaxId || '');
@@ -1432,6 +1647,13 @@ export default {
             'Content-Type': 'multipart/form-data'
           }
         });
+
+        // Recargar datos del producto para mostrar la imagen actualizada
+        await this.loadProductData();
+
+        // Limpiar preview de imagen temporal
+        this.formData.imagePreview = null;
+        this.formData.image = null;
 
         Swal.fire({
           icon: 'success',
@@ -1488,52 +1710,24 @@ export default {
       if (this.usePercentageCalc && this.formData.cost > 0) {
         const cost = parseFloat(this.formData.cost) || 0;
         const profit = parseFloat(this.quickProfitPercent) || 0;
-        this.formData.prices[0].total = cost * (1 + profit / 100);
+        this.formData.prices[0].total = this.roundToTwo(cost * (1 + profit / 100));
       }
     },
 
     toggleQuickPriceCalc() {
       this.usePercentageCalc = !this.usePercentageCalc;
-    },
+    }
+  },
 
-    async suspendProduct() {
-      Swal.fire({
-        title: '¿Suspender producto?',
-        text: 'El producto se marcará como inactivo y no estará disponible para venta',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, suspender',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#ffc107',
-        cancelButtonColor: '#6c757d'
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          try {
-            await api.put(
-              `/products/${this.productId}`,
-              { status: 'inactive', is_active: false }
-            );
-
-            Swal.fire({
-              icon: 'success',
-              title: 'Producto Suspendido',
-              text: 'El producto ha sido suspendido exitosamente',
-              timer: 2000
-            });
-
-            setTimeout(() => {
-              this.$router.push('/inventory/product-list');
-            }, 2000);
-          } catch (error) {
-            console.error('Error suspending product:', error);
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: error.response?.data?.message || 'Error al suspender el producto'
-            });
-          }
+  watch: {
+    'formData.category_id': {
+      handler(newValue, oldValue) {
+        // Solo cargar subcategorías si el valor realmente cambió y NO es la carga inicial
+        if (newValue !== oldValue && oldValue !== undefined && !this.isInitialLoad) {
+          this.loadSubcategories(newValue);
         }
-      });
+      },
+      immediate: false
     }
   }
 };
@@ -1607,5 +1801,47 @@ export default {
   right: 5px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+/* Estilos para el selector de colores */
+.color-selector {
+  min-height: 50px;
+}
+
+.color-option {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.color-option.selected {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.color-option i {
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Para el color blanco, usar un icono oscuro */
+.color-option[style*="#ffffff"] i {
+  color: #000;
+  text-shadow: none;
 }
 </style>

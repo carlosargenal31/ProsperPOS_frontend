@@ -279,15 +279,27 @@
 
                   <!-- Botones para FACTURA -->
                   <template v-else>
-                    <button class="btn btn-warning btn-lg" @click="saveAsDraft" :disabled="invoice.items.length === 0">
-                      <i class="ti ti-device-floppy me-2"></i>GUARDAR
-                    </button>
-                    <button class="btn btn-success btn-lg" @click="showQuickPaymentModal = true" :disabled="invoice.items.length === 0">
-                      <i class="ti ti-currency-dollar me-2"></i>COBRO RÁPIDO
-                    </button>
-                    <button class="btn btn-info btn-lg" @click="showDetailedPaymentModal = true" :disabled="invoice.items.length === 0">
-                      <i class="ti ti-receipt-2 me-2"></i>COBRO DETALLADO
-                    </button>
+                    <!-- Mostrar botones solo si hay resolución activa -->
+                    <template v-if="!resolutionExpired">
+                      <button class="btn btn-warning btn-lg" @click="saveAsDraft" :disabled="invoice.items.length === 0">
+                        <i class="ti ti-device-floppy me-2"></i>GUARDAR
+                      </button>
+                      <button class="btn btn-success btn-lg" @click="showQuickPaymentModal = true" :disabled="invoice.items.length === 0">
+                        <i class="ti ti-currency-dollar me-2"></i>COBRO RÁPIDO
+                      </button>
+                      <button class="btn btn-info btn-lg" @click="showDetailedPaymentModal = true" :disabled="invoice.items.length === 0">
+                        <i class="ti ti-receipt-2 me-2"></i>COBRO DETALLADO
+                      </button>
+                    </template>
+                    <!-- Mostrar mensaje cuando no hay resolución activa -->
+                    <div v-else class="alert alert-danger" role="alert">
+                      <i class="ti ti-alert-triangle me-2"></i>
+                      <strong>No se puede facturar</strong>
+                      <p class="mb-2 mt-2">No hay una resolución SAR activa.</p>
+                      <button class="btn btn-sm btn-primary mt-2" @click="redirectToResolutions">
+                        <i class="ti ti-settings me-1"></i>Configurar Resolución
+                      </button>
+                    </div>
                   </template>
                 </div>
               </div>
@@ -965,6 +977,43 @@
       </div>
     </div>
 
+    <!-- Modal: Resolución Vencida -->
+    <div v-if="showExpiredResolutionModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.7); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000;">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">
+              <i class="ti ti-alert-triangle me-2"></i>Resolución Vencida
+            </h5>
+          </div>
+          <div class="modal-body text-center py-4">
+            <div class="mb-4">
+              <i class="ti ti-alert-circle text-danger" style="font-size: 4rem;"></i>
+            </div>
+            <h4 class="text-danger mb-3">No se puede facturar</h4>
+            <p class="mb-2" v-if="resolutionInfo">La resolución SAR activa ha vencido y no es posible generar facturas.</p>
+            <p class="mb-2" v-else>No hay una resolución SAR activa. No es posible generar facturas.</p>
+            <div v-if="resolutionInfo" class="alert alert-warning mt-3">
+              <p class="mb-1"><strong>Resolución:</strong> {{ resolutionInfo.numero_resolucion }}</p>
+              <p class="mb-0"><strong>Fecha de vencimiento:</strong> {{ formatDate(resolutionInfo.fecha_fin) }}</p>
+            </div>
+            <div v-else class="alert alert-warning mt-3">
+              <p class="mb-0">No se encontró ninguna resolución activa en el sistema.</p>
+            </div>
+            <p class="text-muted mt-3">Por favor, cree una nueva resolución para poder continuar facturando.</p>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-secondary" @click="showExpiredResolutionModal = false">
+              Cancelar
+            </button>
+            <button type="button" class="btn btn-primary" @click="redirectToResolutions">
+              <i class="ti ti-settings me-1"></i>Ir a Configuración de Resoluciones
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal: Quote Preview -->
     <div v-if="showQuotePreview" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;">
       <div class="modal-dialog modal-xl" style="max-width: 900px; margin: 30px auto;">
@@ -1446,7 +1495,11 @@ export default {
       bankAccounts: [],
       lastQuoteNumber: null,
       lastQuoteConsecutive: null,
-      showQuoteOptionsDropdown: false
+      showQuoteOptionsDropdown: false,
+      // Resolución vencida
+      showExpiredResolutionModal: false,
+      resolutionExpired: false,
+      resolutionInfo: null
     };
   },
   computed: {
@@ -1740,10 +1793,40 @@ export default {
 
     async loadResolutionCurrent() {
       try {
-        const response = await api.get('/resolutions/active');
+        console.log('🔍 Cargando resolución activa...');
+        const response = await api.get('/resolutions/active', {
+          params: { store_id: 1 }
+        });
+
+        console.log('📡 Respuesta del servidor:', response.data);
 
         if (response.data?.success && response.data.data) {
           const activeResolution = response.data.data;
+
+          // Guardar información completa de la resolución
+          this.resolutionInfo = activeResolution;
+
+          // Verificar si la resolución está vencida
+          if (activeResolution.is_expired) {
+            this.resolutionExpired = true;
+            console.warn('⚠️ Resolución vencida detectada, mostrando modal...');
+            console.log('Estado antes de mostrar modal:', {
+              resolutionExpired: this.resolutionExpired,
+              showExpiredResolutionModal: this.showExpiredResolutionModal
+            });
+
+            // Usar nextTick para asegurar que Vue actualice el DOM
+            this.$nextTick(() => {
+              this.showExpiredResolutionModal = true;
+              console.log('✅ Modal activado:', this.showExpiredResolutionModal);
+            });
+
+            console.warn('⚠️ Resolución vencida:', {
+              numero_resolucion: activeResolution.numero_resolucion,
+              fecha_fin: activeResolution.fecha_fin
+            });
+            return;
+          }
 
           // Actualizar toda la información de la resolución
           this.resolution.id = activeResolution.id;
@@ -1759,12 +1842,27 @@ export default {
               id: this.resolution.id,
               current: this.resolution.current,
               prefix: this.resolution.prefix,
-              cai: this.resolution.cai
+              cai: this.resolution.cai,
+              dias_hasta_vencimiento: activeResolution.days_until_expiration
             });
           }
         }
       } catch (error) {
-        console.error('Error loading active resolution:', error);
+        console.error('❌ Error loading active resolution:', error);
+        console.log('Error status:', error.response?.status);
+        console.log('Error message:', error.response?.data?.message);
+
+        // Si no hay resolución activa disponible (404 o cualquier error)
+        if (error.response?.status === 404 || error.response?.data?.message?.includes('No hay resolución')) {
+          console.warn('⚠️ No hay resolución activa, mostrando modal...');
+          this.resolutionExpired = true;
+
+          // Usar nextTick para asegurar que Vue actualice el DOM
+          this.$nextTick(() => {
+            this.showExpiredResolutionModal = true;
+            console.log('✅ Modal activado por falta de resolución:', this.showExpiredResolutionModal);
+          });
+        }
       }
     },
     async loadCustomers() {
@@ -1978,6 +2076,13 @@ export default {
 
     async processQuickPayment() {
       try {
+        // Validar que la resolución no esté vencida antes de facturar
+        if (this.documentType === 'FACTURA' && this.resolutionExpired) {
+          this.showQuickPaymentModal = false;
+          this.showExpiredResolutionModal = true;
+          return;
+        }
+
         // Validar que haya productos
         if (this.invoice.items.length === 0) {
           Swal.fire('Error', 'No hay productos en la factura', 'error');
@@ -2128,6 +2233,13 @@ export default {
 
     async processDetailedPayment() {
       try {
+        // Validar que la resolución no esté vencida antes de facturar
+        if (this.documentType === 'FACTURA' && this.resolutionExpired) {
+          this.showDetailedPaymentModal = false;
+          this.showExpiredResolutionModal = true;
+          return;
+        }
+
         // Validar que haya productos
         if (this.invoice.items.length === 0) {
           Swal.fire('Error', 'No hay productos en la factura', 'error');
@@ -3073,6 +3185,12 @@ export default {
     },
     async saveInvoice(status = 'paid', amountReceived = 0) {
       try {
+        // Validar que la resolución no esté vencida antes de facturar
+        if (this.documentType === 'FACTURA' && this.resolutionExpired) {
+          this.showExpiredResolutionModal = true;
+          return;
+        }
+
         const invoiceData = {
           invoice_number: this.invoiceNumber,
           document_type: this.documentType,
@@ -3537,6 +3655,18 @@ export default {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       }).format(value || 0);
+    },
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    },
+    redirectToResolutions() {
+      this.showExpiredResolutionModal = false;
+      this.$router.push('/financial-settings/resolution-settings');
     },
     formatDateTime(dateString) {
       if (!dateString) return '';
