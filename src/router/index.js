@@ -381,6 +381,14 @@ const routes = [
     ]
   },
   {
+    path: '/price-list',
+    component: () => import('@/views/pages/reports/price-list/pos-pricelist.vue'),
+    children: [
+      { path: '', redirect: '/price-list/price-list' },
+      { path: "price-list", component: () => import('@/views/pages/reports/price-list/price-list.vue') },
+    ]
+  },
+  {
     path: '/reports/sold-items',
     name: 'sold-items-report',
     component: () => import('@/views/pages/reports/sold-items-report.vue'),
@@ -774,6 +782,11 @@ const routes = [
         path: 'destacados',
         name: 'tienda-online-destacados',
         component: () => import('@/views/pages/tienda-online/destacados.vue')
+      },
+      {
+        path: 'pedidos',
+        name: 'tienda-online-pedidos',
+        component: () => import('@/views/pages/tienda-online/pedidos.vue')
       },
       {
         path: 'configuracion',

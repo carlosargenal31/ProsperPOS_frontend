@@ -87,7 +87,7 @@
           },
           {
             "menuValue": "Lista de Precios",
-            "route": "/sales-report/best-sellers",
+            "route": "/price-list/price-list",
             "hasSubRoute": false,
             "showSubRoute": false
           },

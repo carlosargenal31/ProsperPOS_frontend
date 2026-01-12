@@ -21,6 +21,12 @@
             <span>Productos Destacados</span>
           </router-link>
         </li>
+        <li :class="{ 'active': $route.path === '/tienda-online/pedidos' }">
+          <router-link to="/tienda-online/pedidos">
+            <i class="ti ti-shopping-cart fs-16 me-2"></i>
+            <span>Pedidos en Línea</span>
+          </router-link>
+        </li>
         <li :class="{ 'active': $route.path === '/tienda-online/configuracion' }">
           <router-link to="/tienda-online/configuracion">
             <i class="ti ti-settings fs-16 me-2"></i>

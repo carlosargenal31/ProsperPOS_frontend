@@ -73,14 +73,17 @@
                 </li>
                 <!-- /Search -->
 
-                <li class="nav-item dropdown link-nav">
-                    <a href="javascript:void(0);" class="btn btn-primary btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
+                <li class="nav-item dropdown link-nav" ref="dropdownContainer">
+                    <a href="javascript:void(0);"
+                       class="btn btn-primary btn-md d-inline-flex align-items-center"
+                       @click.prevent="toggleDropdown"
+                       :aria-expanded="showDropdown">
                         <i class="ti ti-circle-plus me-1"></i>Agregar Nuevo
                     </a>
-                    <div class="dropdown-menu dropdown-xl dropdown-menu-center">
+                    <div class="dropdown-menu dropdown-xl" :class="{ 'show': showDropdown }" style="left: 50%; transform: translateX(-50%);">
                         <div class="row g-2">
                             <div class="col-md-2">
-                                <router-link to="/inventory/category-list" class="link-item">
+                                <router-link to="/inventory/category-list" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-brand-codepen"></i>
                                     </span>
@@ -88,7 +91,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/inventory/add-product" class="link-item">
+                                <router-link to="/inventory/add-product" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-square-plus"></i>
                                     </span>
@@ -96,7 +99,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/purchases/purchase-list" class="link-item">
+                                <router-link to="/purchases/purchase-list" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-shopping-bag"></i>
                                     </span>
@@ -104,7 +107,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/pos-invoice" class="link-item">
+                                <router-link to="/pos-invoice" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-shopping-cart"></i>
                                     </span>
@@ -112,7 +115,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/expenses/expenses-list" class="link-item">
+                                <router-link to="/expenses/expenses-list" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-truck"></i>
                                     </span>
@@ -120,7 +123,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/sales/quotation-list" class="link-item">
+                                <router-link to="/sales/quotation-list" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-device-floppy"></i>
                                     </span>
@@ -128,7 +131,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/sales/sales-returns" class="link-item">
+                                <router-link to="/sales/sales-returns" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-copy"></i>
                                     </span>
@@ -136,7 +139,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/users/users-list" class="link-item">
+                                <router-link to="/users/users-list" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-user"></i>
                                     </span>
@@ -144,7 +147,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/ecommerce/customers" class="link-item">
+                                <router-link to="/ecommerce/customers" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-users"></i>
                                     </span>
@@ -152,7 +155,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/inventory/brand-list" class="link-item">
+                                <router-link to="/inventory/brand-list" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-shield"></i>
                                     </span>
@@ -160,7 +163,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/people/suppliers" class="link-item">
+                                <router-link to="/people/suppliers" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-user-check"></i>
                                     </span>
@@ -168,7 +171,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/stock/manage-stocks" class="link-item">
+                                <router-link to="/stock/manage-stocks" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-stack-3"></i>
                                     </span>
@@ -266,12 +269,28 @@ export default {
         });
     },
     data() {
-        return {};
+        return {
+            showDropdown: false
+        };
     },
     mounted() {
         this.initMouseoverListener();
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', this.handleClickOutside);
     },
     methods: {
+        toggleDropdown() {
+            this.showDropdown = !this.showDropdown;
+        },
+        closeDropdown() {
+            this.showDropdown = false;
+        },
+        handleClickOutside(event) {
+            const dropdown = this.$refs.dropdownContainer;
+            if (dropdown && !dropdown.contains(event.target)) {
+                this.showDropdown = false;
+            }
+        },
         toggleMobileBtn() {
             document?.querySelector(".main-wrapper")?.classList?.toggle("slide-nav");
             document?.querySelector(".sidebar-overlay")?.classList?.toggle("opened");
@@ -350,6 +369,7 @@ export default {
     },
     beforeUnmount() {
         document.removeEventListener('mouseover', this.handleMouseover);
+        document.removeEventListener('click', this.handleClickOutside);
     },
 };
 </script>

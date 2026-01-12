@@ -199,6 +199,7 @@ export default {
               '/inventory-report/inventory-report': 'reports',
               '/inventory-report/stock-history': 'reports',
               '/inventory-report/sold-stock': 'reports',
+              '/price-list/price-list': 'sales',
               '/inventory/barcode': 'inventory',
           };
 

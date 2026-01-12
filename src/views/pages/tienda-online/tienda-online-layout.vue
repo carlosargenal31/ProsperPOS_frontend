@@ -65,6 +65,7 @@ export default {
         '/tienda-online/categorias': 'Categorías Visibles',
         '/tienda-online/banner': 'Banner Principal',
         '/tienda-online/destacados': 'Productos Destacados',
+        '/tienda-online/pedidos': 'Pedidos en Línea',
         '/tienda-online/configuracion': 'Configuración de Tienda'
       }
       return titles[this.$route.path] || 'Tienda en Línea'
@@ -74,6 +75,7 @@ export default {
         '/tienda-online/categorias': 'Gestiona qué categorías se muestran en tu tienda',
         '/tienda-online/banner': 'Configura las imágenes del banner principal',
         '/tienda-online/destacados': 'Selecciona los productos destacados',
+        '/tienda-online/pedidos': 'Gestiona los pedidos realizados en la tienda online',
         '/tienda-online/configuracion': 'Configuración general de la tienda'
       }
       return subtitles[this.$route.path] || 'Gestiona tu tienda online'
