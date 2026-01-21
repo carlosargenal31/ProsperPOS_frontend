@@ -187,9 +187,10 @@
               <!-- COMPRA -->
               <div v-if="selectedDocumentType === 'COMPRA'" id="purchaseContent">
                 <div class="text-center mb-2">
-                  <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-                  <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
-                  <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
+                  <strong style="font-size: 13px;">{{ companyInfo.commercial_name || companyInfo.company_name || 'EMPRESA' }}</strong><br>
+                  <small style="font-size: 10px;"><strong>RTN:</strong> {{ companyInfo.rtn || 'N/A' }}</small><br>
+                  <small style="font-size: 10px;">{{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}</small><br>
+                  <small style="font-size: 10px;">Tel: {{ companyInfo.phone || companyInfo.telefono || 'N/A' }}</small>
                 </div>
 
                 <h6 class="text-success text-center mb-2" style="font-size: 14px;">FACTURA DE COMPRA</h6>
@@ -217,7 +218,7 @@
                   <tbody>
                     <tr v-for="item in selectedDocument.items" :key="item.id">
                       <td style="padding: 4px;">{{ item.product_code || 'N/A' }}</td>
-                      <td style="padding: 4px;">{{ item.product_name }}</td>
+                      <td style="padding: 4px;">{{ item.product_name }} <strong>{{ item.product_unit || item.unit || 'UNIDAD' }}</strong></td>
                       <td class="text-end" style="padding: 4px;">{{ formatCurrency(item.quantity) }}</td>
                       <td class="text-end" style="padding: 4px;">L {{ formatCurrency(item.unit_price) }}</td>
                       <td class="text-end" style="padding: 4px;">L {{ formatCurrency(item.total || (item.quantity * item.unit_price)) }}</td>
@@ -235,9 +236,10 @@
               <!-- DEVOLUCION COMPRA -->
               <div v-else-if="selectedDocumentType === 'DEVOLUCION COMPRA'" id="purchaseReturnContent">
                 <div class="text-center mb-2">
-                  <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-                  <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
-                  <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
+                  <strong style="font-size: 13px;">{{ companyInfo.commercial_name || companyInfo.company_name || 'EMPRESA' }}</strong><br>
+                  <small style="font-size: 10px;"><strong>RTN:</strong> {{ companyInfo.rtn || 'N/A' }}</small><br>
+                  <small style="font-size: 10px;">{{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}</small><br>
+                  <small style="font-size: 10px;">Tel: {{ companyInfo.phone || companyInfo.telefono || 'N/A' }}</small>
                 </div>
 
                 <h6 class="text-success text-center mb-2" style="font-size: 14px;">DEVOLUCIÓN DE COMPRA</h6>
@@ -262,9 +264,10 @@
               <!-- NOTA CREDITO COMPRA -->
               <div v-else-if="selectedDocumentType === 'NOTA CREDITO COMPRA'" id="purchaseCreditNoteContent">
                 <div class="text-center mb-2">
-                  <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-                  <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
-                  <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
+                  <strong style="font-size: 13px;">{{ companyInfo.commercial_name || companyInfo.company_name || 'EMPRESA' }}</strong><br>
+                  <small style="font-size: 10px;"><strong>RTN:</strong> {{ companyInfo.rtn || 'N/A' }}</small><br>
+                  <small style="font-size: 10px;">{{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}</small><br>
+                  <small style="font-size: 10px;">Tel: {{ companyInfo.phone || companyInfo.telefono || 'N/A' }}</small>
                 </div>
 
                 <h6 class="text-danger text-center mb-2" style="font-size: 14px;">NOTA DE CRÉDITO DE COMPRA</h6>
@@ -316,7 +319,7 @@ import axios from 'axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
-import { LOGO_BASE64 } from '@/assets/img/logo.js';
+import api from '@/utils/axios';
 
 export default {
   data() {
@@ -357,24 +360,54 @@ export default {
       const date = new Date();
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`;
     },
+    async getCompanyLogo() {
+      if (!this.companyInfo?.logo_url) {
+        return '';
+      }
+
+      const dbLogoUrl = this.companyInfo.logo_url;
+      if (!dbLogoUrl.startsWith('http')) {
+        return '';
+      }
+
+      try {
+        const response = await api.get('/image-proxy', { params: { url: dbLogoUrl } });
+        if (response.data.success && response.data.data.base64) {
+          return response.data.data.base64;
+        }
+      } catch (error) {
+        console.error('Error al cargar logo:', error);
+      }
+
+      return '';
+    },
     async loadCompanyInfo() {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('/api/v1/reports/company-info', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (response.data.success) {
+        const response = await api.get('/companies/default');
+        if (response.data && response.data.success) {
           this.companyInfo = response.data.data;
         }
       } catch (error) {
         console.error('Error loading company info:', error);
-        this.companyInfo = {
-          company_name: 'ProsperPOS',
-          direccion: 'Honduras',
-          telefono: 'N/A',
-          rtn: 'N/A'
-        };
+        // Fallback: intentar con endpoint público
+        try {
+          const publicResponse = await api.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            this.companyInfo = publicResponse.data.data;
+          }
+        } catch (publicError) {
+          console.error('Error loading public company info:', publicError);
+          this.companyInfo = {
+            company_name: 'ProsperPOS',
+            commercial_name: 'ProsperPOS',
+            direccion: 'Honduras',
+            address: 'Honduras',
+            telefono: 'N/A',
+            phone: 'N/A',
+            rtn: 'N/A',
+            email: 'info@prosperpos.com'
+          };
+        }
       }
     },
     async loadBranches() {
@@ -451,9 +484,9 @@ export default {
       this.showExportDropdown = false;
       this.selectedDocument = null;
     },
-    printDocument() {
+    async printDocument() {
       const printWindow = window.open('', '_blank');
-      const html = this.buildDocumentHTML();
+      const html = await this.buildDocumentHTML();
       printWindow.document.write(html);
       printWindow.document.close();
 
@@ -487,8 +520,9 @@ export default {
 
       if (this.selectedDocument.items && this.selectedDocument.items.length > 0) {
         this.selectedDocument.items.forEach(item => {
+          const unitText = item.product_unit || item.unit || 'UNIDAD';
           data.push([
-            item.product_name,
+            `${item.product_name} ${unitText}`,
             item.quantity,
             item.unit_price,
             item.total || (item.quantity * item.unit_price)
@@ -516,7 +550,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildDocumentHTML();
+        const htmlContent = await this.buildDocumentHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -557,7 +591,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildDocumentHTML();
+        const htmlContent = await this.buildDocumentHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -582,7 +616,11 @@ export default {
         alert('Error al generar la imagen');
       }
     },
-    buildDocumentHTML() {
+    async buildDocumentHTML() {
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
       const docTitle = this.selectedDocumentType;
       const docColor = '#28a745'; // Verde para todos los documentos de compras
 
@@ -609,12 +647,13 @@ export default {
 
           // Total del item
           const itemTotal = item.total || (itemSubtotal - discount + tax);
+          const unitText = item.product_unit || item.unit || 'UNIDAD';
 
           tableRows += `
             <tr>
               <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${String(index + 1).padStart(2, '0')}</td>
               <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_code || 'N/A'}</td>
-              <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_name}</td>
+              <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_name} <span style="font-weight: 600;">${unitText}</span></td>
               <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${this.formatCurrency(qty)}</td>
               <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-size: 10px;">L ${this.formatCurrency(price)}</td>
               <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 10px;">L ${this.formatCurrency(itemTotal)}</td>
@@ -796,13 +835,13 @@ export default {
           <div class="invoice-container">
             <div class="header">
               <div class="company-logo">
-                <img src="${LOGO_BASE64}" alt="Logo" style="max-width: 180px; height: auto; margin-bottom: 15px;">
-                <div class="company-name">${this.companyInfo.company_name || 'EMPRESA'}</div>
+                ${hasLogo ? `<img src="${logoUrl}" alt="Logo" style="max-width: 180px; height: auto; margin-bottom: 15px;">` : ''}
+                <div class="company-name">${this.companyInfo.commercial_name || this.companyInfo.company_name || 'EMPRESA'}</div>
                 <div class="company-details">
-                  <strong>RTN:</strong> ${this.companyInfo.rtn || '00000000000000'}<br>
-                  <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                  <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}${this.companyInfo.telefono_movil ? '<br><strong>Teléfono Móvil:</strong> ' + this.companyInfo.telefono_movil : ''}<br>
-                  <strong>Email:</strong> ${this.companyInfo.email || 'info@empresa.com'}
+                  <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                  <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                  <strong>Tel:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}${this.companyInfo.whatsapp ? ` | <strong>Móvil:</strong> ${this.companyInfo.whatsapp}` : ''}<br>
+                  <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
                 </div>
               </div>
               <div class="invoice-header">

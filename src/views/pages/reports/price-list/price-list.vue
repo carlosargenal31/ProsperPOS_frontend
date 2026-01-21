@@ -484,7 +484,7 @@ import Swal from 'sweetalert2';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
-import { LOGO_BASE64 } from '@/assets/img/logo.js';
+import api from '@/utils/axios';
 
 const API_URL = 'http://localhost:3000/api/v1';
 
@@ -886,7 +886,11 @@ export default {
       document.body.classList.toggle('header-collapse');
     };
 
-    const buildPriceListHTML = () => {
+    const buildPriceListHTML = async () => {
+      // Obtener logo desde la base de datos
+      const logoUrl = await getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
       // Generar HTML para la lista de precios
       const itemRows = filteredProducts.value.map(product => {
         let row = '<tr>';
@@ -1093,12 +1097,12 @@ export default {
         <body>
           <div class="header-section">
             <div class="company-info">
-              <img src="${LOGO_BASE64}" alt="Logo">
-              <div class="company-name">${companyInfo.value.company_name || 'Cerámicas Terrazos y Pulidos Universal'}</div>
-              <div class="company-detail"><strong>RTN:</strong> ${companyInfo.value.rtn || '01061977002516'}</div>
-              <div class="company-detail"><strong>Dirección:</strong> ${companyInfo.value.direccion || 'Casa Matriz, Barrio La Merced, Avenida 14 de Julio entre 15 y 16 calle frente a Repuestos del Atlántico, La Ceiba, Atlántida'}</div>
-              <div class="company-detail"><strong>Tel:</strong> ${companyInfo.value.telefono || '+504 2440-0037'} | <strong>Móvil:</strong> ${companyInfo.value.celular || '+504 9875-2725'}</div>
-              <div class="company-detail"><strong>Email:</strong> ${companyInfo.value.email || 'mauricio_argenal@hotmail.com'}</div>
+              ${hasLogo ? `<img src="${logoUrl}" alt="Logo">` : ''}
+              <div class="company-name">${companyInfo.value.commercial_name || companyInfo.value.company_name || 'EMPRESA'}</div>
+              <div class="company-detail"><strong>RTN:</strong> ${companyInfo.value.rtn || 'N/A'}</div>
+              <div class="company-detail"><strong>Dirección:</strong> ${companyInfo.value.address || companyInfo.value.direccion || 'Sin dirección'}</div>
+              <div class="company-detail"><strong>Tel:</strong> ${companyInfo.value.phone || companyInfo.value.telefono || 'N/A'}${companyInfo.value.whatsapp ? ` | <strong>Móvil:</strong> ${companyInfo.value.whatsapp}` : ''}</div>
+              <div class="company-detail"><strong>Email:</strong> ${companyInfo.value.email || 'info@prosperpos.com'}</div>
             </div>
             <div class="report-box">
               <div class="report-title">LISTA DE PRECIOS</div>
@@ -1140,9 +1144,9 @@ export default {
         const wb = XLSX.utils.book_new();
 
         const headerData = [
-          [companyInfo.value.company_name || 'PROSPERPOS'],
-          [companyInfo.value.direccion || 'Sin dirección'],
-          [`Tel: ${companyInfo.value.telefono || 'N/A'}`],
+          [companyInfo.value.commercial_name || companyInfo.value.company_name || 'PROSPERPOS'],
+          [companyInfo.value.address || companyInfo.value.direccion || 'Sin dirección'],
+          [`Tel: ${companyInfo.value.phone || companyInfo.value.telefono || 'N/A'}`],
           [''],
           ['LISTA DE PRECIOS'],
           [`Fecha: ${new Date().toLocaleDateString()}`],
@@ -1199,7 +1203,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = buildPriceListHTML();
+        const htmlContent = await buildPriceListHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -1259,7 +1263,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = buildPriceListHTML();
+        const htmlContent = await buildPriceListHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -1290,10 +1294,10 @@ export default {
       }
     };
 
-    const printReport = () => {
+    const printReport = async () => {
       showSaveReportModal.value = false;
       const printWindow = window.open('', '_blank');
-      const html = buildPriceListHTML();
+      const html = await buildPriceListHTML();
 
       const printHtml = html.replace('</body>', `
         <script>
@@ -1326,14 +1330,55 @@ export default {
       printWindow.document.close();
     };
 
+    const getCompanyLogo = async () => {
+      if (!companyInfo.value?.logo_url) {
+        return '';
+      }
+
+      const dbLogoUrl = companyInfo.value.logo_url;
+      if (!dbLogoUrl.startsWith('http')) {
+        return '';
+      }
+
+      try {
+        const response = await api.get('/image-proxy', { params: { url: dbLogoUrl } });
+        if (response.data.success && response.data.data.base64) {
+          return response.data.data.base64;
+        }
+      } catch (error) {
+        console.error('Error al cargar logo:', error);
+      }
+
+      return '';
+    };
+
     const loadCompanyInfo = async () => {
       try {
-        const response = await axios.get(`${API_URL}/company`, getAuthHeaders());
-        if (response.data && response.data.success && response.data.data) {
+        const response = await api.get('/companies/default');
+        if (response.data && response.data.success) {
           companyInfo.value = response.data.data;
         }
       } catch (error) {
         console.error('Error loading company info:', error);
+        // Fallback: intentar con endpoint público
+        try {
+          const publicResponse = await api.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            companyInfo.value = publicResponse.data.data;
+          }
+        } catch (publicError) {
+          console.error('Error loading public company info:', publicError);
+          companyInfo.value = {
+            company_name: 'ProsperPOS',
+            commercial_name: 'ProsperPOS',
+            direccion: 'Honduras',
+            address: 'Honduras',
+            telefono: 'N/A',
+            phone: 'N/A',
+            rtn: 'N/A',
+            email: 'info@prosperpos.com'
+          };
+        }
       }
     };
 

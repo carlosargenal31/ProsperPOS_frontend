@@ -197,9 +197,10 @@
               <!-- NOTA DE CRÉDITO -->
               <div v-if="selectedDocumentType === 'NOTA DE CREDITO'" id="creditNoteContent">
                 <div class="text-center mb-2">
-                  <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-                  <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
-                  <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
+                  <strong style="font-size: 13px;">{{ companyInfo.commercial_name || companyInfo.company_name || 'EMPRESA' }}</strong><br>
+                  <small style="font-size: 10px;"><strong>RTN:</strong> {{ companyInfo.rtn || 'N/A' }}</small><br>
+                  <small style="font-size: 10px;">{{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}</small><br>
+                  <small style="font-size: 10px;">Tel: {{ companyInfo.phone || companyInfo.telefono || 'N/A' }}</small>
                 </div>
 
                 <h6 class="text-danger text-center mb-2" style="font-size: 14px;">NOTA DE CRÉDITO</h6>
@@ -212,9 +213,9 @@
 
                 <!-- Información del Documento -->
                 <div class="d-flex justify-content-around border p-1 mb-2" style="font-size: 10px;">
-                  <span><strong>Nro. Nota Crédito:</strong> {{ selectedDocument.credit_note_number || selectedDocument.correlative || 'N/A' }}</span>
-                  <span><strong>Factura Original:</strong> {{ selectedDocument.invoice_number }}</span>
-                  <span><strong>Fecha:</strong> {{ formatDate(selectedDocument.emission_date) }}</span>
+                  <span><strong>Documento:</strong> {{ selectedDocument.credit_note_number || selectedDocument.document_number || selectedDocument.correlative || 'N/A' }}</span>
+                  <span><strong>Factura Original:</strong> {{ selectedDocument.invoice_number || 'N/A' }}</span>
+                  <span><strong>Fecha:</strong> {{ formatDate(selectedDocument.emission_date || selectedDocument.issue_date) }}</span>
                 </div>
 
                 <div class="mb-2" style="font-size: 10px;">
@@ -278,18 +279,19 @@
               <!-- DEVOLUCIÓN -->
               <div v-else-if="selectedDocumentType === 'DEVOLUCION'" id="returnContent">
                 <div class="text-center mb-2">
-                  <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-                  <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
-                  <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
+                  <strong style="font-size: 13px;">{{ companyInfo.commercial_name || companyInfo.company_name || 'EMPRESA' }}</strong><br>
+                  <small style="font-size: 10px;"><strong>RTN:</strong> {{ companyInfo.rtn || 'N/A' }}</small><br>
+                  <small style="font-size: 10px;">{{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}</small><br>
+                  <small style="font-size: 10px;">Tel: {{ companyInfo.phone || companyInfo.telefono || 'N/A' }}</small>
                 </div>
 
                 <h6 class="text-primary text-center mb-2" style="font-size: 14px;">DEVOLUCIÓN</h6>
 
                 <!-- Información del Documento -->
                 <div class="d-flex justify-content-around border p-1 mb-2" style="font-size: 10px;">
-                  <span><strong>DEVOLUCIÓN:</strong> {{ selectedDocument.correlative }}</span>
-                  <span><strong>Doc/Devuelto:</strong> {{ selectedDocument.invoice_number }}</span>
-                  <span><strong>Fecha:</strong> {{ formatDate(selectedDocument.emission_date) }}</span>
+                  <span><strong>Documento:</strong> {{ selectedDocument.document_number || selectedDocument.correlative }}</span>
+                  <span><strong>Doc/Devuelto:</strong> {{ selectedDocument.invoice_number || 'N/A' }}</span>
+                  <span><strong>Fecha:</strong> {{ formatDate(selectedDocument.emission_date || selectedDocument.issue_date) }}</span>
                 </div>
 
                 <div class="mb-2" style="font-size: 10px;">
@@ -334,17 +336,18 @@
               <!-- FACTURA / COTIZACION / GUIA DE REMISION / FACT EN ESPERA -->
               <div v-else id="genericDocContent">
                 <div class="text-center mb-2">
-                  <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-                  <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
-                  <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
+                  <strong style="font-size: 13px;">{{ companyInfo.commercial_name || companyInfo.company_name || 'EMPRESA' }}</strong><br>
+                  <small style="font-size: 10px;"><strong>RTN:</strong> {{ companyInfo.rtn || 'N/A' }}</small><br>
+                  <small style="font-size: 10px;">{{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}</small><br>
+                  <small style="font-size: 10px;">Tel: {{ companyInfo.phone || companyInfo.telefono || 'N/A' }}</small>
                 </div>
 
                 <h6 class="text-info text-center mb-2" style="font-size: 14px;">{{ selectedDocumentType }}</h6>
 
                 <!-- Información del Documento -->
                 <div class="d-flex justify-content-around border p-1 mb-2" style="font-size: 10px;">
-                  <span><strong>Documento:</strong> {{ selectedDocument.document_number || selectedDocument.full_number }}</span>
-                  <span><strong>Fecha:</strong> {{ formatDate(selectedDocument.issue_date || selectedDocument.quote_date) }}</span>
+                  <span><strong>Documento:</strong> {{ selectedDocument.document_number || selectedDocument.full_number || selectedDocument.correlative || 'N/A' }}</span>
+                  <span><strong>Fecha:</strong> {{ formatDate(selectedDocument.issue_date || selectedDocument.quote_date || selectedDocument.created_at) }}</span>
                 </div>
 
                 <div class="mb-2" style="font-size: 10px;">
@@ -408,10 +411,10 @@
 
 <script>
 import axios from 'axios';
+import api from '@/utils/axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
-import { LOGO_BASE64 } from '@/assets/img/logo.js';
 
 export default {
   data() {
@@ -463,23 +466,57 @@ export default {
     },
     async loadCompanyInfo() {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('/api/v1/reports/company-info', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (response.data.success) {
+        const response = await api.get('/companies/default');
+        if (response.data && response.data.success) {
           this.companyInfo = response.data.data;
+        } else if (response.data) {
+          this.companyInfo = response.data;
         }
       } catch (error) {
         console.error('Error loading company info:', error);
-        this.companyInfo = {
-          company_name: 'ProsperPOS',
-          direccion: 'Honduras',
-          telefono: 'N/A',
-          rtn: 'N/A'
-        };
+        // Fallback: intentar con endpoint público
+        try {
+          const publicResponse = await api.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            this.companyInfo = publicResponse.data.data;
+          } else if (publicResponse.data) {
+            this.companyInfo = publicResponse.data;
+          }
+        } catch (publicError) {
+          console.error('Error loading public company info:', publicError);
+          this.companyInfo = {
+            company_name: 'ProsperPOS',
+            commercial_name: 'ProsperPOS',
+            direccion: 'Honduras',
+            address: 'Honduras',
+            telefono: 'N/A',
+            phone: 'N/A',
+            rtn: 'N/A',
+            email: 'info@prosperpos.com'
+          };
+        }
       }
+    },
+    async getCompanyLogo() {
+      if (!this.companyInfo?.logo_url) {
+        return '';
+      }
+
+      const dbLogoUrl = this.companyInfo.logo_url;
+      if (!dbLogoUrl.startsWith('http')) {
+        return '';
+      }
+
+      try {
+        const response = await api.get('/image-proxy', { params: { url: dbLogoUrl } });
+        if (response.data.success && response.data.data.base64) {
+          return response.data.data.base64;
+        }
+      } catch (error) {
+        console.error('Error al cargar logo:', error);
+      }
+
+      return '';
     },
     async loadBranches() {
       try {
@@ -596,6 +633,9 @@ export default {
           console.log('Surcharges:', this.selectedDocument.surcharges);
           console.log('Surcharge:', this.selectedDocument.surcharge);
           console.log('Items:', this.selectedDocument.items);
+          console.log('Orden Compra:', this.selectedDocument.orden_compra);
+          console.log('Constancia Exonerado:', this.selectedDocument.constancia_exonerado);
+          console.log('Registro SAG:', this.selectedDocument.registro_sag);
           console.log('===========================');
 
           this.showDocumentModal = true;
@@ -610,9 +650,9 @@ export default {
       this.showExportDropdown = false;
       this.selectedDocument = null;
     },
-    printDocument() {
+    async printDocument() {
       const printWindow = window.open('', '_blank');
-      const html = this.buildDocumentHTML();
+      const html = await this.buildDocumentHTML();
       printWindow.document.write(html);
       printWindow.document.close();
 
@@ -645,8 +685,9 @@ export default {
       ];
 
       this.selectedDocument.items.forEach(item => {
+        const unitText = item.product_unit || item.unit || 'UNIDAD';
         data.push([
-          item.product_name,
+          `${item.product_name} ${unitText}`,
           item.quantity,
           item.unit_price || item.price,
           item.total || this.calculateItemTotal(item)
@@ -673,7 +714,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildDocumentHTML();
+        const htmlContent = await this.buildDocumentHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -714,7 +755,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildDocumentHTML();
+        const htmlContent = await this.buildDocumentHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -739,17 +780,17 @@ export default {
         alert('Error al generar la imagen');
       }
     },
-    buildDocumentHTML() {
+    async buildDocumentHTML() {
       const docTitle = this.selectedDocumentType;
 
       // Si es GUIA DE REMISION, usar formato de comprobante de entrega
       if (docTitle === 'GUIA DE REMISION') {
-        return this.buildShippingGuideHTML();
+        return await this.buildShippingGuideHTML();
       }
 
       // Si es COTIZACIÓN, DEVOLUCIÓN, NOTA DE CRÉDITO o FACT EN ESPERA, usar formato carta (como estado de cuenta)
       if (docTitle === 'COTIZACION' || docTitle === 'DEVOLUCION' || docTitle === 'NOTA DE CREDITO' || docTitle === 'FACT EN ESPERA') {
-        return this.buildLetterFormatHTML();
+        return await this.buildLetterFormatHTML();
       }
 
       // Para FACTURA, usar formato de ticket (80mm)
@@ -786,10 +827,11 @@ export default {
         subtotal += itemSubtotal;
         totalDiscount += itemDiscount;
 
+        const unitText = item.product_unit || item.unit || 'UNIDAD';
         tableRows += `
           <tr>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(qty)}</td>
-            <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name}</td>
+            <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name} <span style="font-weight: 600;">${unitText}</span></td>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(price)}</td>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemTotal)}</td>
           </tr>
@@ -805,6 +847,10 @@ export default {
       const finalSurcharges = documentSurcharges;
 
       const grandTotal = subtotal - finalDiscount + totalTax + finalSurcharges;
+
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
 
       const html = `
         <!DOCTYPE html>
@@ -988,19 +1034,14 @@ export default {
           <div class="invoice-container">
             <!-- Header -->
             <div class="header">
-              <div class="company-logo">
-                <img src="${LOGO_BASE64}" alt="Logo">
-              </div>
-              <div class="company-name">CERAMICAS TERRAZOS Y PULIDOS<br>UNIVERSAL</div>
+              ${hasLogo ? `<div class="company-logo"><img src="${logoUrl}" alt="Logo"></div>` : ''}
+              <div class="company-name">${this.companyInfo.commercial_name || this.companyInfo.company_name || 'CERAMICAS TERRAZOS Y PULIDOS UNIVERSAL'}</div>
               <div class="company-details">
-                <strong>RTN:</strong> 01061977002516<br>
-                <strong>Dirección:</strong> Casa Matriz, Barrio La Merced,<br>
-                Avenida 14 de Julio entre 15 y 16 calle frente a<br>
-                Repuestos del Atlántico, La Ceiba, Atlántida<br>
-                <strong>Teléfono de Empresa:</strong> 2440-0037<br>
-                <strong>Teléfono Móvil:</strong> 9875-2725<br>
-                mauricio_argenal@hotmail.com<br>
-                <strong>CAI:</strong> ${this.selectedDocument.cai || 'N/A'}
+                <strong>RTN:</strong> ${this.companyInfo.rtn || '01061977002516'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Casa Matriz, Barrio La Merced, La Ceiba, Atlántida'}<br>
+                <strong>Teléfono:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || '2440-0037'}${this.companyInfo.whatsapp ? '<br><strong>Móvil:</strong> ' + this.companyInfo.whatsapp : ''}<br>
+                ${this.companyInfo.email ? this.companyInfo.email + '<br>' : ''}
+                <strong>CAI:</strong> ${this.selectedDocument.cai || this.selectedDocument.numero_resolucion || 'N/A'}
               </div>
             </div>
 
@@ -1091,19 +1132,19 @@ export default {
               })()}<br>
               <strong>Rango de facturación Vigente:</strong><br>
               <strong>Desde:</strong> ${(() => {
-                const prefix = this.selectedDocument.prefijo_control || '000-002-01';
-                const inicio = this.selectedDocument.nro_inicial_control || '00000001';
-                return prefix + '-' + String(inicio).padStart(8, '0');
+                const prefix = this.selectedDocument.prefijo_control || '000-002-01-';
+                const inicio = this.selectedDocument.nro_inicial_control || 40001;
+                return prefix + String(inicio).padStart(8, '0');
               })()}<br>
               <strong>Hasta:</strong> ${(() => {
-                const prefix = this.selectedDocument.prefijo_control || '000-002-01';
-                const final = this.selectedDocument.nro_final_control || '00000000';
-                return prefix + '-' + String(final).padStart(8, '0');
+                const prefix = this.selectedDocument.prefijo_control || '000-002-01-';
+                const final = this.selectedDocument.nro_final_control || 50000;
+                return prefix + String(final).padStart(8, '0');
               })()}<br>
-              <strong>Fecha Limite de Emisión Vigente:</strong> ${this.formatDate(this.selectedDocument.fecha_fin) || '31/12/2025'}<br>
-              <strong>No. Correlativo de la Orden de Compra<br>Exenta:</strong><br>
-              <strong>No. Correlativo de la Constancia del Reg<br>Exonerado:</strong><br>
-              <strong>No. Identificativo del Registro SAG:</strong><br>
+              <strong>Fecha Limite de Emisión Vigente:</strong> ${this.formatDate(this.selectedDocument.fecha_fin || '2026-12-28')}<br>
+              <strong>No. Correlativo de la Orden de Compra<br>Exenta:</strong> ${this.selectedDocument.orden_compra || ''}<br>
+              <strong>No. Correlativo de la Constancia del Reg<br>Exonerado:</strong> ${this.selectedDocument.constancia_exonerado || ''}<br>
+              <strong>No. Identificativo del Registro SAG:</strong> ${this.selectedDocument.registro_sag || ''}<br>
               ${this.formatDateTime(this.selectedDocument.issue_date || this.selectedDocument.emission_date)}
             </div>
 
@@ -1120,13 +1161,13 @@ export default {
 
       return html;
     },
-    buildLetterFormatHTML() {
+    async buildLetterFormatHTML() {
       const docTitle = this.selectedDocumentType;
       const docColor = '#FF9800'; // Naranja/Amarillo uniforme
 
       // Si es GUÍA DE REMISIÓN, usar formato especial
       if (this.selectedDocumentType === 'GUIA DE REMISION') {
-        return this.buildShippingGuideHTML();
+        return await this.buildShippingGuideHTML();
       }
 
       // Devoluciones y notas de crédito usan el mismo formato que los demás documentos
@@ -1153,11 +1194,12 @@ export default {
         totalDiscount += itemDiscount;
         totalTax += itemTax;
 
+        const unitText = item.product_unit || item.unit || 'UNIDAD';
         tableRows += `
           <tr>
             <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${String(index + 1).padStart(2, '0')}</td>
             <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_code || 'N/A'}</td>
-            <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_name}</td>
+            <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_name} <span style="font-weight: 600;">${unitText}</span></td>
             <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${this.formatCurrency(qty)}</td>
             <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-size: 10px;">L ${this.formatCurrency(price)}</td>
             <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 10px;">L ${this.formatCurrency(itemTotal)}</td>
@@ -1170,6 +1212,10 @@ export default {
       const finalDiscount = documentDiscount > 0 ? documentDiscount : totalDiscount;
       const finalSurcharges = documentSurcharges;
       const grandTotal = subtotal - finalDiscount + totalTax + finalSurcharges;
+
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
 
       const html = `
         <!DOCTYPE html>
@@ -1391,13 +1437,13 @@ export default {
           <div class="invoice-container">
             <div class="header">
               <div class="company-logo">
-                <img src="${LOGO_BASE64}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">
-                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.company_name || 'PROSPERPOS'}</div>
+                ${hasLogo ? `<img src="${logoUrl}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">` : ''}
+                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</div>
                 <div class="company-details">
                   <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
-                  <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                  <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}<br>
-                  <strong>Teléfono Móvil:</strong> +504 9875-2725<br>
+                  <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                  <strong>Teléfono:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}<br>
+                  ${this.companyInfo.whatsapp ? '<strong>Móvil:</strong> ' + this.companyInfo.whatsapp + '<br>' : ''}
                   <strong>Email:</strong> ${this.companyInfo.email || 'info@prosperpos.com'}
                 </div>
               </div>
@@ -1422,9 +1468,9 @@ export default {
                   <strong>Condiciones de la Transacción:</strong> ${this.selectedDocument.payment_terms || 'Contado'}<br>
                   <strong>Entrega:</strong> ${this.formatDate(this.selectedDocument.emission_date || this.selectedDocument.issue_date || this.selectedDocument.quote_date || this.selectedDocument.created_at)}<br>
                   ${this.selectedDocument.invoice_number && this.selectedDocumentType !== 'DEVOLUCION' && this.selectedDocumentType !== 'NOTA DE CREDITO' ? `<strong>Factura Orig.:</strong> ${this.selectedDocument.invoice_number}<br>` : ''}
-                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong><br>
-                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong><br>
-                  <strong>No. Identificativo del Registro SAG:</strong>
+                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong> ${this.selectedDocument.orden_compra || 'N/A'}<br>
+                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong> ${this.selectedDocument.constancia_exonerado || 'N/A'}<br>
+                  <strong>No. Identificativo del Registro SAG:</strong> ${this.selectedDocument.registro_sag || 'N/A'}
                 </div>
               </div>
             </div>
@@ -1518,8 +1564,12 @@ export default {
 
       return html;
     },
-    buildShippingGuideHTML() {
+    async buildShippingGuideHTML() {
       const docColor = '#FF9800';
+
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
 
       // Construir tabla de productos (enfoque en cantidad y peso)
       let tableRows = '';
@@ -1527,11 +1577,12 @@ export default {
         const qty = parseFloat(item.quantity) || 0;
         const weight = parseFloat(item.weight) || 0;
         const totalWeight = qty * weight;
+        const unitText = item.product_unit || item.unit || 'UNIDAD';
         tableRows += `
           <tr>
             <td style="padding: 6px; text-align: center; border: 1px solid #ddd; font-size: 10px;">${String(index + 1).padStart(2, '0')}</td>
             <td style="padding: 6px; border: 1px solid #ddd; font-size: 10px;">${item.product_code || 'N/A'}</td>
-            <td style="padding: 6px; border: 1px solid #ddd; font-size: 10px;">${item.product_name}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 10px;">${item.product_name} <span style="font-weight: 600;">${unitText}</span></td>
             <td style="padding: 6px; text-align: center; border: 1px solid #ddd; font-size: 10px;">${weight.toFixed(2)}</td>
             <td style="padding: 6px; text-align: center; border: 1px solid #ddd; font-size: 10px;">${this.formatCurrency(qty)}</td>
             <td style="padding: 6px; text-align: center; border: 1px solid #ddd; font-size: 10px;">${totalWeight.toFixed(2)}</td>
@@ -1787,13 +1838,13 @@ export default {
             <!-- Header -->
             <div class="header">
               <div class="company-logo">
-                <img src="${LOGO_BASE64}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">
-                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.company_name || 'PROSPERPOS'}</div>
+                ${hasLogo ? `<img src="${logoUrl}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">` : ''}
+                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</div>
                 <div class="company-details">
                   <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
-                  <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                  <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}<br>
-                  <strong>Teléfono Móvil:</strong> +504 9875-2725<br>
+                  <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                  <strong>Teléfono:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}<br>
+                  ${this.companyInfo.whatsapp ? '<strong>Móvil:</strong> ' + this.companyInfo.whatsapp + '<br>' : ''}
                   <strong>Email:</strong> ${this.companyInfo.email || 'info@prosperpos.com'}
                 </div>
               </div>
@@ -1842,6 +1893,9 @@ export default {
                 <p><strong>Cliente:</strong> ${this.selectedDocument.customer_name || 'N/A'}</p>
                 <p><strong>RTN:</strong> ${this.selectedDocument.customer_rtn || 'N/A'}</p>
                 <p><strong>Dirección:</strong> ${this.selectedDocument.destination_address || this.selectedDocument.customer_address || 'N/A'}</p>
+                ${this.selectedDocument.orden_compra ? `<p><strong>Orden de Compra:</strong> ${this.selectedDocument.orden_compra}</p>` : ''}
+                ${this.selectedDocument.constancia_exonerado ? `<p><strong>Constancia Exonerado:</strong> ${this.selectedDocument.constancia_exonerado}</p>` : ''}
+                ${this.selectedDocument.registro_sag ? `<p><strong>Registro SAG:</strong> ${this.selectedDocument.registro_sag}</p>` : ''}
               </div>
             </div>
 
@@ -1948,12 +2002,21 @@ export default {
     formatDateTime(dateStr) {
       if (!dateStr) return '';
       const date = new Date(dateStr);
-      return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')} PM`;
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12;
+      return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year} ${String(displayHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
     },
     formatDate(dateStr) {
       if (!dateStr) return '';
-      const date = new Date(dateStr);
-      return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+      // Extraer solo la fecha (puede venir con T o con espacio)
+      const dateString = String(dateStr).split('T')[0].split(' ')[0];
+      const [year, month, day] = dateString.split('-');
+      return `${day}/${month}/${year}`;
     },
     getStatusLabel(status) {
       const labelMap = {

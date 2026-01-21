@@ -143,11 +143,10 @@
                   <img :src="getLogoBase64()" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo" />
                 </div>
                 <div style="font-size: 11px; line-height: 1.5;">
-                  <strong>{{ companyInfo.business_description || companyInfo.description || 'Cerámicas Terrazos y Pulidos' }}</strong><br>
+                  <strong>{{ companyInfo.commercial_name || companyInfo.company_name || 'PROSPERPOS' }}</strong><br>
                   <strong>RTN:</strong> {{ companyInfo.rtn || 'N/A' }}<br>
-                  <strong>Dirección:</strong> {{ companyInfo.direccion || 'Sin dirección' }}<br>
-                  <strong>Teléfono:</strong> {{ companyInfo.telefono || 'N/A' }}<br>
-                  <strong>Teléfono Móvil:</strong> {{ companyInfo.telefono_movil || companyInfo.phone_mobile || '+504 9875-2725' }}<br>
+                  <strong>Dirección:</strong> {{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}<br>
+                  <strong>Tel:</strong> {{ companyInfo.phone || companyInfo.telefono || 'N/A' }} | <strong>Móvil:</strong> {{ companyInfo.whatsapp || 'N/A' }}<br>
                   <strong>Email:</strong> {{ companyInfo.email || 'N/A' }}
                 </div>
               </div>
@@ -226,13 +225,14 @@ import axios from 'axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
-import { LOGO_BASE64 } from '@/assets/img/logo.js';
+import api from '@/utils/axios';
 import logoImage from '@/assets/img/logo.png';
 
 export default {
   data() {
     return {
       logoUrl: logoImage,
+      dynamicLogoUrl: '',
       filters: {
         date_from: this.getTodayDate(),
         date_to: this.getTodayDate(),
@@ -260,8 +260,31 @@ export default {
       if (this.filters.supplier_id === 'all') return 'TODOS';
       return this.filters.supplier_id;
     },
+    async getCompanyLogo() {
+      if (!this.companyInfo?.logo_url) {
+        return '';
+      }
+
+      const dbLogoUrl = this.companyInfo.logo_url;
+      if (!dbLogoUrl.startsWith('http')) {
+        return '';
+      }
+
+      try {
+        const response = await api.get('/image-proxy', {
+          params: { url: dbLogoUrl }
+        });
+        if (response.data.success && response.data.data.base64) {
+          return response.data.data.base64;
+        }
+      } catch (error) {
+        console.error('Error al cargar logo:', error);
+      }
+      return '';
+    },
     getLogoBase64() {
-      return LOGO_BASE64;
+      // Si hay logo dinámico cargado, usarlo; sino usar el estático
+      return this.dynamicLogoUrl || this.logoUrl;
     },
     async loadSuppliers() {
       try {
@@ -278,15 +301,33 @@ export default {
     },
     async loadCompanyInfo() {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('/api/v1/supplier-reports/company-info', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.data.success) {
+        const response = await api.get('/companies/default');
+        if (response.data && response.data.success) {
           this.companyInfo = response.data.data;
+          // Cargar el logo dinámico
+          this.dynamicLogoUrl = await this.getCompanyLogo();
         }
       } catch (error) {
-        console.error('Error loading company info:', error);
+        console.error('Error al cargar información de empresa:', error);
+        try {
+          const publicResponse = await api.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            this.companyInfo = publicResponse.data.data;
+            // Cargar el logo dinámico
+            this.dynamicLogoUrl = await this.getCompanyLogo();
+          }
+        } catch (publicError) {
+          console.error('Error al cargar información pública de empresa:', publicError);
+          this.companyInfo = {
+            company_name: 'ProsperPOS',
+            commercial_name: 'ProsperPOS',
+            rtn: 'N/A',
+            address: 'Sin dirección',
+            phone: 'N/A',
+            whatsapp: 'N/A',
+            email: 'N/A'
+          };
+        }
       }
     },
     async loadReport() {
@@ -341,7 +382,7 @@ export default {
       const data = [
         ['REPORTE DE PROVEEDORES'],
         [''],
-        ['Empresa:', this.companyInfo.company_name || 'EMPRESA'],
+        ['Empresa:', this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'],
         ['Desde:', this.formatDate(this.filters.date_from)],
         ['Hasta:', this.formatDate(this.filters.date_to)],
         ['Proveedor:', supplierFilterText],
@@ -381,7 +422,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildReportHTML();
+        const htmlContent = await this.buildReportHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -423,7 +464,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildReportHTML();
+        const htmlContent = await this.buildReportHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -449,7 +490,11 @@ export default {
         alert('Error al generar la imagen');
       }
     },
-    buildReportHTML() {
+    async buildReportHTML() {
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
       const supplierFilterText = this.getSupplierFilterText();
 
       let tableRows = '';
@@ -575,13 +620,12 @@ export default {
         <body>
           <div class="header-section">
             <div class="company-info">
-              <img src="${LOGO_BASE64}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">
+              ${hasLogo ? `<img src="${logoUrl}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">` : ''}
               <div class="company-details">
-                <strong>${this.companyInfo.business_description || this.companyInfo.description || 'Cerámicas Terrazos y Pulidos'}</strong><br>
+                <strong>${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</strong><br>
                 <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
-                <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}<br>
-                <strong>Teléfono Móvil:</strong> ${this.companyInfo.telefono_movil || this.companyInfo.phone_mobile || '+504 9875-2725'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.whatsapp || 'N/A'}<br>
                 <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
               </div>
             </div>
@@ -626,9 +670,9 @@ export default {
         </html>
       `;
     },
-    generatePrintableReport() {
+    async generatePrintableReport() {
       const printWindow = window.open('', '_blank');
-      const html = this.buildReportHTML();
+      const html = await this.buildReportHTML();
 
       const printHtml = html.replace('</body>', `
         <scr` + `ipt>

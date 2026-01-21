@@ -331,7 +331,6 @@ import api from "@/utils/axios";
 import html2canvas from "html2canvas";
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
-import { LOGO_BASE64 } from '@/assets/img/logo.js';
 
 export default {
   name: "ProfitLossReport",
@@ -534,9 +533,9 @@ export default {
         const wb = XLSX.utils.book_new();
 
         const headerData = [
-          ['Cerámicas Terrazos y Pulidos Universal'],
-          ['RTN: 01061977002516 | Tel: +504 2440-0037 | Móvil: +504 9875-2725'],
-          ['Casa Matriz, Barrio La Merced, Avenida 14 de Julio entre 15 y 16 calle. La Ceiba, Atlántida'],
+          [this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'],
+          [`RTN: ${this.companyInfo.rtn || 'N/A'} | Tel: ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'} | Móvil: ${this.companyInfo.whatsapp || 'N/A'}`],
+          [this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'],
           [''],
           ['REPORTE DE PÉRDIDAS Y GANANCIAS'],
           [`Desde: ${this.dateFrom} | Hasta: ${this.dateTo} | Agrupado por: ${this.selectedGroupByLabel}`],
@@ -580,7 +579,33 @@ export default {
       }
     },
 
-    buildReportHTML() {
+    async getCompanyLogo() {
+      if (!this.companyInfo?.logo_url) {
+        return '';
+      }
+
+      const dbLogoUrl = this.companyInfo.logo_url;
+      if (!dbLogoUrl.startsWith('http')) {
+        return '';
+      }
+
+      try {
+        const response = await api.get('/image-proxy', {
+          params: { url: dbLogoUrl }
+        });
+        if (response.data.success && response.data.data.base64) {
+          return response.data.data.base64;
+        }
+      } catch (error) {
+        console.error('Error al cargar logo:', error);
+      }
+      return '';
+    },
+    async buildReportHTML() {
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
       // Dividir períodos en grupos de máximo 10 columnas
       const MAX_COLS_PER_TABLE = 10;
       const periods = this.reportData.periods;
@@ -775,14 +800,13 @@ export default {
         <body>
           <div class="header-section">
             <div class="company-info">
-              <img src="${LOGO_BASE64}" alt="Logo">
+              ${hasLogo ? `<img src="${logoUrl}" alt="Logo">` : ''}
               <div class="company-details">
-                <strong>Cerámicas Terrazos y Pulidos Universal</strong><br>
-                <strong>RTN:</strong> 01061977002516<br>
-                <strong>Dirección:</strong> Casa Matriz, Barrio La Merced, Avenida 14 de Julio entre 15 y 16 calle frente a Repuestos del Atlántico. La Ceiba, Atlántida<br>
-                <strong>Tel:</strong> +504 2440-0037<br>
-                <strong>Tel Móvil:</strong> +504 9875-2725<br>
-                <strong>Email:</strong> mauricio_argenal@hotmail.com
+                <strong>${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</strong><br>
+                <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.whatsapp || 'N/A'}<br>
+                <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
               </div>
             </div>
             <div class="report-box">
@@ -824,7 +848,7 @@ export default {
         iframe.style.height = '800px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildReportHTML();
+        const htmlContent = await this.buildReportHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -893,7 +917,7 @@ export default {
         iframe.style.height = '800px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildReportHTML();
+        const htmlContent = await this.buildReportHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -925,12 +949,29 @@ export default {
 
     async loadCompanyInfo() {
       try {
-        const response = await api.get('/reports/company-info');
-        if (response.data.success) {
+        const response = await api.get('/companies/default');
+        if (response.data && response.data.success) {
           this.companyInfo = response.data.data;
         }
       } catch (error) {
-        console.error('Error loading company info:', error);
+        console.error('Error al cargar información de empresa:', error);
+        try {
+          const publicResponse = await api.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            this.companyInfo = publicResponse.data.data;
+          }
+        } catch (publicError) {
+          console.error('Error al cargar información pública de empresa:', publicError);
+          this.companyInfo = {
+            company_name: 'ProsperPOS',
+            commercial_name: 'ProsperPOS',
+            rtn: 'N/A',
+            address: 'Sin dirección',
+            phone: 'N/A',
+            whatsapp: 'N/A',
+            email: 'N/A'
+          };
+        }
       }
     },
 
@@ -968,7 +1009,7 @@ export default {
         iframe.style.height = '297mm';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildReportHTML();
+        const htmlContent = await this.buildReportHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 

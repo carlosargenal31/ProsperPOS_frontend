@@ -22,10 +22,13 @@
             </a>
           </li>
         </ul>
-        <div class="page-btn">
+        <div class="page-btn d-flex gap-2">
           <router-link to="/shipments/create" class="btn btn-primary btn-md d-inline-flex align-items-center">
             <vue-feather type="plus-circle" class="me-2"></vue-feather> Nueva Guía de Remisión
           </router-link>
+          <button class="btn btn-success btn-md d-inline-flex align-items-center" @click="showSaveReportModal = true">
+            <i class="ti ti-download me-2"></i> Guardar Reporte
+          </button>
         </div>
       </div>
 
@@ -423,6 +426,40 @@
     </div>
   </div>
 
+  <!-- Modal Guardar Reporte -->
+  <div v-if="showSaveReportModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Guardar Reporte - Guías de Remisión</h5>
+          <button type="button" class="btn-close" @click="showSaveReportModal = false"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">Selecciona el formato en el que deseas guardar el reporte:</p>
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-success" @click="saveShipmentsAsExcel">
+              <i class="ti ti-file-spreadsheet me-2"></i> Guardar como Excel
+            </button>
+            <button class="btn btn-outline-danger" @click="saveShipmentsAsPDF">
+              <i class="ti ti-file-type-pdf me-2"></i> Guardar como PDF
+            </button>
+            <button class="btn btn-outline-primary" @click="saveShipmentsAsImage">
+              <i class="ti ti-photo me-2"></i> Guardar como Imagen
+            </button>
+            <button class="btn btn-outline-secondary" @click="printShipmentsList">
+              <i class="ti ti-printer me-2"></i> Imprimir
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="showSaveReportModal = false">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 <script>
@@ -430,6 +467,9 @@ import api from '@/api/config';
 import Swal from 'sweetalert2';
 import { Modal } from 'bootstrap';
 import * as XLSX from 'xlsx';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import apiAxios from '@/utils/axios';
 
 export default {
   data() {
@@ -442,12 +482,15 @@ export default {
       selectedShipment: null,
       shipmentToChangeStatus: null,
       newStatus: '',
-      shipmentToExport: null
+      shipmentToExport: null,
+      showSaveReportModal: false,
+      companyInfo: {}
     };
   },
   mounted() {
     this.loadShipments();
     this.loadStatistics();
+    this.loadCompanyInfo();
   },
   methods: {
     async loadShipments() {
@@ -712,6 +755,311 @@ export default {
         'cancelado': 'Cancelados'
       };
       return texts[this.selectedStatus] || 'Todos los Estados';
+    },
+
+    // Company info methods
+    async loadCompanyInfo() {
+      try {
+        const response = await apiAxios.get('/companies/default');
+        if (response.data && response.data.success) {
+          this.companyInfo = response.data.data;
+        }
+      } catch (error) {
+        console.error('Error al cargar información de empresa:', error);
+        try {
+          const publicResponse = await apiAxios.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            this.companyInfo = publicResponse.data.data;
+          }
+        } catch (publicError) {
+          this.companyInfo = {
+            company_name: 'ProsperPOS',
+            commercial_name: 'ProsperPOS',
+            rtn: 'N/A',
+            address: 'Sin dirección',
+            phone: 'N/A',
+            whatsapp: 'N/A',
+            email: 'N/A'
+          };
+        }
+      }
+    },
+
+    async getCompanyLogo() {
+      if (!this.companyInfo?.logo_url) return '';
+      const dbLogoUrl = this.companyInfo.logo_url;
+      if (!dbLogoUrl.startsWith('http')) return '';
+
+      try {
+        const response = await apiAxios.get('/image-proxy', { params: { url: dbLogoUrl } });
+        if (response.data.success && response.data.data.base64) {
+          return response.data.data.base64;
+        }
+      } catch (error) {
+        console.error('Error al cargar logo:', error);
+      }
+      return '';
+    },
+
+    // Export methods for Shipments Report
+    async saveShipmentsAsExcel() {
+      try {
+        const wb = XLSX.utils.book_new();
+
+        // Header info
+        const headerData = [
+          ['REPORTE DE GUÍAS DE REMISIÓN'],
+          [''],
+          ['Empresa:', this.companyInfo.commercial_name || this.companyInfo.company_name || 'EMPRESA'],
+          ['Dirección:', this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'],
+          ['Teléfono:', this.companyInfo.phone || this.companyInfo.telefono || 'N/A'],
+          ['Email:', this.companyInfo.email || 'N/A'],
+          [''],
+          ['Generado:', `${new Date().toLocaleDateString('es-HN')} - ${new Date().toLocaleTimeString('es-HN')}`],
+          [''],
+          ['N° Guía', 'Cliente', 'Receptor', 'Destino', 'Fecha Emisión', 'Estado', 'Conductor']
+        ];
+
+        // Data rows
+        const dataRows = this.shipments.map(ship => [
+          ship.shipment_number,
+          ship.customer_name,
+          ship.receiver_name,
+          ship.destination_address,
+          this.formatDate(ship.emission_date),
+          this.getStatusText(ship.status),
+          ship.driver_name || '-'
+        ]);
+
+        const allData = [...headerData, ...dataRows];
+        const ws = XLSX.utils.aoa_to_sheet(allData);
+
+        // Column widths
+        ws['!cols'] = [
+          { wch: 18 }, // N° Guía
+          { wch: 25 }, // Cliente
+          { wch: 25 }, // Receptor
+          { wch: 35 }, // Destino
+          { wch: 15 }, // Fecha
+          { wch: 12 }, // Estado
+          { wch: 20 }  // Conductor
+        ];
+
+        // Merge cells for title
+        ws['!merges'] = [
+          { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }
+        ];
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Guías de Remisión');
+        XLSX.writeFile(wb, `Reporte_Guias_Remision_${new Date().toLocaleDateString('es-HN').replace(/\//g, '-')}.xlsx`);
+        this.showSaveReportModal = false;
+      } catch (error) {
+        console.error('Error generating Excel:', error);
+        Swal.fire('Error', 'Error al generar el archivo Excel', 'error');
+      }
+    },
+
+    async saveShipmentsAsPDF() {
+      try {
+        const htmlContent = await this.buildShipmentsReportHTML();
+
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '900px';
+        document.body.appendChild(iframe);
+
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 900,
+          windowWidth: 900
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('l', 'mm', 'letter'); // landscape
+        const imgWidth = 279;
+        const pageHeight = 210;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        pdf.save(`Reporte_Guias_Remision_${new Date().toLocaleDateString('es-HN').replace(/\//g, '-')}.pdf`);
+        document.body.removeChild(iframe);
+        this.showSaveReportModal = false;
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        Swal.fire('Error', 'Error al generar el PDF', 'error');
+      }
+    },
+
+    async saveShipmentsAsImage() {
+      try {
+        const htmlContent = await this.buildShipmentsReportHTML();
+
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '900px';
+        document.body.appendChild(iframe);
+
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 900,
+          windowWidth: 900
+        });
+
+        const link = document.createElement('a');
+        link.download = `Reporte_Guias_Remision_${new Date().toLocaleDateString('es-HN').replace(/\//g, '-')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        document.body.removeChild(iframe);
+        this.showSaveReportModal = false;
+      } catch (error) {
+        console.error('Error generating image:', error);
+        Swal.fire('Error', 'Error al generar la imagen', 'error');
+      }
+    },
+
+    async printShipmentsList() {
+      try {
+        const htmlContent = await this.buildShipmentsReportHTML();
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        printWindow.print();
+        this.showSaveReportModal = false;
+      } catch (error) {
+        console.error('Error printing:', error);
+        Swal.fire('Error', 'Error al imprimir', 'error');
+      }
+    },
+
+    async buildShipmentsReportHTML() {
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
+      let tableRows = '';
+
+      this.shipments.forEach((ship, index) => {
+        const statusClass = ship.status === 'entregado' ? '#4CAF50' : ship.status === 'en_camino' ? '#2196F3' : ship.status === 'cancelado' ? '#F44336' : '#FF9800';
+
+        tableRows += `
+          <tr>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: center;">${index + 1}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${ship.shipment_number}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${ship.customer_name}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${ship.receiver_name}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${this.truncate(ship.destination_address, 35)}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: center;">${this.formatDate(ship.emission_date)}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: center;">
+              <span style="background-color: ${statusClass}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: 600;">
+                ${this.getStatusText(ship.status)}
+              </span>
+            </td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${ship.driver_name || '-'}</td>
+          </tr>
+        `;
+      });
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Reporte de Guías de Remisión</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; padding: 15px; background: white; margin: 0; width: 900px; }
+            .header-section { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
+            .company-info { width: 60%; flex-shrink: 0; }
+            .company-info img { max-width: 180px; height: auto; margin-bottom: 8px; }
+            .company-details { font-size: 11px; line-height: 1.5; }
+            .report-box { width: 38%; flex-shrink: 0; background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+                          -webkit-print-color-adjust: exact; print-color-adjust: exact;
+                          color: white; padding: 10px; border-radius: 8px; }
+            .report-title { font-size: 13px; font-weight: bold; margin-bottom: 8px; }
+            .report-details { font-size: 10px; line-height: 1.6; }
+            .separator { border: none; border-top: 3px solid #f97316; margin: 15px 0; }
+            table { width: 100%; border-collapse: collapse; font-size: 9px; }
+            thead { background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+                    -webkit-print-color-adjust: exact; print-color-adjust: exact; color: white; }
+            th { padding: 8px 4px; text-align: left; border: 1px solid #ddd; font-size: 9px; }
+            td { padding: 6px; border: 1px solid #ddd; }
+          </style>
+        </head>
+        <body>
+          <div class="header-section">
+            <div class="company-info">
+              ${hasLogo ? `<img src="${logoUrl}" alt="Logo">` : ''}
+              <div class="company-details">
+                <strong>${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</strong><br>
+                <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.whatsapp || 'N/A'}<br>
+                <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
+              </div>
+            </div>
+            <div class="report-box">
+              <div class="report-title">REPORTE DE GUÍAS DE REMISIÓN</div>
+              <div class="report-details">
+                <strong>Generado:</strong> ${new Date().toLocaleDateString('es-HN', { year: 'numeric', month: 'long', day: 'numeric' })} - ${new Date().toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' })}<br>
+                <strong>Total de Guías:</strong> ${this.shipments.length}
+              </div>
+            </div>
+          </div>
+          <hr class="separator">
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 30px; text-align: center;">#</th>
+                <th>N° Guía</th>
+                <th>Cliente</th>
+                <th>Receptor</th>
+                <th>Destino</th>
+                <th style="text-align: center;">Fecha</th>
+                <th style="text-align: center;">Estado</th>
+                <th>Conductor</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      return html;
     }
   }
 };

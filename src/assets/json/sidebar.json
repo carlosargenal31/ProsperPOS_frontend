@@ -56,6 +56,10 @@
           {
             "menuValue": "Guías de Remisión",
             "route": "/shipments"
+          },
+          {
+            "menuValue": "Arqueo de Caja",
+            "route": "/cash-register"
           }
         ]
       },

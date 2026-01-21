@@ -10,6 +10,11 @@
             <h6>Gestionar devoluciones de facturas</h6>
           </div>
         </div>
+        <div class="page-btn d-flex gap-2" v-if="!selectedInvoice">
+          <button class="btn btn-success" @click="showSaveReportModal = true">
+            <i class="ti ti-download me-1"></i>Guardar Reporte
+          </button>
+        </div>
       </div>
 
       <!-- Search Invoice Card -->
@@ -513,9 +518,9 @@
           <!-- NOTA DE CRÉDITO -->
           <div v-if="currentDocument === 'credit_note'" id="creditNoteContent">
             <div class="text-center mb-2">
-              <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-              <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
-              <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
+              <strong style="font-size: 13px;">{{ companyInfo.commercial_name || companyInfo.company_name || 'EMPRESA' }}</strong><br>
+              <small style="font-size: 10px;">{{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}</small><br>
+              <small style="font-size: 10px;">Tel: {{ companyInfo.phone || companyInfo.telefono || 'N/A' }} | Móvil: {{ companyInfo.whatsapp || 'N/A' }}</small>
             </div>
 
             <h6 class="text-danger text-center mb-2" style="font-size: 14px;">NOTA DE CRÉDITO</h6>
@@ -594,9 +599,9 @@
           <!-- DEVOLUCIÓN -->
           <div v-if="currentDocument === 'return'" id="returnContent">
             <div class="text-center mb-2">
-              <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-              <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
-              <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
+              <strong style="font-size: 13px;">{{ companyInfo.commercial_name || companyInfo.company_name || 'EMPRESA' }}</strong><br>
+              <small style="font-size: 10px;">{{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}</small><br>
+              <small style="font-size: 10px;">Tel: {{ companyInfo.phone || companyInfo.telefono || 'N/A' }} | Móvil: {{ companyInfo.whatsapp || 'N/A' }}</small>
             </div>
 
             <h6 class="text-primary text-center mb-2" style="font-size: 14px;">DEVOLUCIÓN</h6>
@@ -706,6 +711,40 @@
 </div>
 <div class="modal-backdrop fade show" v-if="showDocumentsModal" @click="closeDocumentsModal"></div>
 
+<!-- Modal Guardar Reporte -->
+<div v-if="showSaveReportModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Guardar Reporte - Devoluciones</h5>
+        <button type="button" class="btn-close" @click="showSaveReportModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">Selecciona el formato en el que deseas guardar el reporte:</p>
+        <div class="d-grid gap-2">
+          <button class="btn btn-outline-success" @click="saveReturnsAsExcel">
+            <i class="ti ti-file-spreadsheet me-2"></i> Guardar como Excel
+          </button>
+          <button class="btn btn-outline-danger" @click="saveReturnsAsPDF">
+            <i class="ti ti-file-type-pdf me-2"></i> Guardar como PDF
+          </button>
+          <button class="btn btn-outline-primary" @click="saveReturnsAsImage">
+            <i class="ti ti-photo me-2"></i> Guardar como Imagen
+          </button>
+          <button class="btn btn-outline-secondary" @click="printReturnsList">
+            <i class="ti ti-printer me-2"></i> Imprimir
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" @click="showSaveReportModal = false">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </template>
 
 <script>
@@ -713,7 +752,7 @@ import axios from 'axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
-import { LOGO_BASE64 } from '@/assets/img/logo.js';
+import api from '@/utils/axios';
 
 export default {
   data() {
@@ -722,6 +761,7 @@ export default {
       showReturnModal: false,
       showDocumentsModal: false,
       showExportDropdown: false,
+      showSaveReportModal: false,
       currentDocument: 'credit_note', // 'credit_note' o 'return'
       selectedInvoice: null,
       processedReturn: {
@@ -1126,24 +1166,44 @@ export default {
     },
     async loadCompanyInfo() {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('/api/v1/reports/company-info', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (response.data.success) {
+        const response = await api.get('/companies/default');
+        if (response.data && response.data.success) {
           this.companyInfo = response.data.data;
         }
       } catch (error) {
-        console.error('Error loading company info:', error);
-        // Datos por defecto en caso de error
-        this.companyInfo = {
-          company_name: 'ProsperPOS',
-          direccion: 'Honduras',
-          telefono: 'N/A',
-          rtn: 'N/A'
-        };
+        console.error('Error al cargar información de empresa:', error);
+        try {
+          const publicResponse = await api.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            this.companyInfo = publicResponse.data.data;
+          }
+        } catch (publicError) {
+          this.companyInfo = {
+            company_name: 'ProsperPOS',
+            commercial_name: 'ProsperPOS',
+            rtn: 'N/A',
+            address: 'Sin dirección',
+            phone: 'N/A',
+            whatsapp: 'N/A',
+            email: 'N/A'
+          };
+        }
       }
+    },
+    async getCompanyLogo() {
+      if (!this.companyInfo?.logo_url) return '';
+      const dbLogoUrl = this.companyInfo.logo_url;
+      if (!dbLogoUrl.startsWith('http')) return '';
+
+      try {
+        const response = await api.get('/image-proxy', { params: { url: dbLogoUrl } });
+        if (response.data.success && response.data.data.base64) {
+          return response.data.data.base64;
+        }
+      } catch (error) {
+        console.error('Error al cargar logo:', error);
+      }
+      return '';
     },
     async loadReturns() {
       try {
@@ -1224,9 +1284,9 @@ export default {
       this.showExportDropdown = false;
       this.currentDocument = 'credit_note';
     },
-    generatePrintableDocument() {
+    async generatePrintableDocument() {
       const printWindow = window.open('', '_blank');
-      const html = this.buildDocumentHTML();
+      const html = await this.buildDocumentHTML();
       printWindow.document.write(html);
       printWindow.document.close();
 
@@ -1294,9 +1354,9 @@ export default {
       const data = [
         ['NOTA DE CRÉDITO'],
         [''],
-        ['Empresa:', this.companyInfo.company_name || 'EMPRESA'],
-        ['Dirección:', this.companyInfo.direccion || 'Sin dirección'],
-        ['Teléfono:', this.companyInfo.telefono || 'N/A'],
+        ['Empresa:', this.companyInfo.commercial_name || this.companyInfo.company_name || 'EMPRESA'],
+        ['Dirección:', this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'],
+        ['Teléfono:', this.companyInfo.phone || this.companyInfo.telefono || 'N/A'],
         ['RTN:', this.companyInfo.rtn || 'N/A'],
         [''],
         ['Nro. Nota Crédito:', this.getCreditNoteNumber()],
@@ -1345,7 +1405,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildDocumentHTML();
+        const htmlContent = await this.buildDocumentHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -1402,7 +1462,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildDocumentHTML();
+        const htmlContent = await this.buildDocumentHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -1429,7 +1489,9 @@ export default {
         alert('Error al generar la imagen');
       }
     },
-    buildDocumentHTML() {
+    async buildDocumentHTML() {
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
       const docTitle = this.currentDocument === 'credit_note' ? 'NOTA DE CRÉDITO' : 'DEVOLUCIÓN';
       const docColor = '#FF9800'; // Color naranja uniforme
 
@@ -1629,14 +1691,13 @@ export default {
           <div class="invoice-container">
             <div class="header">
               <div class="company-logo">
-                <img src="${LOGO_BASE64}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">
-                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.company_name || 'PROSPERPOS'}</div>
+                ${hasLogo ? `<img src="${logoUrl}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">` : ''}
+                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</div>
                 <div class="company-details">
                   <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
-                  <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                  <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}<br>
-                  <strong>Teléfono Móvil:</strong> +504 9875-2725<br>
-                  <strong>Email:</strong> ${this.companyInfo.email || 'info@prosperpos.com'}
+                  <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                  <strong>Tel:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.whatsapp || 'N/A'}<br>
+                  <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
                 </div>
               </div>
               <div style="flex: 1; margin-left: 20px;">
@@ -1735,6 +1796,266 @@ export default {
               </div>
             </div>
           </div>
+        </body>
+        </html>
+      `;
+
+      return html;
+    },
+    // Export methods for Returns History Report
+    async saveReturnsAsExcel() {
+      try {
+        const wb = XLSX.utils.book_new();
+
+        // Header info
+        const headerData = [
+          ['REPORTE DE DEVOLUCIONES DE VENTAS'],
+          [''],
+          ['Empresa:', this.companyInfo.commercial_name || this.companyInfo.company_name || 'EMPRESA'],
+          ['Dirección:', this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'],
+          ['Teléfono:', this.companyInfo.phone || this.companyInfo.telefono || 'N/A'],
+          ['Email:', this.companyInfo.email || 'N/A'],
+          [''],
+          ['Generado:', `${new Date().toLocaleDateString('es-HN')} - ${new Date().toLocaleTimeString('es-HN')}`],
+          [''],
+          ['Correlativo', 'Factura', 'Cliente', 'Fecha', 'Nota Crédito', 'Total']
+        ];
+
+        // Data rows
+        const dataRows = this.returns.map(ret => [
+          ret.correlative,
+          ret.invoice_number,
+          ret.customer_name,
+          this.formatDate(ret.emission_date),
+          ret.credit_note_correlative || '-',
+          parseFloat(ret.total || 0).toFixed(2)
+        ]);
+
+        // Calculate total
+        const total = this.returns.reduce((sum, ret) => sum + parseFloat(ret.total || 0), 0);
+        dataRows.push(['', '', '', '', 'TOTAL:', total.toFixed(2)]);
+
+        const allData = [...headerData, ...dataRows];
+        const ws = XLSX.utils.aoa_to_sheet(allData);
+
+        // Column widths
+        ws['!cols'] = [
+          { wch: 15 }, // Correlativo
+          { wch: 15 }, // Factura
+          { wch: 30 }, // Cliente
+          { wch: 12 }, // Fecha
+          { wch: 15 }, // Nota Crédito
+          { wch: 12 }  // Total
+        ];
+
+        // Merge cells for title
+        ws['!merges'] = [
+          { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }
+        ];
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Devoluciones');
+        XLSX.writeFile(wb, `Reporte_Devoluciones_${new Date().toLocaleDateString('es-HN').replace(/\//g, '-')}.xlsx`);
+        this.showSaveReportModal = false;
+      } catch (error) {
+        console.error('Error generating Excel:', error);
+        alert('Error al generar el archivo Excel');
+      }
+    },
+    async saveReturnsAsPDF() {
+      try {
+        const htmlContent = await this.buildReturnsReportHTML();
+
+        // Create hidden iframe
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        document.body.appendChild(iframe);
+
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 800,
+          windowWidth: 800
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'letter');
+        const imgWidth = 210;
+        const pageHeight = 279;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        pdf.save(`Reporte_Devoluciones_${new Date().toLocaleDateString('es-HN').replace(/\//g, '-')}.pdf`);
+        document.body.removeChild(iframe);
+        this.showSaveReportModal = false;
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error al generar el PDF');
+      }
+    },
+    async saveReturnsAsImage() {
+      try {
+        const htmlContent = await this.buildReturnsReportHTML();
+
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        document.body.appendChild(iframe);
+
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 800,
+          windowWidth: 800
+        });
+
+        const link = document.createElement('a');
+        link.download = `Reporte_Devoluciones_${new Date().toLocaleDateString('es-HN').replace(/\//g, '-')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        document.body.removeChild(iframe);
+        this.showSaveReportModal = false;
+      } catch (error) {
+        console.error('Error generating image:', error);
+        alert('Error al generar la imagen');
+      }
+    },
+    async printReturnsList() {
+      try {
+        const htmlContent = await this.buildReturnsReportHTML();
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        printWindow.print();
+        this.showSaveReportModal = false;
+      } catch (error) {
+        console.error('Error printing:', error);
+        alert('Error al imprimir');
+      }
+    },
+    async buildReturnsReportHTML() {
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
+      let tableRows = '';
+      let totalAmount = 0;
+
+      this.returns.forEach((ret, index) => {
+        const total = parseFloat(ret.total || 0);
+        totalAmount += total;
+
+        tableRows += `
+          <tr>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: center;">${index + 1}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${ret.correlative}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${ret.invoice_number}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${ret.customer_name}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: center;">${this.formatDate(ret.emission_date)}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: center;">${ret.credit_note_correlative || '-'}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: right;">L ${this.formatCurrency(total)}</td>
+          </tr>
+        `;
+      });
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Reporte de Devoluciones</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; padding: 15px; background: white; margin: 0; width: 800px; }
+            .header-section { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
+            .company-info { width: 60%; flex-shrink: 0; }
+            .company-info img { max-width: 180px; height: auto; margin-bottom: 8px; }
+            .company-details { font-size: 11px; line-height: 1.5; }
+            .report-box { width: 38%; flex-shrink: 0; background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+                          -webkit-print-color-adjust: exact; print-color-adjust: exact;
+                          color: white; padding: 10px; border-radius: 8px; }
+            .report-title { font-size: 13px; font-weight: bold; margin-bottom: 8px; }
+            .report-details { font-size: 10px; line-height: 1.6; }
+            .separator { border: none; border-top: 3px solid #f97316; margin: 15px 0; }
+            table { width: 100%; border-collapse: collapse; font-size: 9px; }
+            thead { background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+                    -webkit-print-color-adjust: exact; print-color-adjust: exact; color: white; }
+            th { padding: 8px 4px; text-align: left; border: 1px solid #ddd; font-size: 9px; }
+            td { padding: 6px; border: 1px solid #ddd; }
+            .total-row { background-color: #FFF3E0; font-weight: bold; }
+            .total-row td { border-top: 2px solid #f97316; }
+          </style>
+        </head>
+        <body>
+          <div class="header-section">
+            <div class="company-info">
+              ${hasLogo ? `<img src="${logoUrl}" alt="Logo">` : ''}
+              <div class="company-details">
+                <strong>${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</strong><br>
+                <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.whatsapp || 'N/A'}<br>
+                <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
+              </div>
+            </div>
+            <div class="report-box">
+              <div class="report-title">REPORTE DE DEVOLUCIONES</div>
+              <div class="report-details">
+                <strong>Generado:</strong> ${new Date().toLocaleDateString('es-HN', { year: 'numeric', month: 'long', day: 'numeric' })} - ${new Date().toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            </div>
+          </div>
+          <hr class="separator">
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 30px; text-align: center;">#</th>
+                <th>Correlativo</th>
+                <th>Factura</th>
+                <th>Cliente</th>
+                <th style="text-align: center;">Fecha</th>
+                <th style="text-align: center;">Nota Crédito</th>
+                <th style="text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+              <tr class="total-row">
+                <td colspan="6" style="text-align: right; padding: 6px;"><strong>TOTAL:</strong></td>
+                <td style="text-align: right; padding: 6px;"><strong>L ${this.formatCurrency(totalAmount)}</strong></td>
+              </tr>
+            </tbody>
+          </table>
         </body>
         </html>
       `;

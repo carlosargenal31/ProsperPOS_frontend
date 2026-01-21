@@ -405,7 +405,7 @@
                     <tbody>
                       <tr v-for="item in currentDocument.items" :key="item.id">
                         <td style="padding: 3px;">{{ item.product_code || item.codigo || 'N/A' }}</td>
-                        <td style="padding: 3px;">{{ item.product_name }}</td>
+                        <td style="padding: 3px;">{{ item.product_name }}{{ item.unit_name ? ' (' + item.unit_name + ')' : '' }}</td>
                         <td class="text-center" style="padding: 3px;">{{ formatWeight(item.weight) }}</td>
                         <td class="text-center" style="padding: 3px;">{{ item.quantity }}</td>
                         <td class="text-center" style="padding: 3px;">{{ formatTotalWeight(item.weight, item.quantity) }}</td>
@@ -424,9 +424,10 @@
               <!-- NOTA DE CRÉDITO -->
               <div v-else-if="currentDocument.type === 'nota_credito'" id="creditNoteContent">
                 <div class="text-center mb-2">
-                  <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-                  <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
-                  <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
+                  <strong style="font-size: 13px;">{{ companyInfo.commercial_name || companyInfo.company_name || 'EMPRESA' }}</strong><br>
+                  <small style="font-size: 10px;"><strong>RTN:</strong> {{ companyInfo.rtn || 'N/A' }}</small><br>
+                  <small style="font-size: 10px;">{{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}</small><br>
+                  <small style="font-size: 10px;">Tel: {{ companyInfo.phone || companyInfo.telefono || 'N/A' }}</small>
                 </div>
 
                 <h6 class="text-danger text-center mb-2" style="font-size: 14px;">NOTA DE CRÉDITO</h6>
@@ -465,7 +466,7 @@
                   <tbody>
                     <tr v-for="item in currentDocument.items" :key="item.id">
                       <td style="padding: 4px;">{{ item.product_code || 'N/A' }}</td>
-                      <td style="padding: 4px;">{{ item.product_name }}</td>
+                      <td style="padding: 4px;">{{ item.product_name }}{{ item.unit_name ? ' (' + item.unit_name + ')' : '' }}</td>
                       <td class="text-end" style="padding: 4px;">{{ formatCurrency(item.quantity) }}</td>
                       <td class="text-end" style="padding: 4px;">L {{ formatCurrency(item.unit_price) }}</td>
                       <td class="text-end" style="padding: 4px;">{{ formatCurrency(item.discount_value || 0) }}%</td>
@@ -505,9 +506,10 @@
               <!-- DEVOLUCIÓN -->
               <div v-else-if="currentDocument.type === 'devolucion'" id="returnContent">
                 <div class="text-center mb-2">
-                  <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-                  <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
-                  <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
+                  <strong style="font-size: 13px;">{{ companyInfo.commercial_name || companyInfo.company_name || 'EMPRESA' }}</strong><br>
+                  <small style="font-size: 10px;"><strong>RTN:</strong> {{ companyInfo.rtn || 'N/A' }}</small><br>
+                  <small style="font-size: 10px;">{{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}</small><br>
+                  <small style="font-size: 10px;">Tel: {{ companyInfo.phone || companyInfo.telefono || 'N/A' }}</small>
                 </div>
 
                 <h6 class="text-primary text-center mb-2" style="font-size: 14px;">DEVOLUCIÓN</h6>
@@ -540,7 +542,7 @@
                   <tbody>
                     <tr v-for="item in currentDocument.items" :key="item.id">
                       <td style="padding: 4px;">{{ item.product_code || 'N/A' }}</td>
-                      <td style="padding: 4px;">{{ item.product_name }}</td>
+                      <td style="padding: 4px;">{{ item.product_name }}{{ item.unit_name ? ' (' + item.unit_name + ')' : '' }}</td>
                       <td class="text-end" style="padding: 4px;">{{ formatCurrency(item.unit_price) }}</td>
                       <td class="text-end" style="padding: 4px;">{{ formatCurrency(item.quantity) }}</td>
                       <td class="text-end" style="padding: 4px;">{{ formatCurrency(item.discount_value || 0) }}</td>
@@ -561,9 +563,10 @@
               <!-- COTIZACIÓN -->
               <div v-else-if="currentDocument.type === 'cotizacion'" id="quoteContent">
                 <div class="text-center mb-2">
-                  <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-                  <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
-                  <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
+                  <strong style="font-size: 13px;">{{ companyInfo.commercial_name || companyInfo.company_name || 'EMPRESA' }}</strong><br>
+                  <small style="font-size: 10px;"><strong>RTN:</strong> {{ companyInfo.rtn || 'N/A' }}</small><br>
+                  <small style="font-size: 10px;">{{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}</small><br>
+                  <small style="font-size: 10px;">Tel: {{ companyInfo.phone || companyInfo.telefono || 'N/A' }}</small>
                 </div>
 
                 <h6 class="text-info text-center mb-2" style="font-size: 14px;">COTIZACIÓN</h6>
@@ -593,7 +596,7 @@
                   <tbody>
                     <tr v-for="item in currentDocument.items" :key="item.id">
                       <td style="padding: 4px;">{{ item.product_code || 'N/A' }}</td>
-                      <td style="padding: 4px;">{{ item.product_name }}</td>
+                      <td style="padding: 4px;">{{ item.product_name }}{{ item.unit_name ? ' (' + item.unit_name + ')' : '' }}</td>
                       <td class="text-end" style="padding: 4px;">{{ formatCurrency(item.quantity) }}</td>
                       <td class="text-end" style="padding: 4px;">{{ formatCurrency(item.unit_price || item.price) }}</td>
                       <td class="text-end" style="padding: 4px;">{{ formatCurrency(item.total || calculateItemTotal(item)) }}</td>
@@ -611,9 +614,10 @@
               <!-- FACTURA / GUIA DE REMISION / FACT EN ESPERA -->
               <div v-else id="genericDocContent">
                 <div class="text-center mb-2">
-                  <strong style="font-size: 13px;">{{ companyInfo.company_name || 'EMPRESA' }}</strong><br>
-                  <small style="font-size: 10px;">{{ companyInfo.direccion || 'Sin dirección' }}</small><br>
-                  <small style="font-size: 10px;">Tel: {{ companyInfo.telefono || 'N/A' }}</small>
+                  <strong style="font-size: 13px;">{{ companyInfo.commercial_name || companyInfo.company_name || 'EMPRESA' }}</strong><br>
+                  <small style="font-size: 10px;"><strong>RTN:</strong> {{ companyInfo.rtn || 'N/A' }}</small><br>
+                  <small style="font-size: 10px;">{{ companyInfo.address || companyInfo.direccion || 'Sin dirección' }}</small><br>
+                  <small style="font-size: 10px;">Tel: {{ companyInfo.phone || companyInfo.telefono || 'N/A' }}</small>
                 </div>
 
                 <h6 class="text-info text-center mb-2" style="font-size: 14px;">{{ getDocTypeLabel(currentDocument.type) }}</h6>
@@ -643,7 +647,7 @@
                   <tbody>
                     <tr v-for="item in currentDocument.items" :key="item.id">
                       <td style="padding: 4px;">{{ item.product_code || 'N/A' }}</td>
-                      <td style="padding: 4px;">{{ item.product_name }}</td>
+                      <td style="padding: 4px;">{{ item.product_name }}{{ item.unit_name ? ' (' + item.unit_name + ')' : '' }}</td>
                       <td class="text-end" style="padding: 4px;">{{ formatCurrency(item.quantity) }}</td>
                       <td class="text-end" style="padding: 4px;">{{ formatCurrency(item.unit_price || item.price) }}</td>
                       <td class="text-end" style="padding: 4px;">{{ formatCurrency(item.total || calculateItemTotal(item)) }}</td>
@@ -718,10 +722,10 @@
 
 <script>
 import axios from 'axios';
+import api from '@/utils/axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
-import { LOGO_BASE64 } from '@/assets/img/logo.js';
 
 export default {
   data() {
@@ -865,23 +869,57 @@ export default {
     },
     async loadCompanyInfo() {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('/api/v1/reports/company-info', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (response.data.success) {
+        const response = await api.get('/companies/default');
+        if (response.data && response.data.success) {
           this.companyInfo = response.data.data;
+        } else if (response.data) {
+          this.companyInfo = response.data;
         }
       } catch (error) {
         console.error('Error loading company info:', error);
-        this.companyInfo = {
-          company_name: 'ProsperPOS',
-          direccion: 'Honduras',
-          telefono: 'N/A',
-          rtn: 'N/A'
-        };
+        // Fallback: intentar con endpoint público
+        try {
+          const publicResponse = await api.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            this.companyInfo = publicResponse.data.data;
+          } else if (publicResponse.data) {
+            this.companyInfo = publicResponse.data;
+          }
+        } catch (publicError) {
+          console.error('Error loading public company info:', publicError);
+          this.companyInfo = {
+            company_name: 'ProsperPOS',
+            commercial_name: 'ProsperPOS',
+            direccion: 'Honduras',
+            address: 'Honduras',
+            telefono: 'N/A',
+            phone: 'N/A',
+            rtn: 'N/A',
+            email: 'info@prosperpos.com'
+          };
+        }
       }
+    },
+    async getCompanyLogo() {
+      if (!this.companyInfo?.logo_url) {
+        return '';
+      }
+
+      const dbLogoUrl = this.companyInfo.logo_url;
+      if (!dbLogoUrl.startsWith('http')) {
+        return '';
+      }
+
+      try {
+        const response = await api.get('/image-proxy', { params: { url: dbLogoUrl } });
+        if (response.data.success && response.data.data.base64) {
+          return response.data.data.base64;
+        }
+      } catch (error) {
+        console.error('Error al cargar logo:', error);
+      }
+
+      return '';
     },
     async loadCustomers() {
       try {
@@ -1093,7 +1131,7 @@ export default {
 
           data.push([
             item.product_code || 'N/A',
-            item.product_name,
+            item.product_name + (item.unit_name ? ' (' + item.unit_name + ')' : ''),
             qty,
             price,
             discountValue,
@@ -1132,7 +1170,7 @@ export default {
 
       this.currentDocument.items.forEach(item => {
         data.push([
-          item.product_name,
+          item.product_name + (item.unit_name ? ' (' + item.unit_name + ')' : ''),
           item.quantity,
           item.unit_price || item.price,
           item.discount_value || 0,
@@ -1160,7 +1198,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildDocumentHTML();
+        const htmlContent = await this.buildDocumentHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -1198,7 +1236,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildDocumentHTML();
+        const htmlContent = await this.buildDocumentHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -1223,9 +1261,9 @@ export default {
         alert('Error al generar la imagen');
       }
     },
-    printDocument() {
+    async printDocument() {
       const printWindow = window.open('', '_blank');
-      const html = this.buildDocumentHTML();
+      const html = await this.buildDocumentHTML();
       printWindow.document.write(html);
       printWindow.document.close();
 
@@ -1234,21 +1272,25 @@ export default {
         printWindow.print();
       };
     },
-    buildDocumentHTML() {
+    async buildDocumentHTML() {
       const docTitle = this.getDocTypeLabel(this.currentDocument.type);
       const docColor = '#FF9800'; // Naranja/Amarillo uniforme
 
       // Si es GUÍA DE REMISIÓN, usar formato especial
       if (this.currentDocument.type === 'guia_remision') {
-        return this.buildShippingGuideHTML();
+        return await this.buildShippingGuideHTML();
       }
 
       // Si es FACTURA, usar formato de ticket (80mm)
       if (this.currentDocument.type === 'factura') {
-        return this.buildInvoiceTicketHTML();
+        return await this.buildInvoiceTicketHTML();
       }
 
       // Devoluciones, notas de crédito y cotizaciones usan formato carta
+
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
 
       // Construir filas de la tabla según el tipo de documento
       let tableRows = '';
@@ -1276,7 +1318,7 @@ export default {
           <tr>
             <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${String(index + 1).padStart(2, '0')}</td>
             <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_code || 'N/A'}</td>
-            <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_name}</td>
+            <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_name}${item.unit_name ? ' (' + item.unit_name + ')' : ''}</td>
             <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${this.formatCurrency(qty)}</td>
             <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-size: 10px;">L ${this.formatCurrency(price)}</td>
             <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 10px;">L ${this.formatCurrency(itemTotal)}</td>
@@ -1510,13 +1552,13 @@ export default {
           <div class="invoice-container">
             <div class="header">
               <div class="company-logo">
-                <img src="${LOGO_BASE64}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">
-                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.company_name || 'PROSPERPOS'}</div>
+                ${hasLogo ? `<img src="${logoUrl}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">` : ''}
+                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</div>
                 <div class="company-details">
                   <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
-                  <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                  <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}<br>
-                  <strong>Teléfono Móvil:</strong> +504 9875-2725<br>
+                  <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                  <strong>Teléfono:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}<br>
+                  ${this.companyInfo.whatsapp ? `<strong>Móvil:</strong> ${this.companyInfo.whatsapp}<br>` : ''}
                   <strong>Email:</strong> ${this.companyInfo.email || 'info@prosperpos.com'}
                 </div>
               </div>
@@ -1541,9 +1583,9 @@ export default {
                   <strong>Condiciones de la Transacción:</strong> ${this.currentDocument.payment_terms || 'Contado'}<br>
                   <strong>Entrega:</strong> ${this.formatDate(this.currentDocument.emission_date || this.currentDocument.issue_date || this.currentDocument.quote_date)}<br>
                   ${this.currentDocument.invoice_number && this.currentDocument.type !== 'devolucion' && this.currentDocument.type !== 'nota_credito' ? `<strong>Factura Orig.:</strong> ${this.currentDocument.invoice_number}<br>` : ''}
-                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong><br>
-                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong><br>
-                  <strong>No. Identificativo del Registro SAG:</strong>
+                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong> ${this.currentDocument.orden_compra || ''}<br>
+                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong> ${this.currentDocument.constancia_exonerado || ''}<br>
+                  <strong>No. Identificativo del Registro SAG:</strong> ${this.currentDocument.registro_sag || ''}
                 </div>
               </div>
             </div>
@@ -1637,8 +1679,12 @@ export default {
 
       return html;
     },
-    buildInvoiceTicketHTML() {
+    async buildInvoiceTicketHTML() {
       const docTitle = this.getDocTypeLabel(this.currentDocument.type);
+
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
 
       let tableRows = '';
       let subtotal = 0;
@@ -1675,7 +1721,7 @@ export default {
         tableRows += `
           <tr>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(qty)}</td>
-            <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name}</td>
+            <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name}${item.unit_name ? ' (' + item.unit_name + ')' : ''}</td>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(price)}</td>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemTotal)}</td>
           </tr>
@@ -1874,19 +1920,15 @@ export default {
           <div class="invoice-container">
             <!-- Header -->
             <div class="header">
-              <div class="company-logo">
-                <img src="${LOGO_BASE64}" alt="Logo">
-              </div>
-              <div class="company-name">CERAMICAS TERRAZOS Y PULIDOS<br>UNIVERSAL</div>
+              ${hasLogo ? `<div class="company-logo"><img src="${logoUrl}" alt="Logo"></div>` : ''}
+              <div class="company-name">${this.companyInfo.commercial_name || this.companyInfo.company_name || 'EMPRESA'}</div>
               <div class="company-details">
-                <strong>RTN:</strong> 01061977002516<br>
-                <strong>Dirección:</strong> Casa Matriz, Barrio La Merced,<br>
-                Avenida 14 de Julio entre 15 y 16 calle frente a<br>
-                Repuestos del Atlántico, La Ceiba, Atlántida<br>
-                <strong>Teléfono de Empresa:</strong> 2440-0037<br>
-                <strong>Teléfono Móvil:</strong> 9875-2725<br>
-                mauricio_argenal@hotmail.com<br>
-                <strong>CAI:</strong> ${this.currentDocument.cai || 'N/A'}
+                <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Teléfono:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}<br>
+                ${this.companyInfo.whatsapp ? `<strong>Móvil:</strong> ${this.companyInfo.whatsapp}<br>` : ''}
+                <strong>Email:</strong> ${this.companyInfo.email || 'info@prosperpos.com'}<br>
+                <strong>CAI:</strong> ${this.currentDocument.cai || this.currentDocument.numero_resolucion || 'N/A'}
               </div>
             </div>
 
@@ -1977,19 +2019,19 @@ export default {
               })()}<br>
               <strong>Rango de facturación Vigente:</strong><br>
               <strong>Desde:</strong> ${(() => {
-                const prefix = this.currentDocument.prefijo_control || '000-002-01';
-                const inicio = this.currentDocument.nro_inicial_control || '00000001';
-                return prefix + '-' + String(inicio).padStart(8, '0');
+                const prefix = this.currentDocument.prefijo_control || '000-002-01-';
+                const inicio = this.currentDocument.nro_inicial_control || 40001;
+                return prefix + String(inicio).padStart(8, '0');
               })()}<br>
               <strong>Hasta:</strong> ${(() => {
-                const prefix = this.currentDocument.prefijo_control || '000-002-01';
-                const final = this.currentDocument.nro_final_control || '00000000';
-                return prefix + '-' + String(final).padStart(8, '0');
+                const prefix = this.currentDocument.prefijo_control || '000-002-01-';
+                const final = this.currentDocument.nro_final_control || 50000;
+                return prefix + String(final).padStart(8, '0');
               })()}<br>
-              <strong>Fecha Limite de Emisión Vigente:</strong> ${this.formatDate(this.currentDocument.fecha_fin) || '31/12/2025'}<br>
-              <strong>No. Correlativo de la Orden de Compra<br>Exenta:</strong><br>
-              <strong>No. Correlativo de la Constancia del Reg<br>Exonerado:</strong><br>
-              <strong>No. Identificativo del Registro SAG:</strong><br>
+              <strong>Fecha Limite de Emisión Vigente:</strong> ${this.formatDate(this.currentDocument.fecha_fin || '2026-12-28')}<br>
+              <strong>No. Correlativo de la Orden de Compra<br>Exenta:</strong> ${this.currentDocument.orden_compra || ''}<br>
+              <strong>No. Correlativo de la Constancia del Reg<br>Exonerado:</strong> ${this.currentDocument.constancia_exonerado || ''}<br>
+              <strong>No. Identificativo del Registro SAG:</strong> ${this.currentDocument.registro_sag || ''}<br>
               ${this.formatDateTime(this.currentDocument.issue_date || this.currentDocument.emission_date)}
             </div>
 
@@ -2006,8 +2048,13 @@ export default {
 
       return html;
     },
-    buildShippingGuideHTML() {
+    async buildShippingGuideHTML() {
       const docColor = '#FF9800';
+
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
       let tableRows = '';
       this.currentDocument.items.forEach((item, index) => {
         const qty = parseFloat(item.quantity) || 0;
@@ -2017,7 +2064,7 @@ export default {
           <tr>
             <td style="padding: 6px; text-align: center; border: 1px solid #ddd; font-size: 10px;">${String(index + 1).padStart(2, '0')}</td>
             <td style="padding: 6px; border: 1px solid #ddd; font-size: 10px;">${item.product_code || 'N/A'}</td>
-            <td style="padding: 6px; border: 1px solid #ddd; font-size: 10px;">${item.product_name}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 10px;">${item.product_name}${item.unit_name ? ' (' + item.unit_name + ')' : ''}</td>
             <td style="padding: 6px; text-align: center; border: 1px solid #ddd; font-size: 10px;">${weight.toFixed(2)}</td>
             <td style="padding: 6px; text-align: center; border: 1px solid #ddd; font-size: 10px;">${this.formatCurrency(qty)}</td>
             <td style="padding: 6px; text-align: center; border: 1px solid #ddd; font-size: 10px;">${totalWeight.toFixed(2)}</td>
@@ -2226,13 +2273,13 @@ export default {
           <div class="guide-container">
             <div class="header">
               <div class="company-logo">
-                <img src="${LOGO_BASE64}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">
-                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.company_name || 'PROSPERPOS'}</div>
+                ${hasLogo ? `<img src="${logoUrl}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">` : ''}
+                <div class="company-name" style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 4px;">${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</div>
                 <div class="company-details">
                   <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
-                  <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                  <strong>Teléfono:</strong> ${this.companyInfo.telefono || 'N/A'}<br>
-                  <strong>Teléfono Móvil:</strong> +504 9875-2725<br>
+                  <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                  <strong>Teléfono:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}<br>
+                  ${this.companyInfo.whatsapp ? `<strong>Móvil:</strong> ${this.companyInfo.whatsapp}<br>` : ''}
                   <strong>Email:</strong> ${this.companyInfo.email || 'info@prosperpos.com'}
                 </div>
               </div>
@@ -2277,6 +2324,9 @@ export default {
                 <p><strong>Cliente:</strong> ${this.currentDocument.customer_name || 'N/A'}</p>
                 <p><strong>RTN:</strong> ${this.currentDocument.customer_rtn || 'N/A'}</p>
                 <p><strong>Dirección:</strong> ${this.currentDocument.destination_address || this.currentDocument.customer_address || 'N/A'}</p>
+                ${this.currentDocument.orden_compra ? `<p><strong>Orden de Compra:</strong> ${this.currentDocument.orden_compra}</p>` : ''}
+                ${this.currentDocument.constancia_exonerado ? `<p><strong>Constancia Exonerado:</strong> ${this.currentDocument.constancia_exonerado}</p>` : ''}
+                ${this.currentDocument.registro_sag ? `<p><strong>Registro SAG:</strong> ${this.currentDocument.registro_sag}</p>` : ''}
               </div>
             </div>
             <div class="section-title" style="margin-top: 15px;">Quien Recibe</div>
@@ -2380,13 +2430,22 @@ export default {
     },
     formatDate(dateStr) {
       if (!dateStr) return 'N/A';
-      const date = new Date(dateStr);
-      return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+      // Extraer solo la fecha (puede venir con T o con espacio)
+      const dateString = String(dateStr).split('T')[0].split(' ')[0];
+      const [year, month, day] = dateString.split('-');
+      return `${day}/${month}/${year}`;
     },
     formatDateTime(dateStr) {
       if (!dateStr) return 'N/A';
       const date = new Date(dateStr);
-      return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')} ${date.getHours() >= 12 ? 'PM' : 'AM'}`;
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12;
+      return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year} ${String(displayHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
     },
     formatDueDate(emissionDate, docType) {
       if (!emissionDate) return 'N/A';
@@ -2692,7 +2751,11 @@ export default {
         alert('Error al generar el archivo Excel');
       }
     },
-    buildReportHTML() {
+    async buildReportHTML() {
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
       // Generar HTML de tabla de documentos
       const totalAmount = this.filteredDocuments.reduce((sum, doc) => sum + parseFloat(doc.total || 0), 0);
 
@@ -2811,12 +2874,12 @@ export default {
         <body>
           <div class="header-section">
             <div class="company-info">
-              <img src="${LOGO_BASE64}" alt="Logo">
+              ${hasLogo ? `<img src="${logoUrl}" alt="Logo">` : ''}
               <div class="company-details">
-                <strong>${this.companyInfo.business_description || this.companyInfo.description || this.companyInfo.company_name || 'PROSPERPOS'}</strong><br>
+                <strong>${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</strong><br>
                 <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
-                <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                <strong>Tel:</strong> ${this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.telefono_movil || this.companyInfo.phone_mobile || '+504 9875-2725'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}${this.companyInfo.whatsapp ? ` | <strong>Móvil:</strong> ${this.companyInfo.whatsapp}` : ''}<br>
                 <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
               </div>
             </div>
@@ -2875,7 +2938,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildReportHTML();
+        const htmlContent = await this.buildReportHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -2931,7 +2994,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildReportHTML();
+        const htmlContent = await this.buildReportHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -2956,11 +3019,11 @@ export default {
         alert('Error al generar la imagen');
       }
     },
-    printReportTable() {
+    async printReportTable() {
       this.showSaveReportModal = false;
 
       const printWindow = window.open('', '_blank');
-      const html = this.buildReportHTML();
+      const html = await this.buildReportHTML();
       printWindow.document.write(html);
       printWindow.document.close();
 

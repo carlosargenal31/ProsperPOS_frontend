@@ -359,7 +359,7 @@ import axios from 'axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
-import { LOGO_BASE64 } from '@/assets/img/logo.js';
+import api from '@/utils/axios';
 
 export default {
   name: 'PurchaseBook',
@@ -565,9 +565,9 @@ export default {
         const wb = XLSX.utils.book_new();
 
         const headerData = [
-          [this.companyInfo.company_name || 'PROSPERPOS'],
-          [this.companyInfo.direccion || 'Sin dirección'],
-          [`Tel: ${this.companyInfo.telefono || 'N/A'}`],
+          [this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'],
+          [this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'],
+          [`Tel: ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}`],
           [''],
           ['LIBRO DE COMPRAS'],
           [`Desde: ${this.filters.date_from} | Hasta: ${this.filters.date_to}`],
@@ -615,7 +615,33 @@ export default {
         alert('Error al generar el archivo Excel');
       }
     },
-    buildPurchaseBookHTML() {
+    async getCompanyLogo() {
+      if (!this.companyInfo?.logo_url) {
+        return '';
+      }
+
+      const dbLogoUrl = this.companyInfo.logo_url;
+      if (!dbLogoUrl.startsWith('http')) {
+        return '';
+      }
+
+      try {
+        const response = await api.get('/image-proxy', {
+          params: { url: dbLogoUrl }
+        });
+        if (response.data.success && response.data.data.base64) {
+          return response.data.data.base64;
+        }
+      } catch (error) {
+        console.error('Error al cargar logo:', error);
+      }
+      return '';
+    },
+    async buildPurchaseBookHTML() {
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
       // Generar HTML de tabla de compras
       const purchaseRows = this.filteredPurchases.map(pur => {
         return `
@@ -732,12 +758,12 @@ export default {
         <body>
           <div class="header-section">
             <div class="company-info">
-              <img src="${LOGO_BASE64}" alt="Logo">
+              ${hasLogo ? `<img src="${logoUrl}" alt="Logo">` : ''}
               <div class="company-details">
-                <strong>${this.companyInfo.business_description || this.companyInfo.description || 'Cerámicas Terrazos y Pulidos'}</strong><br>
+                <strong>${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</strong><br>
                 <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
-                <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                <strong>Tel:</strong> ${this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.telefono_movil || this.companyInfo.phone_mobile || '+504 9875-2725'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.whatsapp || 'N/A'}<br>
                 <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
               </div>
             </div>
@@ -804,7 +830,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildPurchaseBookHTML();
+        const htmlContent = await this.buildPurchaseBookHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -861,7 +887,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildPurchaseBookHTML();
+        const htmlContent = await this.buildPurchaseBookHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -897,7 +923,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildPurchaseBookHTML();
+        const htmlContent = await this.buildPurchaseBookHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -917,15 +943,29 @@ export default {
     },
     async loadCompanyInfo() {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('/api/v1/reports/company-info', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.data.success) {
+        const response = await api.get('/companies/default');
+        if (response.data && response.data.success) {
           this.companyInfo = response.data.data;
         }
       } catch (error) {
-        console.error('Error loading company info:', error);
+        console.error('Error al cargar información de empresa:', error);
+        try {
+          const publicResponse = await api.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            this.companyInfo = publicResponse.data.data;
+          }
+        } catch (publicError) {
+          console.error('Error al cargar información pública de empresa:', publicError);
+          this.companyInfo = {
+            company_name: 'ProsperPOS',
+            commercial_name: 'ProsperPOS',
+            rtn: 'N/A',
+            address: 'Sin dirección',
+            phone: 'N/A',
+            whatsapp: 'N/A',
+            email: 'N/A'
+          };
+        }
       }
     },
     toggleHeader() {

@@ -17,12 +17,15 @@
                     <h4 class="mb-0">Gestión de Cargo/Descargo</h4>
                     <p class="text-muted mb-0">Administración de documentos de cargo y descargo</p>
                   </div>
-                  <div class="btn-group">
+                  <div class="d-flex gap-2">
                     <button type="button" class="btn btn-success" @click="createNewDocument('CARGO')">
                       <i class="ti ti-file-plus me-1"></i>Nuevo Cargo
                     </button>
                     <button type="button" class="btn btn-warning" @click="createNewDocument('DESCARGO')">
                       <i class="ti ti-file-minus me-1"></i>Nuevo Descargo
+                    </button>
+                    <button type="button" class="btn btn-info" @click="showReportModal = true" :disabled="documents.length === 0">
+                      <i class="ti ti-download me-1"></i>Guardar Reporte
                     </button>
                   </div>
                 </div>
@@ -460,6 +463,40 @@
     </div>
   </div>
 
+  <!-- Modal Guardar Reporte -->
+  <div v-if="showReportModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Guardar Reporte - Cargo/Descargo</h5>
+          <button type="button" class="btn-close" @click="showReportModal = false"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">Selecciona el formato en el que deseas guardar el reporte:</p>
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-success" @click="saveListAsExcel">
+              <i class="ti ti-file-spreadsheet me-2"></i> Guardar como Excel
+            </button>
+            <button class="btn btn-outline-danger" @click="saveListAsPDF">
+              <i class="ti ti-file-type-pdf me-2"></i> Guardar como PDF
+            </button>
+            <button class="btn btn-outline-primary" @click="saveListAsImage">
+              <i class="ti ti-photo me-2"></i> Guardar como Imagen
+            </button>
+            <button class="btn btn-outline-secondary" @click="printDocumentsList">
+              <i class="ti ti-printer me-2"></i> Imprimir
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="showReportModal = false">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 <script>
@@ -469,6 +506,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import { LOGO_BASE64 } from '@/assets/img/logo.js';
+import apiAxios from '@/utils/axios';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 
@@ -484,17 +522,11 @@ export default {
       showFormModal: false,
       showDocumentModal: false,
       showExportDropdown: false,
+      showReportModal: false,
       isEdit: false,
       editingId: null,
       currentDocument: null,
-      companyInfo: {
-        company_name: 'Ceramicas Terrazos y Pulidos Universal',
-        direccion: 'Casa Matriz, Barrio La Merced, Avenida 14 de Julio entre 15 y 16 calle frente a Repuestos del Atlántico. La Ceiba, Atlántida',
-        telefono: '+504 2440-0037',
-        telefono_movil: '+504 9875-2725',
-        rtn: '01061977002516',
-        email: 'mauricio_argenal@hotmail.com'
-      },
+      companyInfo: {},
 
       // Stats
       stats: {
@@ -577,6 +609,7 @@ export default {
   },
 
   async mounted() {
+    await this.loadCompanyInfo();
     await this.loadWarehouses();
     await this.loadProducts();
     await this.loadDocuments();
@@ -1415,6 +1448,376 @@ export default {
 
     removeProduct(index) {
       this.selectedProducts.splice(index, 1);
+    },
+
+    // Company info methods
+    async loadCompanyInfo() {
+      try {
+        const response = await apiAxios.get('/companies/default');
+        if (response.data && response.data.success) {
+          this.companyInfo = response.data.data;
+        }
+      } catch (error) {
+        console.error('Error loading company info:', error);
+        try {
+          const publicResponse = await apiAxios.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            this.companyInfo = publicResponse.data.data;
+          }
+        } catch (publicError) {
+          console.error('Error loading public company info:', publicError);
+          this.companyInfo = {
+            company_name: 'PROSPERPOS',
+            commercial_name: 'PROSPERPOS',
+            direccion: 'Sin dirección',
+            address: 'Sin dirección',
+            telefono: 'N/A',
+            phone: 'N/A',
+            rtn: 'N/A',
+            email: 'info@prosperpos.com'
+          };
+        }
+      }
+    },
+
+    async getCompanyLogo() {
+      if (!this.companyInfo?.logo_url) {
+        return '';
+      }
+
+      const dbLogoUrl = this.companyInfo.logo_url;
+
+      if (!dbLogoUrl.startsWith('http')) {
+        return '';
+      }
+
+      try {
+        const response = await apiAxios.get('/image-proxy', {
+          params: { url: dbLogoUrl }
+        });
+
+        // La respuesta tiene estructura: { success: true, data: { base64: '...', contentType: '...', size: ... } }
+        if (response.data?.success && response.data?.data?.base64) {
+          return response.data.data.base64;
+        }
+
+        // Fallback por si la estructura es diferente
+        if (response.data?.base64) {
+          return response.data.base64;
+        }
+      } catch (error) {
+        console.error('Error loading logo via proxy:', error);
+      }
+      return '';
+    },
+
+    // Report export methods
+    async saveListAsExcel() {
+      this.showReportModal = false;
+      try {
+        const wb = XLSX.utils.book_new();
+
+        const headerData = [
+          [this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'],
+          [`RTN: ${this.companyInfo.rtn || 'N/A'}`],
+          [this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'],
+          [`Tel: ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}`],
+          [''],
+          ['REPORTE DE CARGO/DESCARGO'],
+          [`Generado: ${new Date().toLocaleString('es-HN')}`],
+          [''],
+          ['Fecha', 'Documento', 'Tipo', 'Emisor', 'Concepto', 'Bodega', 'Estado', 'Total']
+        ];
+
+        this.filteredDocuments.forEach(doc => {
+          headerData.push([
+            this.formatDate(doc.registration_date),
+            doc.document_number || '',
+            doc.document_type || '',
+            doc.issuer || '',
+            doc.concept || '',
+            doc.warehouse_name || '',
+            doc.status || '',
+            parseFloat(doc.total_amount || 0).toFixed(2)
+          ]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(headerData);
+        XLSX.utils.book_append_sheet(wb, ws, 'Cargo Descargo');
+        XLSX.writeFile(wb, `cargo-descargo-${new Date().toISOString().split('T')[0]}.xlsx`);
+      } catch (error) {
+        console.error('Error generating Excel:', error);
+        alert('Error al generar el archivo Excel');
+      }
+    },
+
+    async saveListAsPDF() {
+      this.showReportModal = false;
+      try {
+        const fileName = `cargo-descargo-${new Date().toISOString().split('T')[0]}`;
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '900px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
+
+        const htmlContent = await this.buildListReportHTML();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 900,
+          windowWidth: 900
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('l', 'mm', 'letter');
+        const imgWidth = 279;
+        const pageHeight = 216;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        pdf.save(`${fileName}.pdf`);
+        document.body.removeChild(iframe);
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error al generar el PDF');
+      }
+    },
+
+    async saveListAsImage() {
+      this.showReportModal = false;
+      try {
+        const fileName = `cargo-descargo-${new Date().toISOString().split('T')[0]}`;
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '900px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
+
+        const htmlContent = await this.buildListReportHTML();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 900,
+          windowWidth: 900
+        });
+
+        const link = document.createElement('a');
+        link.download = `${fileName}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        document.body.removeChild(iframe);
+      } catch (error) {
+        console.error('Error generating image:', error);
+        alert('Error al generar la imagen');
+      }
+    },
+
+    async printDocumentsList() {
+      this.showReportModal = false;
+      try {
+        const htmlContent = await this.buildListReportHTML();
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        printWindow.onload = function() {
+          printWindow.focus();
+          printWindow.print();
+        };
+      } catch (error) {
+        console.error('Error printing:', error);
+        alert('Error al imprimir el reporte');
+      }
+    },
+
+    async buildListReportHTML() {
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
+      let tableRows = '';
+      let totalAmount = 0;
+
+      this.filteredDocuments.forEach((doc, index) => {
+        const total = parseFloat(doc.total_amount || 0);
+        totalAmount += total;
+
+        const docTypeClass = doc.document_type === 'CARGO' ? '#4CAF50' : '#FF9800';
+        const statusClass = doc.status === 'PROCESADO' ? '#2196F3' : '#F44336';
+
+        tableRows += `
+          <tr>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: center;">${index + 1}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: center;">${this.formatDate(doc.registration_date)}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${doc.document_number}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: center;">
+              <span style="background-color: ${docTypeClass}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: 600; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                ${doc.document_type}
+              </span>
+            </td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${doc.issuer || '-'}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${doc.concept || '-'}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${doc.warehouse_name || '-'}</td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: center;">
+              <span style="background-color: ${statusClass}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: 600; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                ${doc.status}
+              </span>
+            </td>
+            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: right;">L ${this.formatCurrency(total)}</td>
+          </tr>
+        `;
+      });
+
+      const finalLogoUrl = hasLogo ? logoUrl : LOGO_BASE64;
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Reporte de Cargo/Descargo</title>
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color-adjust: exact !important;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              padding: 15px;
+              background: white;
+              margin: 0;
+              width: 900px;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .header-section { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
+            .company-info { width: 60%; flex-shrink: 0; }
+            .company-info img { max-width: 180px; height: auto; margin-bottom: 8px; }
+            .company-details { font-size: 11px; line-height: 1.5; }
+            .report-box {
+              width: 38%;
+              flex-shrink: 0;
+              background: linear-gradient(135deg, #f97316 0%, #fb923c 100%) !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color: white !important;
+              padding: 10px;
+              border-radius: 8px;
+            }
+            .report-title { font-size: 13px; font-weight: bold; margin-bottom: 8px; color: white !important; }
+            .report-details { font-size: 10px; line-height: 1.6; color: white !important; }
+            .separator { border: none; border-top: 3px solid #f97316; margin: 15px 0; }
+            table { width: 100%; border-collapse: collapse; font-size: 9px; }
+            thead {
+              background: linear-gradient(135deg, #f97316 0%, #fb923c 100%) !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color: white !important;
+            }
+            th {
+              padding: 8px 4px;
+              text-align: left;
+              border: 1px solid #ddd;
+              font-size: 9px;
+              color: white !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            td { padding: 6px; border: 1px solid #ddd; }
+            .total-row {
+              background-color: #FFF3E0 !important;
+              font-weight: bold;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .total-row td { border-top: 2px solid #f97316; }
+            @media print {
+              * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header-section">
+            <div class="company-info">
+              <img src="${finalLogoUrl}" alt="Logo">
+              <div class="company-details">
+                <strong>${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</strong><br>
+                <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.whatsapp || 'N/A'}<br>
+                <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
+              </div>
+            </div>
+            <div class="report-box">
+              <div class="report-title">REPORTE DE CARGO/DESCARGO</div>
+              <div class="report-details">
+                <strong>Generado:</strong> ${new Date().toLocaleDateString('es-HN', { year: 'numeric', month: 'long', day: 'numeric' })} - ${new Date().toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' })}<br>
+                <strong>Total de Documentos:</strong> ${this.filteredDocuments.length}
+              </div>
+            </div>
+          </div>
+          <hr class="separator">
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 30px; text-align: center;">#</th>
+                <th style="text-align: center;">Fecha</th>
+                <th>N° Documento</th>
+                <th style="text-align: center;">Tipo</th>
+                <th>Emisor</th>
+                <th>Concepto</th>
+                <th>Bodega</th>
+                <th style="text-align: center;">Estado</th>
+                <th style="text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+              <tr class="total-row">
+                <td colspan="8" style="text-align: right; padding: 6px;"><strong>TOTAL GENERAL:</strong></td>
+                <td style="text-align: right; padding: 6px;"><strong>L ${this.formatCurrency(totalAmount)}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      return html;
     }
   }
 };

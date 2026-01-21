@@ -720,6 +720,19 @@ const routes = [
     component: () => import('@/views/pages/shipments/print-shipment.vue')
   },
   // ===================================================================
+  // RUTAS DE ARQUEO DE CAJA
+  // ===================================================================
+  {
+    path: '/cash-register',
+    name: 'cash-register',
+    component: () => import('@/views/pages/cash-register/cash-register-list.vue')
+  },
+  {
+    path: '/cash-register/print/:id',
+    name: 'print-arqueo',
+    component: () => import('@/views/pages/cash-register/print-arqueo.vue')
+  },
+  // ===================================================================
   // RUTAS DE TIENDA EN LÍNEA
   // ===================================================================
   {
@@ -787,6 +800,11 @@ const routes = [
         path: 'pedidos',
         name: 'tienda-online-pedidos',
         component: () => import('@/views/pages/tienda-online/pedidos.vue')
+      },
+      {
+        path: 'opiniones',
+        name: 'tienda-online-opiniones',
+        component: () => import('@/views/pages/tienda-online/opinions-list.vue')
       },
       {
         path: 'configuracion',

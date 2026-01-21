@@ -8,8 +8,8 @@
             <i class="ti ti-arrow-left fs-3"></i>
           </router-link>
           <span class="text-muted small">{{ currentDate }}</span>
-          <button class="btn btn-outline-primary btn-sm" @click="toggleDocumentType">
-            <i class="ti ti-file-invoice me-1"></i>{{ documentType }}
+          <button class="btn btn-outline-primary btn-sm" @click="toggleDocumentType" :title="'Cambiar documento (' + (keyboardShortcuts.changeDocument?.keys || 'Alt+D') + ')'">
+            <i class="ti ti-file-invoice me-1"></i>{{ documentType }} <small>({{ keyboardShortcuts.changeDocument?.keys || 'Alt+D' }})</small>
           </button>
         </div>
       </div>
@@ -62,28 +62,28 @@
               <div class="card-body p-3">
                 <div class="row g-3">
                   <div class="col-md-5">
-                    <label class="form-label fw-bold">Cliente</label>
+                    <label class="form-label fw-bold">Cliente <small class="text-muted">({{ keyboardShortcuts.searchClients?.keys || 'Alt+F1' }})</small></label>
                     <div class="input-group">
-                      <button class="btn btn-info" @click="showCustomerModal = true">
+                      <button class="btn btn-info" @click="showCustomerModal = true" :title="'Buscar cliente (' + (keyboardShortcuts.searchClients?.keys || 'Alt+F1') + ')'">
                         <i class="ti ti-search"></i>
                       </button>
                       <input type="text" class="form-control" :value="customerInfo.code" readonly style="max-width: 80px;">
                       <input type="text" class="form-control" :value="customerInfo.name" readonly>
-                      <button class="btn btn-success" @click="showNewCustomerModal = true">
+                      <button class="btn btn-success" @click="openAddCustomerModal">
                         <i class="ti ti-plus"></i>
                       </button>
                     </div>
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label fw-bold">Bodega</label>
-                    <select class="form-select" v-model="invoice.warehouse_id">
+                    <label class="form-label fw-bold">Bodega <small class="text-muted">(Alt+B)</small></label>
+                    <select class="form-select" v-model="invoice.warehouse_id" ref="warehouseSelect" :title="'Cambiar bodega (Alt+B)'">
                       <option v-for="w in warehouses" :key="w.value" :value="w.value">{{ w.label }}</option>
                     </select>
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label fw-bold">Vendedor</label>
+                    <label class="form-label fw-bold">Vendedor <small class="text-muted">({{ keyboardShortcuts.searchSeller?.keys || 'Alt+F3' }})</small></label>
                     <div class="input-group">
-                      <button class="btn btn-info" @click="showVendorModal = true">
+                      <button class="btn btn-info" @click="showVendorModal = true" :title="'Buscar vendedor (' + (keyboardShortcuts.searchSeller?.keys || 'Alt+F3') + ')'">
                         <i class="ti ti-search"></i>
                       </button>
                       <input type="text" class="form-control" :value="currentVendor.name" readonly>
@@ -98,13 +98,25 @@
               <div class="card-body p-3">
                 <div class="row g-2 align-items-end">
                   <div class="col-md-3">
-                    <label class="form-label fw-bold">Código de Producto</label>
+                    <label class="form-label fw-bold">Código de Producto <small class="text-muted">(Ctrl+2)</small></label>
                     <div class="input-group">
-                      <button class="btn btn-info" @click="showProductModal = true">
+                      <button class="btn btn-info" @click="showProductModal = true" title="Buscar producto (Ctrl+2)">
                         <i class="ti ti-search"></i>
                       </button>
-                      <input type="text" class="form-control" v-model="currentProduct.code" @keypress.enter="searchProductByCode" placeholder="Código" ref="productCodeInput">
-                      <button class="btn btn-success" @click="showNewProductModal = true">
+                      <button
+                        class="btn btn-secondary"
+                        @click="toggleBarcodeScanner"
+                        title="Escanear código de barras">
+                        <i class="ti ti-barcode"></i>
+                      </button>
+                      <input
+                        type="text"
+                        class="form-control"
+                        v-model="currentProduct.code"
+                        @keypress.enter="searchProductByCode"
+                        placeholder="Código"
+                        ref="productCodeInput">
+                      <button class="btn btn-success" @click="showNewProductModal = true" title="Registro rápido de producto">
                         <i class="ti ti-plus"></i>
                       </button>
                     </div>
@@ -115,18 +127,12 @@
                   </div>
                   <div class="col-md-2">
                     <label class="form-label fw-bold">Cantidad</label>
-                    <input type="number" class="form-control text-center" v-model.number="currentProduct.quantity" step="0.01" min="0.01">
+                    <input type="number" class="form-control text-center" v-model.number="currentProduct.quantity" step="0.01" min="0.01" @keydown.enter="addProductAndBlur">
                   </div>
-                  <div class="col-md-2">
-                    <label class="form-label fw-bold">Ordenar</label>
-                    <select class="form-select" v-model="productSortOrder">
-                      <option value="desc">↓</option>
-                      <option value="asc">↑</option>
-                    </select>
-                  </div>
-                  <div class="col-md-1">
-                    <button class="btn btn-primary w-100" @click="addProduct">
-                      ADICIONAR
+                  <div class="col-md-3">
+                    <button class="btn btn-primary w-100" @click="addProduct" title="Adicionar producto (Enter)" style="height: 62px;">
+                      <div style="font-size: 1.1rem; font-weight: bold; line-height: 1.2;">ADICIONAR</div>
+                      <small style="font-size: 0.7rem;">Enter</small>
                     </button>
                   </div>
                 </div>
@@ -137,24 +143,27 @@
             <div class="card mb-2 flex-shrink-0">
               <div class="card-body p-2">
                 <div class="d-flex justify-content-end gap-2">
-                  <button class="btn btn-outline-secondary btn-sm" @click="showAdditionalOptions = !showAdditionalOptions">
-                    <i class="ti ti-settings me-1"></i>Opciones Adicionales
+                  <button class="btn btn-outline-secondary btn-sm" @click="showAdditionalOptions = !showAdditionalOptions" :title="'Opciones Adicionales (' + (keyboardShortcuts.additionalOptions?.keys || 'Alt+P') + ')'">
+                    <i class="ti ti-settings me-1"></i>Opciones <small>({{ keyboardShortcuts.additionalOptions?.keys || 'Alt+P' }})</small>
                   </button>
-                  <button class="btn btn-outline-secondary btn-sm" @click="showAdditionalFields = !showAdditionalFields">
-                    <i class="ti ti-forms me-1"></i>Campos Adicionales
+                  <button class="btn btn-outline-secondary btn-sm" @click="showAdditionalFields = !showAdditionalFields" :title="'Campos Adicionales (' + (keyboardShortcuts.additionalFields?.keys || 'Alt+M') + ')'">
+                    <i class="ti ti-forms me-1"></i>Campos <small>({{ keyboardShortcuts.additionalFields?.keys || 'Alt+M' }})</small>
                   </button>
 
                   <!-- Import Document Dropdown -->
-                  <div class="dropdown" :class="{ show: showImportDropdown }">
-                    <button class="btn btn-purple btn-sm dropdown-toggle" type="button" @click="showImportDropdown = !showImportDropdown">
-                      <i class="ti ti-file-import me-1"></i>Importar Documento
+                  <div class="dropdown" :class="{ show: showImportDropdown }" style="position: relative; z-index: 1000;">
+                    <button class="btn btn-purple btn-sm dropdown-toggle" type="button" @click="showImportDropdown = !showImportDropdown" :title="'Importar Documento (' + (keyboardShortcuts.importDocument?.keys || 'Alt+I') + ')'">
+                      <i class="ti ti-file-import me-1"></i>Importar <small>({{ keyboardShortcuts.importDocument?.keys || 'Alt+I' }})</small>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end" :class="{ show: showImportDropdown }">
+                    <ul class="dropdown-menu dropdown-menu-end" :class="{ show: showImportDropdown }" style="z-index: 1001;">
                       <li><a class="dropdown-item" href="#" @click.prevent="openImportModal('pending-invoice')">
-                        <i class="ti ti-clock me-2"></i>Operación en Espera
+                        <i class="ti ti-clock me-2"></i>Operación en Espera <small class="text-muted">(Alt+1)</small>
                       </a></li>
                       <li><a class="dropdown-item" href="#" @click.prevent="openImportModal('quote')">
-                        <i class="ti ti-file-invoice me-2"></i>Cotización
+                        <i class="ti ti-file-invoice me-2"></i>Cotización <small class="text-muted">(Alt+2)</small>
+                      </a></li>
+                      <li><a class="dropdown-item" href="#" @click.prevent="openImportModal('online-order')">
+                        <i class="ti ti-shopping-cart me-2"></i>Pedidos en Línea <small class="text-muted">(Alt+3)</small>
                       </a></li>
                     </ul>
                   </div>
@@ -163,46 +172,97 @@
             </div>
 
             <!-- Products List - Diseño Vertical -->
-            <div class="card products-list-card flex-grow-1">
+            <div class="card products-list-card flex-grow-1" style="position: relative; z-index: 1;">
               <div class="card-body p-2 h-100">
                 <div class="products-vertical-list">
                   <!-- Item Header (Solo se muestra cuando hay productos) -->
-                  <div v-if="invoice.items.length > 0" class="list-header d-flex align-items-center px-2 py-1 bg-light border-bottom fw-bold text-uppercase" style="font-size: 0.75rem;">
-                    <div style="width: 120px;">ALMACEN</div>
-                    <div style="width: 100px;" class="text-end">P.UNIT.</div>
-                    <div style="width: 120px;" class="text-end">DESC.UNIT.</div>
-                    <div style="width: 100px;" class="text-center">CANTIDAD</div>
-                    <div style="width: 100px;" class="text-end">IMPUESTOS</div>
+                  <div v-if="invoice.items.length > 0" class="list-header d-flex align-items-center px-3 py-2 bg-light border-bottom fw-bold text-uppercase" style="font-size: 0.8rem; gap: 30px; position: relative; z-index: 1;">
+                    <div style="width: 170px;">BODEGA</div>
+                    <div style="width: 120px;" class="text-center">P.UNIT.</div>
+                    <div style="width: 120px;" class="text-center">DESC.UNIT.</div>
+                    <div style="width: 120px;" class="text-center">CANTIDAD</div>
+                    <div style="width: 120px;" class="text-center">IMPUESTOS</div>
                     <div class="flex-grow-1 text-end">TOTAL</div>
                   </div>
 
-                  <!-- Lista de Productos - Ultra Compacto -->
+                  <!-- Lista de Productos -->
                   <div class="products-scroll-area">
-                    <div v-for="(item, index) in invoice.items" :key="index" class="product-item-compact mb-1">
-                      <!-- Línea única por producto -->
-                      <div class="d-flex align-items-center">
-                        <div style="flex: 0 0 35px;">
-                          <span class="badge bg-secondary" style="font-size: 0.6rem;">{{ item.code || 'N/A' }}</span>
+                    <div v-for="(item, index) in invoice.items" :key="index"
+                         class="product-item-compact mb-2 border-bottom pb-2"
+                         :class="{ 'selected-product-row': selectedProductRow === index }"
+                         @click="selectedProductRow = index"
+                         style="cursor: pointer;">
+                      <!-- Código, Imagen y Nombre del Producto -->
+                      <div class="d-flex align-items-center mb-1">
+                        <!-- Botón Info -->
+                        <div style="flex: 0 0 70px;">
+                          <button class="btn btn-sm btn-outline-primary" @click="showProductInfo(item)" style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">
+                            + INFO
+                          </button>
                         </div>
-                        <div class="flex-grow-1 px-1" style="min-width: 0;">
-                          <div class="text-truncate fw-semibold" style="font-size: 0.75rem;">{{ item.name }}</div>
+
+                        <!-- Imagen del Producto -->
+                        <div style="flex: 0 0 50px;" class="mx-2">
+                          <img
+                            :src="item.image || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%23ddd%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%228%22 fill=%22%23999%22%3ESIN IMAGEN%3C/text%3E%3C/svg%3E'"
+                            :alt="item.name"
+                            style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;"
+                            @error="handleImageError"
+                          >
                         </div>
-                        <div style="flex: 0 0 60px;" class="text-end">
-                          <input type="number" class="form-control form-control-sm text-center py-0" v-model.number="item.quantity" @input="calculateItemTotal(index)" step="0.01" style="font-size: 0.7rem; height: 22px;">
+
+                        <!-- Código -->
+                        <div style="flex: 0 0 80px;">
+                          <span class="badge bg-dark" style="font-size: 0.7rem;">{{ item.code || 'N/A' }}</span>
                         </div>
-                        <div style="flex: 0 0 70px;" class="text-end px-1">
-                          <span style="font-size: 0.7rem;">{{ formatCurrency(item.price) }}</span>
+
+                        <!-- Nombre -->
+                        <div class="flex-grow-1 px-2">
+                          <div class="fw-semibold text-truncate" style="font-size: 0.85rem;">{{ item.name }}</div>
                         </div>
-                        <div style="flex: 0 0 45px;" class="text-center">
-                          <span class="badge bg-info py-0" style="font-size: 0.6rem;">{{ item.tax_percent }}%</span>
-                        </div>
-                        <div style="flex: 0 0 80px;" class="text-end">
-                          <strong class="text-primary" style="font-size: 0.75rem;">{{ formatCurrency(item.total) }}</strong>
-                        </div>
+
+                        <!-- Botón Eliminar -->
                         <div style="flex: 0 0 30px;" class="text-end">
-                          <button class="btn btn-link text-danger p-0" @click="removeProduct(index)" title="Eliminar" style="font-size: 0.8rem;">
+                          <button class="btn btn-link text-danger p-0" @click="removeProduct(index)" title="Eliminar">
                             <i class="ti ti-x"></i>
                           </button>
+                        </div>
+                      </div>
+
+                      <!-- Fila de datos siguiendo orden: BODEGA, P.UNIT, DESC.UNIT, CANTIDAD, IMPUESTOS, TOTAL -->
+                      <div class="d-flex align-items-center px-3" style="gap: 30px;">
+                        <!-- BODEGA - Seleccionable -->
+                        <div style="width: 170px;">
+                          <select class="form-select form-select-sm" v-model="item.warehouse_id" @change="onWarehouseChange(index)" style="font-size: 0.7rem; height: 28px; padding: 0.25rem 0.5rem;">
+                            <option v-for="warehouse in warehouses" :key="warehouse.value" :value="warehouse.value">
+                              {{ warehouse.label }}
+                            </option>
+                          </select>
+                        </div>
+
+                        <!-- P.UNIT. - Editable -->
+                        <div style="width: 120px;">
+                          <input type="number" class="form-control form-control-sm text-center" v-model.number="item.price" @input="calculateItemTotal(index)" step="0.01" min="0" style="font-size: 0.75rem; height: 28px;">
+                        </div>
+
+                        <!-- DESC.UNIT. - Solo lectura -->
+                        <div style="width: 120px;" class="text-center">
+                          <span class="badge bg-secondary" style="font-size: 0.75rem;">{{ item.discount_percent }}%</span>
+                        </div>
+
+                        <!-- CANTIDAD -->
+                        <div style="width: 120px;">
+                          <input type="number" class="form-control form-control-sm text-center" v-model.number="item.quantity" @input="calculateItemTotal(index)" step="0.01" min="0.01" style="font-size: 0.75rem; height: 28px;">
+                        </div>
+
+                        <!-- IMPUESTOS -->
+                        <div style="width: 120px;" class="text-center">
+                          <span class="badge bg-info" style="font-size: 0.75rem;">{{ item.tax_percent }}%</span>
+                        </div>
+
+                        <!-- TOTAL -->
+                        <div class="flex-grow-1 text-end">
+                          <strong class="text-primary" style="font-size: 0.9rem;">L {{ formatCurrency(item.total) }}</strong>
                         </div>
                       </div>
                     </div>
@@ -230,7 +290,7 @@
               <div class="card-body p-3">
                 <div class="total-row">
                   <span>CANT. ARTICULOS:</span>
-                  <strong>{{ totals.itemCount.toFixed(2) }}</strong>
+                  <strong>{{ totals.itemCount }}</strong>
                 </div>
                 <div class="total-row">
                   <span>MONTO BRUTO:</span>
@@ -244,11 +304,27 @@
                   <span>ISV:</span>
                   <strong>L {{ formatCurrency(totals.tax) }}</strong>
                 </div>
+                <!-- Cupones Aplicados -->
+                <div v-for="coupon in appliedCoupons" :key="coupon.code" class="total-row text-success">
+                  <span>
+                    <i class="ti ti-discount-check me-1"></i>
+                    Cupón {{ coupon.code }}
+                  </span>
+                  <strong>- L {{ formatCurrency(coupon.discount_amount) }}</strong>
+                </div>
+                <!-- Ofertas Aplicadas -->
+                <div v-if="totalOffersDiscount > 0" class="total-row text-success">
+                  <span>
+                    <i class="ti ti-tag me-1"></i>
+                    Descuento Ofertas
+                  </span>
+                  <strong>- L {{ formatCurrency(totalOffersDiscount) }}</strong>
+                </div>
                 <div class="total-row align-items-center">
-                  <span>RECARGOS:</span>
+                  <span>RECARGOS: <small class="text-muted">(Alt+R)</small></span>
                   <div class="input-group input-group-sm" style="width: 130px;">
                     <span class="input-group-text py-0">L</span>
-                    <input type="number" class="form-control py-0 text-end" v-model.number="invoice.shipping_cost" min="0" step="0.01">
+                    <input type="number" class="form-control py-0 text-end" v-model.number="invoice.shipping_cost" min="0" step="0.01" ref="shippingCostInput" :title="'Editar recargos (Alt+R)'">
                   </div>
                 </div>
                 <hr class="my-2">
@@ -263,17 +339,17 @@
             <div class="card flex-shrink-0">
               <div class="card-body p-2">
                 <div class="d-grid gap-2">
-                  <button class="btn btn-danger btn-lg" @click="clearInvoice">
-                    <i class="ti ti-trash me-2"></i>ELIMINAR
+                  <button class="btn btn-danger btn-lg" @click="clearInvoice" :title="'Eliminar transacción (' + (keyboardShortcuts.deleteTransaction?.keys || 'Alt+F8') + ')'">
+                    <i class="ti ti-trash me-2"></i>ELIMINAR <small>({{ keyboardShortcuts.deleteTransaction?.keys || 'Alt+F8' }})</small>
                   </button>
 
                   <!-- Botones para COTIZACIÓN -->
                   <template v-if="documentType === 'COTIZACION'">
-                    <button class="btn btn-info btn-lg" @click="saveAsQuote" :disabled="invoice.items.length === 0">
-                      <i class="ti ti-file-invoice me-2"></i>Guardar como Cotización
+                    <button class="btn btn-info btn-lg" @click="saveAsQuote" :disabled="invoice.items.length === 0" :title="'Guardar cotización (' + (keyboardShortcuts.saveQuote?.keys || 'Alt+F6') + ')'">
+                      <i class="ti ti-file-invoice me-2"></i>Guardar Cotización <small>({{ keyboardShortcuts.saveQuote?.keys || 'Alt+F6' }})</small>
                     </button>
-                    <button class="btn btn-warning btn-lg" @click="saveAsPendingInvoice" :disabled="invoice.items.length === 0">
-                      <i class="ti ti-device-floppy me-2"></i>Guardar como Operación en Espera
+                    <button class="btn btn-warning btn-lg" @click="saveAsPendingInvoice" :disabled="invoice.items.length === 0" :title="'Guardar en espera (' + (keyboardShortcuts.savePending?.keys || 'Alt+F7') + ')'">
+                      <i class="ti ti-device-floppy me-2"></i>Guardar Op. Espera <small>({{ keyboardShortcuts.savePending?.keys || 'Alt+F7' }})</small>
                     </button>
                   </template>
 
@@ -281,14 +357,14 @@
                   <template v-else>
                     <!-- Mostrar botones solo si hay resolución activa -->
                     <template v-if="!resolutionExpired">
-                      <button class="btn btn-warning btn-lg" @click="saveAsDraft" :disabled="invoice.items.length === 0">
-                        <i class="ti ti-device-floppy me-2"></i>GUARDAR
+                      <button class="btn btn-warning btn-lg" @click="saveAsDraft" :disabled="invoice.items.length === 0" :title="'Guardar transacción (' + (keyboardShortcuts.saveTransaction?.keys || 'Alt+F5') + ')'">
+                        <i class="ti ti-device-floppy me-2"></i>GUARDAR <small>({{ keyboardShortcuts.saveTransaction?.keys || 'Alt+F5' }})</small>
                       </button>
-                      <button class="btn btn-success btn-lg" @click="showQuickPaymentModal = true" :disabled="invoice.items.length === 0">
-                        <i class="ti ti-currency-dollar me-2"></i>COBRO RÁPIDO
+                      <button class="btn btn-success btn-lg" @click="showQuickPaymentModal = true" :disabled="invoice.items.length === 0" :title="'Cobro rápido (' + (keyboardShortcuts.fastPayment?.keys || 'Alt+F9') + ')'">
+                        <i class="ti ti-currency-dollar me-2"></i>COBRO RÁPIDO <small>({{ keyboardShortcuts.fastPayment?.keys || 'Alt+F9' }})</small>
                       </button>
-                      <button class="btn btn-info btn-lg" @click="showDetailedPaymentModal = true" :disabled="invoice.items.length === 0">
-                        <i class="ti ti-receipt-2 me-2"></i>COBRO DETALLADO
+                      <button class="btn btn-info btn-lg" @click="showDetailedPaymentModal = true" :disabled="invoice.items.length === 0" :title="'Cobro detallado (' + (keyboardShortcuts.detailedPayment?.keys || 'Alt+F10') + ')'">
+                        <i class="ti ti-receipt-2 me-2"></i>COBRO DETALLADO <small>({{ keyboardShortcuts.detailedPayment?.keys || 'Alt+F10' }})</small>
                       </button>
                     </template>
                     <!-- Mostrar mensaje cuando no hay resolución activa -->
@@ -376,7 +452,7 @@
           </div>
           <div class="modal-footer justify-content-between">
             <div>
-              <button type="button" class="btn btn-success" @click="showAddCustomerModal = true; showCustomerModal = false;">
+              <button type="button" class="btn btn-success" @click="openAddCustomerModal">
                 <i class="ti ti-plus me-1"></i>Nuevo Cliente
               </button>
             </div>
@@ -440,102 +516,255 @@
       </div>
     </div>
 
-    <!-- Modal: Nuevo Cliente -->
-    <div v-if="showAddCustomerModal" class="modal fade show" style="display: block;" tabindex="-1">
-      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <!-- Modal: Registro Rápido de Cliente -->
+    <div v-if="showAddCustomerModal" class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header bg-dark text-white">
-            <h5 class="modal-title text-white">Documentos Ventas - Nuevo Cliente</h5>
-            <button type="button" class="btn-close" @click="closeAddCustomerModal"></button>
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title text-white">
+              <i class="ti ti-user-plus me-2"></i>Registro Rápido de Cliente
+            </h5>
+            <button type="button" class="btn-close btn-close-white" @click="closeAddCustomerModal"></button>
           </div>
           <div class="modal-body">
             <div class="row g-3">
-              <div class="col-md-3">
-                <label class="form-label fw-bold">Código</label>
-                <div class="input-group">
-                  <input type="text" class="form-control" v-model="newCustomer.code" placeholder="Código">
-                  <button class="btn btn-outline-secondary" title="Usar Consecutivos">
-                    <input type="checkbox" class="form-check-input" v-model="newCustomer.useConsecutive">
-                  </button>
-                  <button class="btn btn-outline-secondary" title="Refrescar">
-                    <i class="ti ti-refresh"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Razón Social</label>
-                <input type="text" class="form-control" v-model="newCustomer.razon_social" placeholder="Razón Social">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label fw-bold">Tipo de Beneficiario</label>
-                <select class="form-select" v-model="newCustomer.beneficiary_type">
-                  <option value="JURIDICA_DOMICILIADA">JURIDICA DOMICILIADA</option>
-                  <option value="NATURAL_DOMICILIADA">NATURAL DOMICILIADA</option>
-                  <option value="JURIDICA_NO_DOMICILIADA">JURIDICA NO DOMICILIADA</option>
-                  <option value="NATURAL_NO_DOMICILIADA">NATURAL NO DOMICILIADA</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Nombre Comercial</label>
-                <input type="text" class="form-control" v-model="newCustomer.nombre_comercial" placeholder="Nombre Comercial">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label fw-bold">Tipo Identificación</label>
-                <select class="form-select" v-model="newCustomer.tipo_identificacion">
-                  <option value="CEDULA">CEDULA</option>
-                  <option value="RTN">RTN</option>
-                  <option value="PASAPORTE">PASAPORTE</option>
-                  <option value="SAR">SAR</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label fw-bold">CEDULA</label>
-                <input type="text" class="form-control" v-model="newCustomer.cedula" placeholder="CEDULA">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label fw-bold">SAR (ID fiscal #2)</label>
-                <input type="text" class="form-control" v-model="newCustomer.sar" placeholder="SAR">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label fw-bold">Tipo de Cliente</label>
-                <select class="form-select" v-model="newCustomer.tipo_cliente">
-                  <option value="NACIONAL">NACIONAL</option>
-                  <option value="EXTRANJERO">EXTRANJERO</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label fw-bold">Tipo de Contribuyente</label>
-                <select class="form-select" v-model="newCustomer.tipo_contribuyente">
-                  <option value="CONTRIBUYENTE">CONTRIBUYENTE</option>
-                  <option value="NO_CONTRIBUYENTE">NO CONTRIBUYENTE</option>
-                  <option value="EXONERADO">EXONERADO</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label fw-bold">Email</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="ti ti-mail"></i></span>
-                  <input type="email" class="form-control" v-model="newCustomer.email" placeholder="Email">
-                </div>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label fw-bold">Teléfono</label>
-                <input type="text" class="form-control" v-model="newCustomer.phone" placeholder="Teléfono">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label fw-bold">Teléfono Móvil</label>
-                <input type="text" class="form-control" v-model="newCustomer.mobile" placeholder="Teléfono Móvil">
-              </div>
+              <!-- Código (Auto-incremental, no editable) -->
               <div class="col-md-12">
-                <label class="form-label fw-bold">Dirección</label>
-                <textarea class="form-control" rows="2" v-model="newCustomer.address" placeholder="Dirección..."></textarea>
+                <label class="form-label fw-bold">Código <span class="text-muted">(Autogenerado)</span></label>
+                <input
+                  type="text"
+                  class="form-control bg-light"
+                  v-model="nextCustomerCode"
+                  readonly
+                  placeholder="Cargando...">
+              </div>
+
+              <!-- Nombre / Razón Social -->
+              <div class="col-md-12">
+                <label class="form-label fw-bold">Nombre / Razón Social <span class="text-danger">*</span></label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="newCustomer.razon_social"
+                  placeholder="Nombre del cliente o razón social"
+                  required
+                  ref="customerNameInput">
+              </div>
+
+              <!-- RTN -->
+              <div class="col-md-12">
+                <label class="form-label fw-bold">RTN <span class="text-danger">*</span></label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="newCustomer.cedula"
+                  @input="formatRTN"
+                  placeholder="0000-0000-000000"
+                  maxlength="16"
+                  required>
+                <small class="text-muted">Formato: 0000-0000-000000 (14 dígitos)</small>
+              </div>
+
+              <!-- Mensaje informativo -->
+              <div class="col-md-12">
+                <div class="alert alert-info mb-0">
+                  <i class="ti ti-info-circle me-2"></i>
+                  <small>Para un registro completo del cliente, utilice el módulo de Clientes en el menú principal.</small>
+                </div>
               </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeAddCustomerModal">CERRAR</button>
-            <button type="button" class="btn btn-success" @click="saveNewCustomer">
-              <i class="ti ti-device-floppy me-1"></i>GUARDAR
+            <button type="button" class="btn btn-secondary" @click="closeAddCustomerModal">
+              <i class="ti ti-x me-1"></i>CERRAR
+            </button>
+            <button type="button" class="btn btn-success" @click="saveNewCustomer" :disabled="savingCustomer">
+              <span v-if="savingCustomer" class="spinner-border spinner-border-sm me-2"></span>
+              <i v-else class="ti ti-device-floppy me-1"></i>
+              {{ savingCustomer ? 'GUARDANDO...' : 'GUARDAR' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Registro Rápido de Producto -->
+    <div v-if="showNewProductModal" class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+      <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title text-white">
+              <i class="ti ti-plus me-2"></i>Registro Rápido de Producto
+            </h5>
+            <button type="button" class="btn-close btn-close-white" @click="closeNewProductModal"></button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="saveNewProduct">
+              <div class="row">
+                <!-- Código -->
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Código <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="newProductForm.code"
+                      required
+                      placeholder="Código del producto"
+                      ref="newProductCodeInput">
+                  </div>
+                </div>
+
+                <!-- Nombre -->
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="newProductForm.name"
+                      required
+                      placeholder="Nombre del producto">
+                  </div>
+                </div>
+
+                <!-- Unidades -->
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label class="form-label">Unidades <span class="text-danger">*</span></label>
+                    <select class="form-select" v-model="newProductForm.unit_id" required>
+                      <option value="">Seleccione una unidad</option>
+                      <option v-for="unit in units" :key="unit.id" :value="unit.id">
+                        {{ unit.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Categoría -->
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label class="form-label">Categoría <span class="text-danger">*</span></label>
+                    <select class="form-select" v-model="newProductForm.category_id" @change="loadNewProductSubcategories" required>
+                      <option value="">Seleccione una categoría</option>
+                      <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                        {{ cat.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Subcategoría -->
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label class="form-label">Subcategoría</label>
+                    <select class="form-select" v-model="newProductForm.subcategory_id" :disabled="!newProductForm.category_id">
+                      <option value="">Seleccione una subcategoría</option>
+                      <option v-for="sub in newProductSubcategories" :key="sub.id" :value="sub.id">
+                        {{ sub.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Impuesto -->
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label class="form-label">Impuesto <span class="text-danger">*</span></label>
+                    <select class="form-select" v-model="newProductForm.tax_id" required>
+                      <option value="">Seleccione un impuesto</option>
+                      <option v-for="tax in taxRates" :key="tax.id" :value="tax.id">
+                        {{ tax.name }} ({{ tax.rate }}%)
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Costo -->
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label class="form-label">Costo</label>
+                    <div class="input-group">
+                      <span class="input-group-text">L</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        v-model="newProductForm.cost"
+                        placeholder="0.00">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Utilidad (%) -->
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label class="form-label">Utilidad (%)</label>
+                    <div class="input-group">
+                      <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        v-model="newProductForm.profit_margin"
+                        @input="calculatePriceFromProfit"
+                        placeholder="0">
+                      <span class="input-group-text">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Precio -->
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label class="form-label">Precio <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                      <span class="input-group-text">L</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        v-model="newProductForm.price"
+                        required
+                        @input="calculateProfitFromPrice"
+                        placeholder="0.00">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Imagen del Producto -->
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label class="form-label">Imagen del Producto</label>
+                    <input
+                      type="file"
+                      class="form-control"
+                      @change="handleNewProductImageUpload"
+                      accept="image/jpeg,image/png,image/gif">
+                    <small class="text-muted">Formatos: JPG, PNG, GIF (Máx. 5MB)</small>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="newProductError" class="alert alert-danger">
+                <i class="ti ti-alert-circle me-2"></i>{{ newProductError }}
+              </div>
+              <div v-if="newProductSuccess" class="alert alert-success">
+                <i class="ti ti-check me-2"></i>{{ newProductSuccess }}
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeNewProductModal">
+              <i class="ti ti-x me-1"></i>CERRAR
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              @click="saveNewProduct"
+              :disabled="savingNewProduct">
+              <span v-if="savingNewProduct" class="spinner-border spinner-border-sm me-2"></span>
+              <i v-else class="ti ti-check me-1"></i>
+              {{ savingNewProduct ? 'GUARDANDO...' : 'GUARDAR' }}
             </button>
           </div>
         </div>
@@ -548,6 +777,7 @@
       :products="products"
       @close="showProductModal = false"
       @select="selectProduct"
+      @show-info="showProductInfoFromSearch"
     />
 
     <!-- Modal: Búsqueda de Vendedor -->
@@ -637,15 +867,13 @@
           </div>
           <div class="modal-body">
             <div class="d-grid gap-2">
-              <button class="btn btn-info btn-lg"><i class="ti ti-cash-register me-2"></i>APERTURA DE CAJA</button>
-              <button class="btn btn-info btn-lg"><i class="ti ti-cash me-2"></i>EGRESO DE CAJA</button>
-              <button class="btn btn-info btn-lg"><i class="ti ti-coins me-2"></i>RETIRAR EFECTIVO</button>
-              <button class="btn btn-info btn-lg"><i class="ti ti-file-certificate me-2"></i>EXONERACIÓN ISV</button>
-              <button class="btn btn-info btn-lg" @click="showCouponModal = true; showAdditionalOptions = false"><i class="ti ti-ticket me-2"></i>APLICAR CUPÓN DE DESCUENTO</button>
-              <button class="btn btn-info btn-lg" @click="showOffersModal = true; showAdditionalOptions = false"><i class="ti ti-tag me-2"></i>VER OFERTAS DISPONIBLES</button>
-              <button class="btn btn-info btn-lg"><i class="ti ti-calculator me-2"></i>RECALCULAR TASA DE CAMBIO</button>
-              <button class="btn btn-outline-secondary btn-lg"><i class="ti ti-keyboard me-2"></i>ATAJOS DE TECLADO</button>
-              <button class="btn btn-outline-secondary btn-lg"><i class="ti ti-settings me-2"></i>CONFIG. DOCUMENTO</button>
+              <button class="btn btn-success btn-lg" @click="showAperturaCajaModal = true; showAdditionalOptions = false"><i class="ti ti-cash-register me-2"></i>APERTURA DE CAJA</button>
+              <button class="btn btn-warning btn-lg" @click="showEgresoCajaModal = true; showAdditionalOptions = false"><i class="ti ti-cash me-2"></i>EGRESO DE CAJA</button>
+              <button class="btn btn-info btn-lg" @click="showRetiroEfectivoModal = true; showAdditionalOptions = false"><i class="ti ti-coins me-2"></i>RETIRAR EFECTIVO</button>
+              <button class="btn btn-info btn-lg" @click="openTaxExemptionModal" :title="'Exoneración ISV (' + (keyboardShortcuts.taxExemption?.keys || 'Alt+F11') + ')'"><i class="ti ti-file-certificate me-2"></i>EXONERACIÓN ISV <small>({{ keyboardShortcuts.taxExemption?.keys || 'Alt+F11' }})</small></button>
+              <button class="btn btn-info btn-lg" @click="showCouponModal = true; showAdditionalOptions = false" :title="'Aplicar cupón (' + (keyboardShortcuts.applyCoupon?.keys || 'Alt+C') + ')'"><i class="ti ti-ticket me-2"></i>APLICAR CUPÓN <small>({{ keyboardShortcuts.applyCoupon?.keys || 'Alt+C' }})</small></button>
+              <button class="btn btn-info btn-lg" @click="showOffersModal = true; showAdditionalOptions = false" :title="'Ver ofertas (' + (keyboardShortcuts.viewOffers?.keys || 'Alt+O') + ')'"><i class="ti ti-tag me-2"></i>VER OFERTAS <small>({{ keyboardShortcuts.viewOffers?.keys || 'Alt+O' }})</small></button>
+              <button class="btn btn-outline-secondary btn-lg" @click="showKeyboardShortcutsModal = true; showAdditionalOptions = false"><i class="ti ti-keyboard me-2"></i>ATAJOS DE TECLADO</button>
             </div>
           </div>
           <div class="modal-footer">
@@ -655,13 +883,338 @@
       </div>
     </div>
 
+    <!-- Modal: Exoneración ISV -->
+    <div v-if="showTaxExemptionModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title text-white">Exoneración ISV</h5>
+            <button type="button" class="btn btn-danger btn-sm rounded-circle" @click="showTaxExemptionModal = false" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
+              <i class="ti ti-x" style="font-size: 1.2rem; color: white;"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <table class="table table-sm table-bordered">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 100px;">Código</th>
+                  <th style="width: 80px;" class="text-center">Ventas</th>
+                  <th>Impuesto</th>
+                  <th style="width: 80px;" class="text-center">%</th>
+                  <th style="width: 100px;" class="text-end">Monto</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="tax in availableTaxes" :key="tax.code">
+                  <td>{{ tax.code }}</td>
+                  <td class="text-center">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      :id="'tax-' + tax.code"
+                      :value="tax.code"
+                      v-model="selectedTaxesForExemption"
+                      style="cursor: pointer; width: 20px; height: 20px; border: 2px solid #000;">
+                  </td>
+                  <td>{{ tax.name }}</td>
+                  <td class="text-center">{{ tax.rate.toFixed(2) }}</td>
+                  <td class="text-end">{{ formatCurrency(calculateTaxAmount(tax.rate)) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="showTaxExemptionModal = false">CANCELAR</button>
+            <button type="button" class="btn btn-success" @click="applyTaxExemption">APLICAR</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal Backdrop -->
-    <div v-if="showCustomerModal || showAddCustomerModal || showCustomerInfoModal || showProductModal || showVendorModal || showAdditionalFields || showAdditionalOptions"
+    <div v-if="showCustomerModal || showAddCustomerModal || showCustomerInfoModal || showProductModal || showVendorModal || showAdditionalFields || showAdditionalOptions || showTaxExemptionModal || showAperturaCajaModal || showEgresoCajaModal || showRetiroEfectivoModal"
          class="modal-backdrop fade show"
          @click="closeAllModals">
     </div>
 
+    <!-- Modales de Arqueo de Caja -->
+    <AperturaCajaModal
+      v-if="showAperturaCajaModal"
+      @close="showAperturaCajaModal = false"
+      @success="handleCashRegisterSuccess" />
+
+    <EgresoCajaModal
+      v-if="showEgresoCajaModal"
+      @close="showEgresoCajaModal = false"
+      @success="handleCashRegisterSuccess" />
+
+    <RetiroEfectivoModal
+      v-if="showRetiroEfectivoModal"
+      @close="showRetiroEfectivoModal = false"
+      @success="handleCashRegisterSuccess" />
+
   </div>
+
+    <!-- Modal: Config. Atajos de Teclado -->
+    <div v-if="showKeyboardShortcutsModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title text-white"><i class="ti ti-keyboard me-2"></i>Configuración de Atajos de Teclado</h5>
+            <button type="button" class="btn-close btn-close-white" @click="showKeyboardShortcutsModal = false"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <!-- Columna Izquierda -->
+              <div class="col-md-6">
+                <h6 class="text-muted mb-3 border-bottom pb-2">Búsquedas</h6>
+                <!-- Búsqueda de Clientes -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-users me-1 text-primary"></i>Búsqueda de Clientes
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.searchClients.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'client-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Búsqueda de Productos -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-box me-1 text-primary"></i>Búsqueda de Productos
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.searchProducts.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'prod-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Búsqueda de Vendedor -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-user-check me-1 text-primary"></i>Búsqueda de Vendedor
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.searchSeller.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'seller-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <h6 class="text-muted mb-3 mt-3 border-bottom pb-2">Acciones de Factura</h6>
+                <!-- Guardar Transacción -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-device-floppy me-1 text-warning"></i>Guardar Transacción
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.saveTransaction.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'save-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Guardar Cotización -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-file-invoice me-1 text-info"></i>Guardar Cotización
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.saveQuote.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'quote-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Guardar Op. en Espera -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-clock me-1 text-secondary"></i>Guardar Op. en Espera
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.savePending.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'pending-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Eliminar Transacción -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-trash me-1 text-danger"></i>Eliminar Transacción
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.deleteTransaction.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'delete-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Adicionar Producto -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-plus me-1 text-success"></i>Adicionar Producto
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.addProduct.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'add-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Columna Derecha -->
+              <div class="col-md-6">
+                <h6 class="text-muted mb-3 border-bottom pb-2">Cobros y Descuentos</h6>
+                <!-- Cobro Rápido -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-currency-dollar me-1 text-success"></i>Cobro Rápido
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.fastPayment.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'fast-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Cobro Detallado -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-receipt-2 me-1 text-info"></i>Cobro Detallado
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.detailedPayment.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'detail-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Exoneración ISV -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-discount-check me-1 text-purple"></i>Exoneración ISV
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.taxExemption.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'tax-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Aplicar Cupón -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-ticket me-1 text-orange"></i>Aplicar Cupón
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.applyCoupon.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'coupon-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Ver Ofertas -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-tag me-1 text-success"></i>Ver Ofertas
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.viewOffers.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'offers-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <h6 class="text-muted mb-3 mt-3 border-bottom pb-2">Configuración</h6>
+                <!-- Cambiar Documento -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-switch-horizontal me-1 text-primary"></i>Cambiar Documento
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.changeDocument.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'doc-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Importar Documento -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-file-import me-1 text-purple"></i>Importar Documento
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.importDocument.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'import-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Opciones Adicionales -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-settings me-1 text-secondary"></i>Opciones Adicionales
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.additionalOptions.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'options-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Campos Adicionales -->
+                <div class="shortcut-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0 small">
+                      <i class="ti ti-forms me-1 text-secondary"></i>Campos Adicionales
+                    </label>
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.additionalFields.keys">
+                      <option value="">Sin asignar</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'fields-'+opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nota informativa -->
+            <div class="alert alert-info mt-3 mb-0">
+              <i class="ti ti-info-circle me-2"></i>
+              <small>Seleccione la combinación de teclas deseada para cada acción. Los atajos funcionan cuando no hay un campo de texto activo.</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" @click="resetKeyboardShortcuts">
+              <i class="ti ti-refresh me-1"></i>Restaurar por Defecto
+            </button>
+            <button type="button" class="btn btn-secondary" @click="showKeyboardShortcutsModal = false">CERRAR</button>
+            <button type="button" class="btn btn-success" @click="saveKeyboardShortcuts">
+              <i class="ti ti-check me-1"></i>GUARDAR
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Modal Cobro Rápido -->
     <div v-if="showQuickPaymentModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
@@ -681,35 +1234,42 @@
                     class="btn"
                     :class="quickPayment.method === 'TRANSFERENCIA' ? 'btn-primary' : 'btn-outline-primary'"
                     @click="quickPayment.method = 'TRANSFERENCIA'">
-                    TRANSFERENCIA
+                    TRANSFERENCIA<br><small>(1)</small>
                   </button>
                   <button
                     type="button"
                     class="btn"
                     :class="quickPayment.method === 'CHEQUE' ? 'btn-primary' : 'btn-outline-primary'"
                     @click="quickPayment.method = 'CHEQUE'">
-                    CHEQUE
+                    CHEQUE<br><small>(2)</small>
                   </button>
                   <button
                     type="button"
                     class="btn"
                     :class="quickPayment.method === 'TARJ_DEBITO' ? 'btn-primary' : 'btn-outline-primary'"
                     @click="quickPayment.method = 'TARJ_DEBITO'">
-                    TARJ. DÉBITO
+                    TARJ. DÉBITO<br><small>(3)</small>
                   </button>
                   <button
                     type="button"
                     class="btn"
                     :class="quickPayment.method === 'TARJ_CREDITO' ? 'btn-primary' : 'btn-outline-primary'"
                     @click="quickPayment.method = 'TARJ_CREDITO'">
-                    TARJ. CRÉDITO
+                    TARJ. CRÉDITO<br><small>(4)</small>
                   </button>
                   <button
                     type="button"
                     class="btn"
                     :class="quickPayment.method === 'EFECTIVO' ? 'btn-primary' : 'btn-outline-primary'"
                     @click="quickPayment.method = 'EFECTIVO'">
-                    EFECTIVO
+                    EFECTIVO<br><small>(5)</small>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn"
+                    :class="quickPayment.method === 'LINK_PAGO' ? 'btn-primary' : 'btn-outline-primary'"
+                    @click="quickPayment.method = 'LINK_PAGO'">
+                    LINK DE PAGO<br><small>(6)</small>
                   </button>
                 </div>
               </div>
@@ -751,13 +1311,13 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="showQuickPaymentModal = false">
-              Cancelar
+              Cancelar <small>(Esc)</small>
             </button>
             <button type="button" class="btn btn-info" @click="switchToDetailedPayment">
-              Cobro Detallado
+              Cobro Detallado <small>(D)</small>
             </button>
             <button type="button" class="btn btn-primary" @click="processQuickPayment">
-              <i class="ti ti-check"></i> Procesar Pago
+              <i class="ti ti-check"></i> Procesar Pago <small>(Enter)</small>
             </button>
           </div>
         </div>
@@ -1031,20 +1591,20 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeQuotePreview">
-              Cerrar
+              Cerrar <small>(Esc)</small>
             </button>
             <div class="btn-group" style="position: relative;">
               <button type="button" class="btn btn-success dropdown-toggle" @click="showQuoteOptionsDropdown = !showQuoteOptionsDropdown">
-                <i class="ti ti-file-export me-1"></i>Otras Opciones
+                <i class="ti ti-file-export me-1"></i>Otras Opciones <small>(Alt+O)</small>
               </button>
               <ul class="dropdown-menu" :class="{ show: showQuoteOptionsDropdown }" style="position: absolute; bottom: 100%; left: 0; margin-bottom: 5px;">
-                <li><a class="dropdown-item" href="#" @click.prevent="exportQuoteToPDF(); showQuoteOptionsDropdown = false"><i class="ti ti-file-type-pdf me-2"></i>Exportar a PDF</a></li>
-                <li><a class="dropdown-item" href="#" @click.prevent="exportQuoteToExcel(); showQuoteOptionsDropdown = false"><i class="ti ti-file-type-xls me-2"></i>Exportar a Excel</a></li>
-                <li><a class="dropdown-item" href="#" @click.prevent="saveQuoteAsImage(); showQuoteOptionsDropdown = false"><i class="ti ti-photo me-2"></i>Guardar como Imagen</a></li>
+                <li><a class="dropdown-item" href="#" @click.prevent="exportQuoteToPDF(); showQuoteOptionsDropdown = false"><i class="ti ti-file-type-pdf me-2"></i>Exportar a PDF <small class="text-muted">(Alt+1)</small></a></li>
+                <li><a class="dropdown-item" href="#" @click.prevent="exportQuoteToExcel(); showQuoteOptionsDropdown = false"><i class="ti ti-file-type-xls me-2"></i>Exportar a Excel <small class="text-muted">(Alt+2)</small></a></li>
+                <li><a class="dropdown-item" href="#" @click.prevent="saveQuoteAsImage(); showQuoteOptionsDropdown = false"><i class="ti ti-photo me-2"></i>Guardar como Imagen <small class="text-muted">(Alt+3)</small></a></li>
               </ul>
             </div>
             <button type="button" class="btn btn-warning" @click="printQuotePreview">
-              <i class="ti ti-printer me-1"></i>Imprimir
+              <i class="ti ti-printer me-1"></i>Imprimir <small>(Alt+P)</small>
             </button>
           </div>
         </div>
@@ -1056,7 +1616,12 @@
       <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
           <div class="modal-header bg-dark text-white py-2">
-            <h5 class="modal-title text-white mb-0">Búsqueda de datos</h5>
+            <h5 class="modal-title text-white mb-0">
+              Búsqueda de datos -
+              <span v-if="importDocumentType === 'pending-invoice'">Operación en Espera</span>
+              <span v-else-if="importDocumentType === 'quote'">Cotización</span>
+              <span v-else-if="importDocumentType === 'online-order'">Pedidos en Línea</span>
+            </h5>
             <button type="button" class="btn-close btn-close-white" @click="closeImportModal"></button>
           </div>
           <div class="modal-body p-3">
@@ -1182,21 +1747,32 @@
               <div class="col-12">
                 <label class="form-label fw-bold">Código del Cupón</label>
                 <div class="input-group">
-                  <input type="text" class="form-control" v-model="couponCode" placeholder="Ingrese el código del cupón" @keypress.enter="applyCoupon">
-                  <button class="btn btn-primary" @click="applyCoupon">
-                    <i class="ti ti-check me-1"></i>APLICAR
+                  <input type="text" class="form-control" v-model="couponCode" placeholder="Ingrese el código del cupón" @keypress.enter="applyCoupon" :disabled="isValidatingCoupon">
+                  <button class="btn btn-primary" @click="applyCoupon" :disabled="!couponCode.trim() || isValidatingCoupon">
+                    <i class="ti ti-check me-1"></i>{{ isValidatingCoupon ? 'VALIDANDO...' : 'APLICAR' }}
                   </button>
                 </div>
               </div>
             </div>
 
-            <div v-if="appliedCoupon" class="alert alert-success">
-              <h6 class="fw-bold mb-2">Cupón Aplicado</h6>
-              <p class="mb-1"><strong>Código:</strong> {{ appliedCoupon.code }}</p>
-              <p class="mb-1"><strong>Descuento:</strong> {{ appliedCoupon.discount_type === 'percentage' ? appliedCoupon.discount_value + '%' : 'L ' + appliedCoupon.discount_value }}</p>
-              <button class="btn btn-sm btn-danger mt-2" @click="removeCoupon">
-                <i class="ti ti-x me-1"></i>Remover Cupón
-              </button>
+            <!-- Error de cupón -->
+            <div v-if="couponError" class="alert alert-danger">
+              <i class="ti ti-alert-circle me-1"></i>
+              {{ couponError }}
+            </div>
+
+            <!-- Cupones Aplicados -->
+            <div v-if="appliedCoupons.length > 0" class="mb-3">
+              <h6 class="fw-bold mb-2">Cupones Aplicados</h6>
+              <div v-for="coupon in appliedCoupons" :key="coupon.code" class="alert alert-success d-flex justify-content-between align-items-center">
+                <div>
+                  <p class="mb-1"><strong>Código:</strong> {{ coupon.code }} - {{ coupon.name }}</p>
+                  <p class="mb-0"><strong>Descuento:</strong> L {{ coupon.discount_amount.toFixed(2) }}</p>
+                </div>
+                <button class="btn btn-sm btn-danger" @click="removeCoupon(coupon.code)">
+                  <i class="ti ti-x"></i>
+                </button>
+              </div>
             </div>
 
             <hr>
@@ -1214,10 +1790,13 @@
                 </thead>
                 <tbody>
                   <tr v-for="coupon in availableCoupons" :key="coupon.id">
-                    <td>{{ coupon.code }}</td>
-                    <td>{{ coupon.discount_type === 'percentage' ? coupon.discount_value + '%' : 'L ' + coupon.discount_value }}</td>
-                    <td>{{ formatDate(coupon.valid_until) }}</td>
+                    <td>{{ coupon.codigo }}</td>
+                    <td>{{ coupon.tipo_descuento === 'porcentaje' ? coupon.valor_descuento + '%' : 'L ' + parseFloat(coupon.valor_descuento).toFixed(2) }}</td>
+                    <td>{{ coupon.fecha_hasta ? formatDate(coupon.fecha_hasta) : 'Sin límite' }}</td>
                     <td class="text-center">
+                      <button class="btn btn-sm btn-success me-1" @click="viewCouponDetails(coupon)">
+                        <i class="ti ti-eye"></i>
+                      </button>
                       <button class="btn btn-sm btn-primary" @click="selectCoupon(coupon)">
                         Aplicar
                       </button>
@@ -1237,6 +1816,121 @@
       </div>
     </div>
 
+    <!-- Modal: Detalles del Cupón -->
+    <div v-if="showCouponDetailsModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title text-white">Detalles del cupón</h5>
+            <button type="button" class="btn-close btn-close-white" @click="showCouponDetailsModal = false"></button>
+          </div>
+          <div class="modal-body" v-if="selectedCouponDetails">
+            <div class="row">
+              <div class="col-lg-3 mb-3">
+                <label class="form-label fw-bold">Código:</label>
+                <p class="form-control-plaintext">{{ selectedCouponDetails.codigo }}</p>
+              </div>
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">Nombre:</label>
+                <p class="form-control-plaintext">{{ selectedCouponDetails.nombre }}</p>
+              </div>
+              <div class="col-lg-3 mb-3">
+                <label class="form-label fw-bold">Agencia:</label>
+                <p class="form-control-plaintext">{{ selectedCouponDetails.agencia_nombre || 'Todas las agencias' }}</p>
+              </div>
+            </div>
+
+            <!-- Para cupones de tipo grupo o producto único -->
+            <div v-if="selectedCouponDetails.tipo_aplicacion !== 'multiple'" class="row">
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Categoría:</label>
+                <p class="form-control-plaintext">{{ selectedCouponDetails.categoria_nombre || 'N/A' }}</p>
+              </div>
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Subcategoría:</label>
+                <p class="form-control-plaintext">{{ selectedCouponDetails.subcategoria_nombre || 'N/A' }}</p>
+              </div>
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Producto:</label>
+                <p class="form-control-plaintext">{{ selectedCouponDetails.producto_nombre || 'N/A' }}</p>
+              </div>
+            </div>
+
+            <!-- Para cupones de tipo múltiple: mostrar lista de productos -->
+            <div v-if="selectedCouponDetails.tipo_aplicacion === 'multiple' && selectedCouponDetails.items && selectedCouponDetails.items.length > 0" class="row">
+              <div class="col-12 mb-3">
+                <label class="form-label fw-bold">Productos Incluidos ({{ selectedCouponDetails.items.length }}):</label>
+                <div class="table-responsive">
+                  <table class="table table-sm table-bordered">
+                    <thead>
+                      <tr>
+                        <th>Código</th>
+                        <th>Producto</th>
+                        <th>% Descuento</th>
+                        <th>Monto Descuento</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="item in selectedCouponDetails.items" :key="item.id">
+                        <td>{{ item.product_code }}</td>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.descuento_porcentaje }}%</td>
+                        <td>L {{ parseFloat(item.descuento_monto).toFixed(2) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Tipo de Descuento:</label>
+                <p class="form-control-plaintext">{{ selectedCouponDetails.tipo_descuento === 'porcentaje' ? 'Porcentaje' : 'Monto' }}</p>
+              </div>
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Valor:</label>
+                <p class="form-control-plaintext">{{ parseFloat(selectedCouponDetails.valor_descuento).toFixed(2) }}{{ selectedCouponDetails.tipo_descuento === 'porcentaje' ? '%' : '' }}</p>
+              </div>
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Estado:</label>
+                <p class="form-control-plaintext">
+                  <span :class="selectedCouponDetails.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                    {{ selectedCouponDetails.is_active ? 'ACTIVO' : 'INACTIVO' }}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div v-if="selectedCouponDetails.limitar_fecha" class="row">
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">Fecha Desde:</label>
+                <p class="form-control-plaintext">{{ selectedCouponDetails.fecha_desde || 'N/A' }}</p>
+              </div>
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">Fecha Hasta:</label>
+                <p class="form-control-plaintext">{{ selectedCouponDetails.fecha_hasta || 'N/A' }}</p>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Suspendida:</label>
+                <p class="form-control-plaintext">
+                  <span :class="selectedCouponDetails.suspendida ? 'badge bg-warning' : 'badge bg-success'">
+                    {{ selectedCouponDetails.suspendida ? 'SÍ' : 'NO' }}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-dark" @click="showCouponDetailsModal = false">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal: Ver Ofertas -->
     <div v-if="showOffersModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
       <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -1246,6 +1940,25 @@
             <button type="button" class="btn-close" @click="closeOffersModal"></button>
           </div>
           <div class="modal-body">
+            <!-- Ofertas Activas Aplicadas -->
+            <div v-if="activeOffers.length > 0" class="mb-4">
+              <h6 class="fw-bold mb-2 text-success">
+                <i class="ti ti-tag me-1"></i>
+                Ofertas Aplicadas Automáticamente
+              </h6>
+              <div v-for="offer in activeOffers" :key="offer.id" class="alert alert-success d-flex justify-content-between align-items-center">
+                <div>
+                  <p class="mb-1"><strong>{{ offer.name }}</strong></p>
+                  <p class="mb-0">Descuento: L {{ offer.discount_amount.toFixed(2) }}</p>
+                </div>
+                <span class="badge bg-success">APLICADA</span>
+              </div>
+            </div>
+
+            <hr v-if="activeOffers.length > 0">
+
+            <h6 class="fw-bold mb-3">Todas las Ofertas Disponibles</h6>
+
             <div class="row mb-3">
               <div class="col-md-6">
                 <input type="text" class="form-control" v-model="offersSearch" placeholder="Buscar ofertas...">
@@ -1253,10 +1966,8 @@
               <div class="col-md-3">
                 <select class="form-select" v-model="offersTypeFilter">
                   <option value="">Todos los tipos</option>
-                  <option value="percentage">Porcentaje</option>
-                  <option value="fixed">Monto fijo</option>
-                  <option value="2x1">2x1</option>
-                  <option value="3x2">3x2</option>
+                  <option value="porcentaje">Porcentaje</option>
+                  <option value="monto">Monto fijo</option>
                 </select>
               </div>
               <div class="col-md-3">
@@ -1271,29 +1982,45 @@
               <table class="table table-sm table-hover">
                 <thead class="table-light sticky-top">
                   <tr>
+                    <th>Código</th>
                     <th>Oferta</th>
-                    <th>Tipo</th>
-                    <th>Descuento</th>
-                    <th>Productos</th>
-                    <th>Válido Hasta</th>
+                    <th>Tipo Descuento</th>
+                    <th>Valor</th>
+                    <th>Aplicación</th>
+                    <th>Agencia</th>
                     <th class="text-center">Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="offer in filteredOffers" :key="offer.id">
+                    <td>{{ offer.codigo }}</td>
                     <td>
-                      <strong>{{ offer.name }}</strong>
+                      <strong>{{ offer.nombre }}</strong>
                       <br>
-                      <small class="text-muted">{{ offer.description }}</small>
+                      <small class="text-muted" v-if="offer.categoria_nombre">
+                        Categoría: {{ offer.categoria_nombre }}
+                      </small>
+                      <small class="text-muted" v-if="offer.subcategoria_nombre">
+                        <br>Subcategoría: {{ offer.subcategoria_nombre }}
+                      </small>
+                      <small class="text-muted" v-if="offer.producto_nombre">
+                        <br>Producto: {{ offer.producto_nombre }}
+                      </small>
                     </td>
                     <td>
-                      <span class="badge bg-info">{{ offer.offer_type }}</span>
+                      <span class="badge" :class="offer.tipo_descuento === 'porcentaje' ? 'bg-info' : 'bg-success'">
+                        {{ offer.tipo_descuento === 'porcentaje' ? 'Porcentaje' : 'Monto Fijo' }}
+                      </span>
                     </td>
-                    <td>{{ offer.discount_type === 'percentage' ? offer.discount_value + '%' : 'L ' + offer.discount_value }}</td>
                     <td>
-                      <small>{{ offer.applies_to === 'all' ? 'Todos los productos' : offer.product_count + ' productos' }}</small>
+                      <strong>{{ offer.tipo_descuento === 'porcentaje' ? offer.valor_descuento + '%' : 'L ' + parseFloat(offer.valor_descuento).toFixed(2) }}</strong>
                     </td>
-                    <td>{{ formatDate(offer.valid_until) }}</td>
+                    <td>
+                      <small>{{ offer.tipo_aplicacion === 'grupo' ? 'Grupo' : 'Múltiple' }}</small>
+                      <br>
+                      <small class="text-muted" v-if="offer.items_count > 0">{{ offer.items_count }} producto(s)</small>
+                    </td>
+                    <td>{{ offer.agencia_nombre || 'Todas' }}</td>
                     <td class="text-center">
                       <button class="btn btn-sm btn-success" @click="viewOfferDetails(offer)">
                         <i class="ti ti-eye me-1"></i>Ver
@@ -1301,7 +2028,7 @@
                     </td>
                   </tr>
                   <tr v-if="filteredOffers.length === 0">
-                    <td colspan="6" class="text-center text-muted py-3">No hay ofertas disponibles</td>
+                    <td colspan="7" class="text-center text-muted py-3">No hay ofertas disponibles</td>
                   </tr>
                 </tbody>
               </table>
@@ -1313,13 +2040,348 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal: Detalles de la Oferta -->
+    <div v-if="showOfferDetailsModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title text-white">Detalles de la Oferta</h5>
+            <button type="button" class="btn-close btn-close-white" @click="showOfferDetailsModal = false"></button>
+          </div>
+          <div class="modal-body" v-if="selectedOfferDetails">
+            <div class="row">
+              <div class="col-lg-3 mb-3">
+                <label class="form-label fw-bold">Código:</label>
+                <p class="form-control-plaintext">{{ selectedOfferDetails.codigo }}</p>
+              </div>
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">Nombre:</label>
+                <p class="form-control-plaintext">{{ selectedOfferDetails.nombre }}</p>
+              </div>
+              <div class="col-lg-3 mb-3">
+                <label class="form-label fw-bold">Agencia:</label>
+                <p class="form-control-plaintext">{{ selectedOfferDetails.agencia_nombre || 'Agencia Principal' }}</p>
+              </div>
+            </div>
+
+            <!-- Para ofertas de tipo grupo o producto único -->
+            <div v-if="selectedOfferDetails.tipo_aplicacion !== 'multiple'" class="row">
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Categoría:</label>
+                <p class="form-control-plaintext">{{ selectedOfferDetails.categoria_nombre || 'N/A' }}</p>
+              </div>
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Subcategoría:</label>
+                <p class="form-control-plaintext">{{ selectedOfferDetails.subcategoria_nombre || 'N/A' }}</p>
+              </div>
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Producto:</label>
+                <p class="form-control-plaintext">{{ selectedOfferDetails.producto_nombre || 'N/A' }}</p>
+              </div>
+            </div>
+
+            <!-- Para ofertas de tipo múltiple: mostrar lista de productos -->
+            <div v-if="selectedOfferDetails.tipo_aplicacion === 'multiple' && selectedOfferDetails.items && selectedOfferDetails.items.length > 0" class="row">
+              <div class="col-12 mb-3">
+                <label class="form-label fw-bold">Productos Incluidos ({{ selectedOfferDetails.items.length }}):</label>
+                <div class="table-responsive">
+                  <table class="table table-sm table-bordered">
+                    <thead>
+                      <tr>
+                        <th>Código</th>
+                        <th>Producto</th>
+                        <th>% Descuento</th>
+                        <th>Monto Descuento</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="item in selectedOfferDetails.items" :key="item.id">
+                        <td>{{ item.product_code }}</td>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.descuento_porcentaje }}%</td>
+                        <td>L {{ parseFloat(item.descuento_monto).toFixed(2) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Tipo de Descuento:</label>
+                <p class="form-control-plaintext">{{ selectedOfferDetails.tipo_descuento === 'porcentaje' ? 'Porcentaje' : 'Monto' }}</p>
+              </div>
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Valor:</label>
+                <p class="form-control-plaintext">{{ parseFloat(selectedOfferDetails.valor_descuento).toFixed(2) }}{{ selectedOfferDetails.tipo_descuento === 'porcentaje' ? '%' : '' }}</p>
+              </div>
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Estado:</label>
+                <p class="form-control-plaintext">
+                  <span :class="selectedOfferDetails.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                    {{ selectedOfferDetails.is_active ? 'ACTIVO' : 'INACTIVO' }}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div v-if="selectedOfferDetails.limitar_fecha" class="row">
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">Fecha Desde:</label>
+                <p class="form-control-plaintext">{{ selectedOfferDetails.fecha_desde || 'N/A' }}</p>
+              </div>
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">Fecha Hasta:</label>
+                <p class="form-control-plaintext">{{ selectedOfferDetails.fecha_hasta || 'N/A' }}</p>
+              </div>
+            </div>
+
+            <div v-if="selectedOfferDetails.limitar_hora" class="row">
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">Hora Desde:</label>
+                <p class="form-control-plaintext">{{ selectedOfferDetails.hora_desde || 'N/A' }}</p>
+              </div>
+              <div class="col-lg-6 mb-3">
+                <label class="form-label fw-bold">Hora Hasta:</label>
+                <p class="form-control-plaintext">{{ selectedOfferDetails.hora_hasta || 'N/A' }}</p>
+              </div>
+            </div>
+
+            <!-- Días de aplicación -->
+            <div class="row">
+              <div class="col-12 mb-3">
+                <label class="form-label fw-bold">Días de Aplicación:</label>
+                <div class="d-flex gap-2 flex-wrap">
+                  <span v-if="selectedOfferDetails.aplica_lunes" class="badge bg-warning">Lunes</span>
+                  <span v-else class="badge bg-secondary">Lunes</span>
+
+                  <span v-if="selectedOfferDetails.aplica_martes" class="badge bg-warning">Martes</span>
+                  <span v-else class="badge bg-secondary">Martes</span>
+
+                  <span v-if="selectedOfferDetails.aplica_miercoles" class="badge bg-warning">Miércoles</span>
+                  <span v-else class="badge bg-secondary">Miércoles</span>
+
+                  <span v-if="selectedOfferDetails.aplica_jueves" class="badge bg-warning">Jueves</span>
+                  <span v-else class="badge bg-secondary">Jueves</span>
+
+                  <span v-if="selectedOfferDetails.aplica_viernes" class="badge bg-warning">Viernes</span>
+                  <span v-else class="badge bg-secondary">Viernes</span>
+
+                  <span v-if="selectedOfferDetails.aplica_sabado" class="badge bg-warning">Sábado</span>
+                  <span v-else class="badge bg-secondary">Sábado</span>
+
+                  <span v-if="selectedOfferDetails.aplica_domingo" class="badge bg-warning">Domingo</span>
+                  <span v-else class="badge bg-secondary">Domingo</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Condiciones de aplicación -->
+            <div class="row">
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Aplica Para:</label>
+                <p class="form-control-plaintext">
+                  {{ selectedOfferDetails.aplica_para === 'todos' ? 'Todos' : selectedOfferDetails.aplica_para === 'compras_mayores' ? 'Compras Mayores' : 'Cantidades Mayores' }}
+                </p>
+              </div>
+              <div class="col-lg-4 mb-3" v-if="selectedOfferDetails.aplica_para === 'compras_mayores'">
+                <label class="form-label fw-bold">Monto Mínimo:</label>
+                <p class="form-control-plaintext">L {{ parseFloat(selectedOfferDetails.monto_minimo || 0).toFixed(2) }}</p>
+              </div>
+              <div class="col-lg-4 mb-3" v-if="selectedOfferDetails.aplica_para === 'cantidades_mayores'">
+                <label class="form-label fw-bold">Cantidad Mínima:</label>
+                <p class="form-control-plaintext">{{ selectedOfferDetails.cantidad_minima }}</p>
+              </div>
+              <div class="col-lg-4 mb-3">
+                <label class="form-label fw-bold">Suspendida:</label>
+                <p class="form-control-plaintext">
+                  <span :class="selectedOfferDetails.suspendida ? 'badge bg-warning' : 'badge bg-success'">
+                    {{ selectedOfferDetails.suspendida ? 'SÍ' : 'NO' }}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-dark" @click="showOfferDetailsModal = false">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Información del Producto -->
+    <div v-if="showProductInfoModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title text-white">Información del Producto</h5>
+            <button type="button" class="btn btn-danger btn-sm rounded-circle" @click="closeProductInfoModal" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
+              <i class="ti ti-x" style="font-size: 1.2rem; color: white;"></i>
+            </button>
+          </div>
+          <div class="modal-body" v-if="selectedProductInfo">
+            <!-- Información Principal -->
+            <div class="row mb-4">
+              <!-- Imagen -->
+              <div class="col-md-3">
+                <img
+                  :src="selectedProductInfo.image || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect width=%22300%22 height=%22300%22 fill=%22%23f0f0f0%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2224%22 fill=%22%23999%22%3ESIN IMAGEN%3C/text%3E%3C/svg%3E'"
+                  :alt="selectedProductInfo.name"
+                  class="img-fluid rounded border"
+                  style="width: 100%; height: auto; object-fit: cover;"
+                  @error="handleImageError"
+                >
+              </div>
+
+              <!-- Datos del Producto -->
+              <div class="col-md-9">
+                <table class="table table-sm table-bordered">
+                  <tbody>
+                    <tr>
+                      <th style="width: 30%;">Código</th>
+                      <td>{{ selectedProductInfo.code }}</td>
+                    </tr>
+                    <tr>
+                      <th>Nombre</th>
+                      <td>{{ selectedProductInfo.name }}</td>
+                    </tr>
+                    <tr>
+                      <th>Categoría/Subcategoría</th>
+                      <td>
+                        <span class="badge bg-warning text-dark">{{ selectedProductInfo.category_name || 'N/A' }}</span>
+                        <span class="badge bg-info ms-2">{{ selectedProductInfo.subcategory_name || 'N/A' }}</span>
+                      </td>
+                    </tr>
+                    <tr v-if="selectedProductInfo.description">
+                      <th>Descripción</th>
+                      <td>{{ selectedProductInfo.description }}</td>
+                    </tr>
+                    <tr v-if="selectedProductInfo.brand_name">
+                      <th>Marca</th>
+                      <td>{{ selectedProductInfo.brand_name }}</td>
+                    </tr>
+                    <tr v-if="selectedProductInfo.model">
+                      <th>Modelo</th>
+                      <td>{{ selectedProductInfo.model }}</td>
+                    </tr>
+                    <tr v-if="selectedProductInfo.weight">
+                      <th>Peso</th>
+                      <td>{{ selectedProductInfo.weight }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Tabla de Precios -->
+            <div class="mb-4">
+              <h6 class="fw-bold mb-2">Lista de Precios</h6>
+              <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>Nivel</th>
+                    <th>% Utilidad</th>
+                    <th>Bruto</th>
+                    <th>Total Venta</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="price in selectedProductInfo.prices" :key="price.type">
+                    <td><strong>{{ price.label }}</strong></td>
+                    <td>{{ price.utilidad }} %</td>
+                    <td>L {{ formatCurrency(price.bruto) }}</td>
+                    <td><strong>L {{ formatCurrency(price.total_venta) }}</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Tabla de Existencias por Bodega -->
+            <div class="mb-4">
+              <h6 class="fw-bold mb-2">Control de Existencias por Bodega</h6>
+              <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>Bodega</th>
+                    <th>Existencia Actual</th>
+                    <th>Mínimo</th>
+                    <th>Máximo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="stock in selectedProductInfo.stock" :key="stock.bodega">
+                    <td><strong>{{ stock.bodega }}</strong></td>
+                    <td><strong>{{ stock.existencia_actual }}</strong></td>
+                    <td>{{ stock.minimo }}</td>
+                    <td>{{ stock.maximo }}</td>
+                  </tr>
+                  <tr class="table-secondary fw-bold">
+                    <td>TOTAL</td>
+                    <td>{{ selectedProductInfo.total_existencias }}</td>
+                    <td>{{ selectedProductInfo.total_minimo }}</td>
+                    <td>{{ selectedProductInfo.total_maximo }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeProductInfoModal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Escáner de Código de Barras con Cámara -->
+    <div v-if="showBarcodeScannerModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.8);">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title text-white">
+              <i class="ti ti-camera me-2"></i>Escanear Código de Barras
+            </h5>
+            <button type="button" class="btn-close btn-close-white" @click="closeBarcodeScanner"></button>
+          </div>
+          <div class="modal-body text-center p-0">
+            <div class="position-relative" style="background: #000;">
+              <video ref="barcodeScannerVideo" style="width: 100%; max-height: 500px; display: block;"></video>
+              <div v-if="scannerLoading" class="position-absolute top-50 start-50 translate-middle">
+                <div class="spinner-border text-light" role="status">
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="text-white mt-2">Iniciando cámara...</p>
+              </div>
+              <div v-if="scannerError" class="position-absolute top-50 start-50 translate-middle text-center">
+                <i class="ti ti-camera-off fs-1 text-danger"></i>
+                <p class="text-white mt-2">{{ scannerError }}</p>
+              </div>
+            </div>
+            <div class="p-3 bg-light">
+              <p class="mb-2">
+                <i class="ti ti-info-circle me-1"></i>
+                Apunte la cámara hacia el código de barras
+              </p>
+              <p class="text-muted small mb-0">El escáner detectará automáticamente el código</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeBarcodeScanner">
+              <i class="ti ti-x me-1"></i>Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 </template>
 
- 
+
 
 
 <script>
 import api from '@/api/config';
+import axios from 'axios';
 import Swal from 'sweetalert2';
 import ProductModal from '@/components/pos/ProductModal.vue';
 import InvoicePrint from '@/components/InvoicePrint.vue';
@@ -1327,12 +2389,20 @@ import { LOGO_BASE64 } from '@/assets/img/logo.js';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
+import { BrowserMultiFormatReader } from '@zxing/browser';
+import { NotFoundException } from '@zxing/library';
+import AperturaCajaModal from './components/AperturaCajaModal.vue';
+import EgresoCajaModal from './components/EgresoCajaModal.vue';
+import RetiroEfectivoModal from './components/RetiroEfectivoModal.vue';
 
 export default {
   name: 'POSInvoice',
   components: {
     ProductModal,
-    InvoicePrint
+    InvoicePrint,
+    AperturaCajaModal,
+    EgresoCajaModal,
+    RetiroEfectivoModal
   },
   data() {
     return {
@@ -1376,7 +2446,11 @@ export default {
         quantity: 1,
         price: 0,
         discount_percent: 0,
-        tax_percent: 15
+        tax_percent: 15,
+        product_id: null,
+        category_id: null,
+        subcategory_id: null,
+        image: null
       },
       customers: [],
       products: [],
@@ -1389,6 +2463,9 @@ export default {
       showAdditionalOptions: false,
       showNewCustomerModal: false,
       showNewProductModal: false,
+      showAperturaCajaModal: false,
+      showEgresoCajaModal: false,
+      showRetiroEfectivoModal: false,
       productSortOrder: 'desc',
       newCustomer: {
         code: '',
@@ -1430,12 +2507,18 @@ export default {
       showAddCustomerModal: false,
       showCustomerInfoModal: false,
       selectedCustomerInfo: null,
+      nextCustomerCode: '',
+      savingCustomer: false,
       // Modales de pago
       showQuickPaymentModal: false,
       showDetailedPaymentModal: false,
       showPrintModal: false,
       showExportMenu: false,
       createdInvoiceData: null,
+      // Selección de fila de producto para Delete
+      selectedProductRow: -1,
+      // Selección en modales de búsqueda
+      selectedSearchIndex: 0,
       // Cobro rápido
       quickPayment: {
         method: 'EFECTIVO',
@@ -1454,7 +2537,7 @@ export default {
       // Import Document
       showImportDropdown: false,
       showImportModal: false,
-      importDocumentType: '', // 'pending-invoice' or 'quote'
+      importDocumentType: '', // 'pending-invoice', 'quote', or 'online-order'
       importSearch: '',
       importSearchBy: 'name',
       importSortBy: 'recent',
@@ -1468,7 +2551,7 @@ export default {
       // Tracking del documento importado
       importedDocument: {
         id: null,
-        type: null, // 'pending-invoice' or 'quote'
+        type: null, // 'pending-invoice', 'quote', or 'online-order'
         number: null
       },
       // Consecutivos numéricos por tipo de documento
@@ -1479,14 +2562,21 @@ export default {
       },
       // Modal de Cupones
       showCouponModal: false,
+      showCouponDetailsModal: false,
+      selectedCouponDetails: null,
       couponCode: '',
-      appliedCoupon: null,
+      appliedCoupons: [], // Cambiado a array para soportar múltiples cupones como en ecommerce
       availableCoupons: [],
+      isValidatingCoupon: false,
+      couponError: '',
       // Modal de Ofertas
       showOffersModal: false,
+      showOfferDetailsModal: false,
+      selectedOfferDetails: null,
       offersSearch: '',
       offersTypeFilter: '',
       offersStatusFilter: 'active',
+      activeOffers: [], // Ofertas aplicadas automáticamente
       availableOffers: [],
       // Quote Preview Modal
       showQuotePreview: false,
@@ -1499,7 +2589,67 @@ export default {
       // Resolución vencida
       showExpiredResolutionModal: false,
       resolutionExpired: false,
-      resolutionInfo: null
+      resolutionInfo: null,
+      // Modal de información del producto
+      showProductInfoModal: false,
+      selectedProductInfo: null,
+      // Escáner de código de barras
+      barcodeScannerActive: false,
+      showBarcodeScannerModal: false,
+      codeReader: null,
+      videoStream: null,
+      scannerLoading: false,
+      scannerError: null,
+      isProcessingBarcode: false,
+      scannerStopped: false,
+      currentScanSessionId: 0,
+      // Modal de Exoneración ISV
+      showTaxExemptionModal: false,
+      selectedTaxesForExemption: [],
+      // Modal de Atajos de Teclado
+      showKeyboardShortcutsModal: false,
+      recordingShortcut: null,
+      keyboardShortcuts: {
+        searchClients: { name: 'Búsqueda de Clientes', keys: 'Alt+F1', action: 'openCustomerSearch' },
+        searchProducts: { name: 'Búsqueda de Productos', keys: 'Alt+F2', action: 'openProductSearch' },
+        searchSeller: { name: 'Búsqueda de Vendedor', keys: 'Alt+F3', action: 'openSellerSearch' },
+        saveTransaction: { name: 'Guardar Transacción', keys: 'Alt+F5', action: 'saveInvoice' },
+        saveQuote: { name: 'Guardar Cotización', keys: 'Alt+F6', action: 'saveQuote' },
+        savePending: { name: 'Guardar Op. en Espera', keys: 'Alt+F7', action: 'savePending' },
+        deleteTransaction: { name: 'Eliminar Transacción', keys: 'Alt+F8', action: 'clearInvoice' },
+        addProduct: { name: 'Adicionar Producto', keys: 'Alt+A', action: 'addProduct' },
+        fastPayment: { name: 'Cobro Rápido', keys: 'Alt+F9', action: 'quickCheckout' },
+        detailedPayment: { name: 'Cobro Detallado', keys: 'Alt+F10', action: 'openCheckout' },
+        taxExemption: { name: 'Exoneración ISV', keys: 'Alt+F11', action: 'openTaxExemption' },
+        applyCoupon: { name: 'Aplicar Cupón', keys: 'Alt+C', action: 'openCouponModal' },
+        viewOffers: { name: 'Ver Ofertas', keys: 'Alt+O', action: 'openOffersModal' },
+        changeDocument: { name: 'Cambiar Documento', keys: 'Alt+D', action: 'toggleDocumentType' },
+        changeWarehouse: { name: 'Cambiar Bodega', keys: 'Alt+B', action: 'focusWarehouse' },
+        editShipping: { name: 'Editar Recargos', keys: 'Alt+R', action: 'focusShippingCost' },
+        importDocument: { name: 'Importar Documento', keys: 'Alt+I', action: 'toggleImportDropdown' },
+        additionalOptions: { name: 'Opciones Adicionales', keys: 'Alt+P', action: 'toggleAdditionalOptions' },
+        additionalFields: { name: 'Campos Adicionales', keys: 'Alt+M', action: 'toggleAdditionalFields' }
+      },
+      // Registro Rápido de Producto
+      newProductForm: {
+        code: '',
+        name: '',
+        unit_id: '',
+        category_id: '',
+        subcategory_id: '',
+        tax_id: '',
+        cost: 0,
+        profit_margin: 0,
+        price: 0,
+        image: null
+      },
+      newProductSubcategories: [],
+      savingNewProduct: false,
+      newProductError: null,
+      newProductSuccess: null,
+      categories: [],
+      units: [],
+      taxRates: []
     };
   },
   computed: {
@@ -1529,22 +2679,24 @@ export default {
       if (this.offersSearch) {
         const search = this.offersSearch.toLowerCase();
         filtered = filtered.filter(o =>
-          (o.name || '').toLowerCase().includes(search) ||
-          (o.description || '').toLowerCase().includes(search)
+          (o.codigo || '').toLowerCase().includes(search) ||
+          (o.nombre || '').toLowerCase().includes(search)
         );
       }
 
       // Filtrar por tipo
       if (this.offersTypeFilter) {
-        filtered = filtered.filter(o => o.offer_type === this.offersTypeFilter);
+        filtered = filtered.filter(o => o.tipo_descuento === this.offersTypeFilter);
       }
 
       // Filtrar por estado
       if (this.offersStatusFilter === 'active') {
         const now = new Date();
         filtered = filtered.filter(o => {
-          const validUntil = new Date(o.valid_until);
-          return o.is_active && validUntil >= now;
+          if (!o.is_active) return false;
+          if (!o.limitar_fecha || !o.fecha_hasta) return true; // Si no tiene límite de fecha, está activa
+          const validUntil = new Date(o.fecha_hasta);
+          return validUntil >= now;
         });
       }
 
@@ -1639,32 +2791,75 @@ export default {
       }, 0);
     },
     taxAmount() {
-      const taxRate = this.invoice.tax_rate || 15;
+      const taxRate = this.invoice.tax_rate !== undefined && this.invoice.tax_rate !== null ? this.invoice.tax_rate : 15;
       return this.subtotal * (taxRate / 100);
     },
     totalWithTax() {
-      return this.subtotal + this.taxAmount - (this.invoice.discount || 0);
+      // Calcular total con tax y descuentos de cupones y ofertas
+      const couponsDiscount = this.totalCouponsDiscount;
+      const offersDiscount = this.totalOffersDiscount;
+      return this.subtotal + this.taxAmount - couponsDiscount - offersDiscount;
+    },
+    // Descuentos de cupones
+    totalCouponsDiscount() {
+      return this.appliedCoupons.reduce((sum, coupon) => sum + (coupon.discount_amount || 0), 0);
+    },
+    // Descuentos de ofertas
+    totalOffersDiscount() {
+      return this.activeOffers.reduce((sum, offer) => sum + (offer.discount_amount || 0), 0);
     },
     totals() {
       let itemCount = 0;
       let gross = 0;
       let subtotal = 0;
-      let tax = 0;
 
       this.invoice.items.forEach(item => {
         itemCount += item.quantity;
         const itemGross = item.price * item.quantity;
         const itemDiscount = itemGross * (item.discount_percent / 100);
         const itemSubtotal = itemGross - itemDiscount;
-        const itemTax = itemSubtotal * (item.tax_percent / 100);
 
         gross += itemGross;
         subtotal += itemSubtotal;
-        tax += itemTax;
       });
 
+      // Aplicar descuentos de cupones y ofertas ANTES del impuesto
+      const couponsDiscount = this.totalCouponsDiscount;
+      const offersDiscount = this.totalOffersDiscount;
+      const subtotalAfterDiscounts = subtotal - couponsDiscount - offersDiscount;
+
+      // Calcular impuesto sobre el subtotal después de descuentos
+      // Si tax_rate es undefined o null, usar 15, pero si es 0 (exonerado), respetar el 0
+      const taxRate = this.invoice.tax_rate !== undefined && this.invoice.tax_rate !== null ? this.invoice.tax_rate : 15;
+      const tax = subtotalAfterDiscounts * (taxRate / 100);
+
       const shipping = parseFloat(this.invoice.shipping_cost) || 0;
-      return { itemCount, gross, subtotal, tax, total: subtotal + tax + shipping };
+      const total = subtotalAfterDiscounts + tax + shipping;
+
+      return { itemCount, gross, subtotal, tax, total };
+    },
+    // Opciones disponibles para atajos de teclado
+    availableShortcutOptions() {
+      const options = [];
+      // Teclas de función con modificadores
+      const modifiers = ['Alt+', 'Ctrl+', 'Shift+', 'Alt+Shift+', 'Ctrl+Shift+', 'Ctrl+Alt+'];
+      const fKeys = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'];
+
+      modifiers.forEach(mod => {
+        fKeys.forEach(fKey => {
+          options.push(mod + fKey);
+        });
+      });
+
+      // También agregar algunas combinaciones con números
+      const numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+      ['Alt+', 'Ctrl+', 'Alt+Shift+', 'Ctrl+Shift+'].forEach(mod => {
+        numbers.forEach(num => {
+          options.push(mod + num);
+        });
+      });
+
+      return options;
     },
     filteredDocuments() {
       if (!Array.isArray(this.documents)) return [];
@@ -1728,17 +2923,74 @@ export default {
     },
     importTotalPages() {
       return Math.ceil(this.filteredDocuments.length / this.importPerPage);
+    },
+    // Impuestos disponibles para exoneración
+    availableTaxes() {
+      const taxes = [];
+
+      // ISV 15%
+      taxes.push({
+        code: '001',
+        name: 'I.S.V 15',
+        rate: 15.00
+      });
+
+      // ISV 18%
+      taxes.push({
+        code: '002',
+        name: 'I.S.V 18',
+        rate: 18.00
+      });
+
+      // Exento
+      taxes.push({
+        code: '003',
+        name: 'EXENTO',
+        rate: 0.00
+      });
+
+      return taxes;
+    }
+  },
+  watch: {
+    // Observar cambios en los items para actualizar ofertas y revalidar cupones
+    'invoice.items': {
+      async handler(newItems, oldItems) {
+        // Recargar ofertas activas cuando cambian los items
+        this.loadActiveOffers();
+
+        // Revalidar cupones aplicados cuando cambian los items
+        if (this.appliedCoupons.length > 0 && newItems.length > 0) {
+          await this.revalidateCoupons();
+        } else if (newItems.length === 0) {
+          // Si no hay items, limpiar cupones
+          this.appliedCoupons = [];
+          this.couponError = '';
+        }
+      },
+      deep: true
     }
   },
   mounted() {
     this.loadInitialData();
     this.focusProductInput();
+    this.loadKeyboardShortcuts();
     // Event listener para cerrar dropdown al hacer click fuera
     document.addEventListener('click', this.handleClickOutside);
+    // Event listener para atajos de teclado
+    document.addEventListener('keydown', this.handleGlobalKeydown);
   },
   beforeUnmount() {
     // Remover event listener al destruir el componente
     document.removeEventListener('click', this.handleClickOutside);
+    document.removeEventListener('keydown', this.handleGlobalKeydown);
+
+    // Detener el escáner de código de barras si está activo
+    if (this.videoStream) {
+      const tracks = this.videoStream.getTracks();
+      tracks.forEach(track => track.stop());
+      this.videoStream = null;
+    }
   },
   methods: {
     toggleDocumentType() {
@@ -1753,9 +3005,13 @@ export default {
         this.loadVendors(),
         this.loadAvailableCoupons(),
         this.loadAvailableOffers(),
+        this.loadActiveOffers(), // Cargar ofertas activas inicialmente
         this.loadResolutionCurrent(),
         this.loadCompanyInfo(),
-        this.loadBankAccounts()
+        this.loadBankAccounts(),
+        this.loadCategories(),
+        this.loadUnits(),
+        this.loadTaxRates()
       ]);
     },
 
@@ -1833,6 +3089,10 @@ export default {
           this.resolution.cai = activeResolution.numero_resolucion || this.resolution.cai;
           this.resolution.prefix = (activeResolution.prefijo_control || '') +
                                    (activeResolution.sufijo_control || '');
+          this.resolution.rangoInicio = activeResolution.nro_inicial_control;
+          this.resolution.rangoFin = activeResolution.nro_final_control;
+          this.resolution.fechaFin = activeResolution.fecha_fin;
+          this.resolution.fecha_fin = activeResolution.fecha_fin;
 
           // Sincronizar el consecutivo de factura con la resolución activa
           if (activeResolution.nro_actual_control) {
@@ -1895,8 +3155,11 @@ export default {
     },
     async loadProducts() {
       try {
-        const response = await api.get('/products', {
-          params: { limit: 10000 }
+        // Usar el endpoint de búsqueda que incluye stock calculado
+        const response = await api.get('/products/search/all', {
+          params: {
+            status: 'active'
+          }
         });
 
         console.log('Products full response:', response);
@@ -1904,10 +3167,8 @@ export default {
 
         let productsData = [];
 
-        // Estructura: { success: true, data: { products: [...], pagination: {...} } }
-        if (response.data && response.data.data && response.data.data.products && Array.isArray(response.data.data.products)) {
-          productsData = response.data.data.products;
-        } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        // Estructura: { success: true, data: [...] }
+        if (response.data && response.data.data && Array.isArray(response.data.data)) {
           productsData = response.data.data;
         } else if (response.data && Array.isArray(response.data)) {
           productsData = response.data;
@@ -1923,7 +3184,7 @@ export default {
             barcode: p.barcode,
             sale_price: p.price_1 || p.sale_price || 0,
             cost: p.cost || 0,
-            stock: p.stock || 0,
+            stock: parseFloat(p.stock) || 0,
             category_id: p.category_id,
             category_name: p.category_name || '',
             subcategory_id: p.subcategory_id,
@@ -1935,6 +3196,7 @@ export default {
             image: p.image
           }));
           console.log('Products loaded successfully:', this.products.length);
+          console.log('First product with stock:', this.products.find(p => p.stock > 0));
         } else {
           console.warn('No products found in response');
           this.products = [];
@@ -2119,12 +3381,20 @@ export default {
           subtotal: this.totals.subtotal,
           tax: this.totals.tax,
           discount: this.totals.discount || 0,
+          coupons_discount: this.totalCouponsDiscount,
+          offers_discount: this.totalOffersDiscount,
+          applied_coupons: this.appliedCoupons.map(c => ({ code: c.code, name: c.name, amount: c.discount_amount })),
+          applied_offers: this.activeOffers.map(o => ({ id: o.id, name: o.name, amount: o.discount_amount })),
           shipping_cost: this.invoice.shipping_cost || 0,
           total: this.totals.total,
           status: 'issued',
           payment_status: 'paid',
           payment_method: this.quickPayment.method,
-          send_to_dispatch: this.quickPayment.sendToDispatch
+          send_to_dispatch: this.quickPayment.sendToDispatch,
+          // Campos adicionales (encabezado)
+          orden_compra: this.additionalFields.orden_compra || null,
+          constancia_exonerado: this.additionalFields.constancia_exonerado || null,
+          registro_sag: this.additionalFields.registro_sag || null
         };
 
         const requestData = {
@@ -2146,6 +3416,10 @@ export default {
           tax_amount: this.totals.tax,
           discount: this.totals.discount || 0,
           discount_amount: this.totals.discount || 0,
+          coupons_discount: this.totalCouponsDiscount,
+          offers_discount: this.totalOffersDiscount,
+          applied_coupons: this.appliedCoupons,
+          applied_offers: this.activeOffers,
           surcharge: this.invoice.shipping_cost || 0,
           total: this.totals.total,
           items: items.map(item => {
@@ -2166,10 +3440,14 @@ export default {
           delivery_date: new Date().toISOString(),
           vendor_name: this.currentVendor?.name || 'VENDEDOR',
           cai: this.resolution.cai,
-          prefijo_control: this.resolution.prefix.replace(/-$/, ''),
-          nro_inicial_control: 30001,
-          nro_final_control: 40000,
-          fecha_fin: '2025-12-30'
+          prefijo_control: this.resolution.prefix,
+          nro_inicial_control: this.resolution.rangoInicio || 30001,
+          nro_final_control: this.resolution.rangoFin || 40000,
+          fecha_fin: '2026-12-28',
+          // Campos adicionales
+          orden_compra: this.additionalFields.orden_compra || null,
+          constancia_exonerado: this.additionalFields.constancia_exonerado || null,
+          registro_sag: this.additionalFields.registro_sag || null
         };
 
         console.log('📄 Datos de factura para impresión:', this.createdInvoiceData);
@@ -2276,6 +3554,10 @@ export default {
           subtotal: this.totals.subtotal,
           tax: this.totals.tax,
           discount: this.invoice.discount || 0,
+          coupons_discount: this.totalCouponsDiscount,
+          offers_discount: this.totalOffersDiscount,
+          applied_coupons: this.appliedCoupons.map(c => ({ code: c.code, name: c.name, amount: c.discount_amount })),
+          applied_offers: this.activeOffers.map(o => ({ id: o.id, name: o.name, amount: o.discount_amount })),
           total: this.totals.total,
           status: 'issued',
           payment_status: 'paid',
@@ -2302,6 +3584,10 @@ export default {
           tax_amount: this.totals.tax,
           discount: this.invoice.discount || 0,
           discount_amount: this.invoice.discount || 0,
+          coupons_discount: this.totalCouponsDiscount,
+          offers_discount: this.totalOffersDiscount,
+          applied_coupons: this.appliedCoupons,
+          applied_offers: this.activeOffers,
           surcharge: 0,
           total: this.totals.total,
           items: items.map(item => {
@@ -2322,10 +3608,14 @@ export default {
           delivery_date: new Date().toISOString(),
           vendor_name: this.currentVendor?.name || 'VENDEDOR',
           cai: this.resolution.cai,
-          prefijo_control: this.resolution.prefix.replace(/-$/, ''),
-          nro_inicial_control: 30001,
-          nro_final_control: 40000,
-          fecha_fin: '2025-12-30'
+          prefijo_control: this.resolution.prefix,
+          nro_inicial_control: this.resolution.rangoInicio || 30001,
+          nro_final_control: this.resolution.rangoFin || 40000,
+          fecha_fin: '2026-12-28',
+          // Campos adicionales
+          orden_compra: this.additionalFields.orden_compra || null,
+          constancia_exonerado: this.additionalFields.constancia_exonerado || null,
+          registro_sag: this.additionalFields.registro_sag || null
         };
 
         console.log('📄 Datos de factura detallada para impresión:', this.createdInvoiceData);
@@ -2474,6 +3764,11 @@ export default {
           </tr>
         `;
       });
+
+      // Agregar descuentos de cupones y ofertas
+      const couponsDiscount = this.totalCouponsDiscount;
+      const offersDiscount = this.totalOffersDiscount;
+      totalDiscount += couponsDiscount + offersDiscount;
 
       const surcharge = parseFloat(this.invoice.shipping_cost) || 0;
       const grandTotal = subtotal - totalDiscount + totalTax + surcharge;
@@ -2707,9 +4002,9 @@ export default {
                   <strong>Emisión:</strong> ${formatDate(today)}<br>
                   <strong>Condiciones de la Transacción:</strong> Contado<br>
                   <strong>Entrega:</strong> ${formatDate(today)}<br>
-                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong><br>
-                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong><br>
-                  <strong>No. Identificativo del Registro SAG:</strong>
+                  ${this.additionalFields.orden_compra ? `<strong>No. Correlativo de la Orden de Compra Exenta:</strong> ${this.additionalFields.orden_compra}<br>` : ''}
+                  ${this.additionalFields.constancia_exonerado ? `<strong>No. Correlativo de la Constancia del Reg Exonerado:</strong> ${this.additionalFields.constancia_exonerado}<br>` : ''}
+                  ${this.additionalFields.registro_sag ? `<strong>No. Identificativo del Registro SAG:</strong> ${this.additionalFields.registro_sag}` : ''}
                 </div>
               </div>
             </div>
@@ -2841,7 +4136,11 @@ export default {
           quote_date: new Date().toISOString().split('T')[0],
           valid_until: null,
           notes: '',
-          terms_conditions: ''
+          terms_conditions: '',
+          // Campos adicionales (encabezado)
+          orden_compra: this.additionalFields.orden_compra || null,
+          constancia_exonerado: this.additionalFields.constancia_exonerado || null,
+          registro_sag: this.additionalFields.registro_sag || null
         };
 
         let response;
@@ -3134,7 +4433,11 @@ export default {
           surcharge: this.invoice.shipping_cost || 0,
           notes: '',
           internal_notes: '',
-          expires_at: null
+          expires_at: null,
+          // Campos adicionales (encabezado)
+          orden_compra: this.additionalFields.orden_compra || null,
+          constancia_exonerado: this.additionalFields.constancia_exonerado || null,
+          registro_sag: this.additionalFields.registro_sag || null
         };
 
         let response;
@@ -3193,18 +4496,29 @@ export default {
 
         const invoiceData = {
           invoice_number: this.invoiceNumber,
-          document_type: this.documentType,
+          invoice_type: this.documentType,
           customer_id: this.customerInfo.id,
+          customer_name: this.customerInfo.name,
+          customer_rtn: this.customerInfo.rtn,
+          issue_date: new Date().toISOString().split('T')[0],
           warehouse_id: this.invoice.warehouse_id,
           seller_id: this.currentVendor.id,
-          items: this.invoice.items,
-          subtotal: this.totals.subtotal,
-          tax: this.totals.tax,
-          total: this.totals.total,
-          status: status
+          seller_name: this.currentVendor.name,
+          payment_status: status,
+          paid_amount: status === 'paid' ? this.totals.total : 0,
+          shipping_cost: this.invoice.shipping_cost || 0,
+          // Campos adicionales (encabezado)
+          orden_compra: this.additionalFields.orden_compra || null,
+          constancia_exonerado: this.additionalFields.constancia_exonerado || null,
+          registro_sag: this.additionalFields.registro_sag || null
         };
 
-        await api.post('/billing/invoices', invoiceData);
+        const requestData = {
+          invoice_data: invoiceData,
+          items: this.invoice.items
+        };
+
+        await api.post('/billing/invoices', requestData);
 
         if (status === 'paid') {
           const change = amountReceived - this.totals.total;
@@ -3241,13 +4555,30 @@ export default {
 
       this.invoice.items = [];
       this.invoice.shipping_cost = 0; // Resetear recargo
+
+      // Limpiar cupones y ofertas aplicados
+      this.appliedCoupons = [];
+      this.activeOffers = [];
+      this.couponCode = '';
+      this.couponError = '';
+
+      // Limpiar campos adicionales
+      this.additionalFields = {
+        orden_compra: '',
+        constancia_exonerado: '',
+        registro_sag: ''
+      };
+
       this.currentProduct = {
         code: '',
         name: '',
         quantity: 1,
         price: 0,
         discount_percent: 0,
-        tax_percent: 15
+        tax_percent: 15,
+        product_id: null,
+        category_id: null,
+        subcategory_id: null
       };
     },
     focusProductInput() {
@@ -3256,6 +4587,388 @@ export default {
           this.$refs.productCodeInput.focus();
         }
       });
+    },
+    toggleBarcodeScanner() {
+      // DESTRUIR completamente el escáner anterior si existe
+      if (this.codeReader) {
+        this.codeReader = null;
+      }
+
+      // Detener cualquier stream activo
+      if (this.videoStream) {
+        const tracks = this.videoStream.getTracks();
+        tracks.forEach(track => track.stop());
+        this.videoStream = null;
+      }
+
+      // Incrementar el ID de sesión para invalidar callbacks anteriores
+      this.currentScanSessionId++;
+
+      // Resetear todas las banderas
+      this.isProcessingBarcode = false;
+      this.scannerStopped = false;
+
+      // Abrir el modal de la cámara para escanear
+      this.showBarcodeScannerModal = true;
+      this.startBarcodeScanner();
+    },
+
+    async startBarcodeScanner() {
+      this.scannerLoading = true;
+      this.scannerError = null;
+
+      try {
+        // Inicializar el lector de códigos de barras
+        this.codeReader = new BrowserMultiFormatReader();
+
+        // Esperar a que el modal se renderice
+        await this.$nextTick();
+
+        // Obtener el elemento de video
+        const videoElement = this.$refs.barcodeScannerVideo;
+
+        if (!videoElement) {
+          throw new Error('No se pudo encontrar el elemento de video');
+        }
+
+        // Obtener dispositivos de video disponibles usando la API de medios
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+        if (videoDevices.length === 0) {
+          throw new Error('No se encontraron cámaras disponibles');
+        }
+
+        // Usar la cámara trasera si está disponible (para móviles)
+        let selectedDeviceId = videoDevices[0].deviceId;
+        const backCamera = videoDevices.find(device =>
+          device.label.toLowerCase().includes('back') ||
+          device.label.toLowerCase().includes('rear') ||
+          device.label.toLowerCase().includes('trasera') ||
+          device.label.toLowerCase().includes('environment')
+        );
+
+        if (backCamera) {
+          selectedDeviceId = backCamera.deviceId;
+        }
+
+        this.scannerLoading = false;
+
+        // Guardar el ID de sesión actual para este escaneo
+        const sessionId = this.currentScanSessionId;
+
+        // Iniciar el escaneo continuo y guardar referencia al stream
+        const controls = await this.codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, error) => {
+          // IGNORAR si este callback es de una sesión anterior
+          if (sessionId !== this.currentScanSessionId) {
+            return;
+          }
+
+          // DETENER INMEDIATAMENTE si ya procesamos un código o si se detuvo el escáner
+          if (this.scannerStopped || this.isProcessingBarcode) {
+            return;
+          }
+
+          if (result) {
+            // MARCAR AMBAS BANDERAS INMEDIATAMENTE
+            this.scannerStopped = true;
+            this.isProcessingBarcode = true;
+
+            // Código detectado exitosamente
+            const barcode = result.getText();
+
+            // Detener el stream INMEDIATAMENTE - método 1
+            if (videoElement.srcObject) {
+              const stream = videoElement.srcObject;
+              const tracks = stream.getTracks();
+              tracks.forEach(track => track.stop());
+              videoElement.srcObject = null;
+            }
+
+            // Detener el stream INMEDIATAMENTE - método 2
+            if (this.videoStream) {
+              const tracks = this.videoStream.getTracks();
+              tracks.forEach(track => track.stop());
+              this.videoStream = null;
+            }
+
+            // Usar setTimeout para asegurar que el callback no se ejecute más
+            setTimeout(() => {
+              this.onBarcodeDetected(barcode);
+            }, 100);
+          }
+
+          if (error && !(error instanceof NotFoundException)) {
+            // Silenciar errores si ya estamos detenidos
+            if (!this.scannerStopped) {
+              console.error('Error al escanear:', error);
+            }
+          }
+        });
+
+        // Guardar el stream de video para poder detenerlo después
+        if (videoElement.srcObject) {
+          this.videoStream = videoElement.srcObject;
+        }
+
+      } catch (error) {
+        console.error('Error al iniciar el escáner:', error);
+        this.scannerLoading = false;
+
+        if (error.name === 'NotAllowedError') {
+          this.scannerError = 'Permiso de cámara denegado. Por favor, permita el acceso a la cámara.';
+        } else if (error.name === 'NotFoundError') {
+          this.scannerError = 'No se encontró ninguna cámara en este dispositivo.';
+        } else {
+          this.scannerError = error.message || 'Error al iniciar la cámara';
+        }
+      }
+    },
+
+    onBarcodeDetected(barcode) {
+      // Cerrar el modal del escáner
+      this.closeBarcodeScanner();
+
+      // Reproducir un sonido de éxito
+      const beep = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE9SJ7Z8rdlGAc6j9fy0IEqBSl+zPLaizsIGGS57OihUBELTKXh8bllHAU2jdXyz30pBSh8yvLajT4JHGi95+mgUBEMUanj8bVlGghAndfyvmMYCCqM1PLNfC4GKX/M8N+VRAwa');
+      beep.play().catch(() => {});
+
+      // Simplemente poner el código en el campo de código de producto
+      this.currentProduct.code = barcode;
+
+      // Buscar y seleccionar el producto automáticamente
+      this.searchProductByCode();
+    },
+
+    closeBarcodeScanner() {
+      // Marcar que el escáner está detenido
+      this.scannerStopped = true;
+
+      // Detener el stream de video
+      if (this.videoStream) {
+        const tracks = this.videoStream.getTracks();
+        tracks.forEach(track => track.stop());
+        this.videoStream = null;
+      }
+
+      // Detener el elemento de video
+      const videoElement = this.$refs.barcodeScannerVideo;
+      if (videoElement && videoElement.srcObject) {
+        const stream = videoElement.srcObject;
+        const tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());
+        videoElement.srcObject = null;
+      }
+
+      // Limpiar el lector
+      this.codeReader = null;
+
+      // Cerrar el modal
+      this.showBarcodeScannerModal = false;
+      this.scannerLoading = false;
+      this.scannerError = null;
+    },
+
+    // Métodos para el Registro Rápido de Producto
+    async loadNewProductSubcategories() {
+      if (!this.newProductForm.category_id) {
+        this.newProductSubcategories = [];
+        this.newProductForm.subcategory_id = '';
+        return;
+      }
+
+      try {
+        const response = await api.get(`/categories/${this.newProductForm.category_id}/subcategories`);
+        if (response.data.success) {
+          this.newProductSubcategories = response.data.data;
+        }
+      } catch (error) {
+        console.error('Error cargando subcategorías:', error);
+        this.newProductSubcategories = [];
+      }
+    },
+
+    calculatePriceFromProfit() {
+      const cost = parseFloat(this.newProductForm.cost) || 0;
+      const profitMargin = parseFloat(this.newProductForm.profit_margin) || 0;
+
+      if (cost > 0 && profitMargin > 0) {
+        const price = cost * (1 + profitMargin / 100);
+        this.newProductForm.price = parseFloat(price.toFixed(2));
+      }
+    },
+
+    calculateProfitFromPrice() {
+      const cost = parseFloat(this.newProductForm.cost) || 0;
+      const price = parseFloat(this.newProductForm.price) || 0;
+
+      if (cost > 0 && price > cost) {
+        const profitMargin = ((price - cost) / cost) * 100;
+        this.newProductForm.profit_margin = parseFloat(profitMargin.toFixed(2));
+      }
+    },
+
+    handleNewProductImageUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Validar tamaño (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          this.newProductError = 'La imagen no puede superar los 5MB';
+          event.target.value = '';
+          return;
+        }
+
+        // Validar tipo
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+          this.newProductError = 'Solo se permiten imágenes JPG, PNG o GIF';
+          event.target.value = '';
+          return;
+        }
+
+        this.newProductForm.image = file;
+        this.newProductError = null;
+      }
+    },
+
+    async saveNewProduct() {
+      this.savingNewProduct = true;
+      this.newProductError = null;
+      this.newProductSuccess = null;
+
+      try {
+        // Validar campos requeridos
+        if (!this.newProductForm.code || !this.newProductForm.name || !this.newProductForm.unit_id ||
+            !this.newProductForm.category_id || !this.newProductForm.tax_id || !this.newProductForm.price) {
+          this.newProductError = 'Por favor complete todos los campos obligatorios';
+          this.savingNewProduct = false;
+          return;
+        }
+
+        // Preparar datos del producto (usando objeto en lugar de FormData)
+        const productData = {
+          code: this.newProductForm.code,
+          name: this.newProductForm.name,
+          short_name: this.newProductForm.name, // Usar el mismo nombre si no hay nombre corto
+          unit_id: parseInt(this.newProductForm.unit_id),
+          category_id: parseInt(this.newProductForm.category_id),
+          subcategory_id: this.newProductForm.subcategory_id ? parseInt(this.newProductForm.subcategory_id) : null,
+          tax_id: parseInt(this.newProductForm.tax_id),
+          cost: parseFloat(this.newProductForm.cost) || 0,
+          price_1: parseFloat(this.newProductForm.price),
+          price_2: 0,
+          price_3: 0,
+          price_4: 0,
+          price_5: 0,
+          price_6: 0,
+          is_active: 1,
+          brand_id: null,
+          supplier_id: null,
+          description: null,
+          weight: null,
+          show_in_online_store: 0,
+          is_featured: 0,
+          image_url: null,
+          color: null,
+          acabado: null,
+          estilo: null
+        };
+
+        // Si hay imagen, subirla primero
+        if (this.newProductForm.image) {
+          // Por ahora, si hay imagen, la omitimos o manejamos después de crear el producto
+          // porque el createProduct no maneja upload de archivo directamente
+          console.log('Imagen seleccionada, se agregará después de crear el producto');
+        }
+
+        // Enviar a la API
+        const response = await api.post('/products', productData);
+
+        if (response.data.success) {
+          this.newProductSuccess = 'Producto creado exitosamente';
+
+          // Recargar productos
+          await this.loadProducts();
+
+          // Cerrar modal después de 1.5 segundos
+          setTimeout(() => {
+            this.closeNewProductModal();
+
+            // Si el código coincide, seleccionarlo automáticamente
+            if (this.currentProduct.code === this.newProductForm.code) {
+              this.searchProductByCode();
+            }
+          }, 1500);
+        }
+      } catch (error) {
+        console.error('Error creando producto:', error);
+        this.newProductError = error.response?.data?.message || 'Error al crear el producto';
+      } finally {
+        this.savingNewProduct = false;
+      }
+    },
+
+    closeNewProductModal() {
+      this.showNewProductModal = false;
+      this.newProductForm = {
+        code: '',
+        name: '',
+        unit_id: '',
+        category_id: '',
+        subcategory_id: '',
+        tax_id: '',
+        cost: 0,
+        profit_margin: 0,
+        price: 0,
+        image: null
+      };
+      this.newProductSubcategories = [];
+      this.newProductError = null;
+      this.newProductSuccess = null;
+      this.savingNewProduct = false;
+    },
+
+    // Cargar datos para el modal de registro rápido
+    async loadCategories() {
+      try {
+        const response = await api.get('/categories/active');
+        if (response.data.success) {
+          this.categories = response.data.data;
+        }
+      } catch (error) {
+        console.error('Error cargando categorías:', error);
+      }
+    },
+
+    async loadUnits() {
+      try {
+        const response = await api.get('/units');
+        if (response.data.success) {
+          this.units = response.data.data;
+        }
+      } catch (error) {
+        console.error('Error cargando unidades:', error);
+      }
+    },
+
+    async loadTaxRates() {
+      try {
+        const response = await api.get('/tax-rates');
+        if (response.data.success) {
+          this.taxRates = response.data.data;
+        }
+      } catch (error) {
+        console.error('Error cargando tasas de impuesto:', error);
+      }
+    },
+    handleImageError(event) {
+      // Prevenir bucle infinito: solo intentar una vez
+      if (event.target.dataset.errorHandled) {
+        return;
+      }
+      event.target.dataset.errorHandled = 'true';
+      // Establecer imagen por defecto SVG inline
+      event.target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%23ddd%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%228%22 fill=%22%23999%22%3ESIN IMAGEN%3C/text%3E%3C/svg%3E';
     },
     focusWarehouse() {
       if (this.$refs.warehouseSelect) {
@@ -3281,15 +4994,69 @@ export default {
       this.selectedCustomerInfo = customer;
       this.showCustomerInfoModal = true;
     },
+    async openAddCustomerModal() {
+      // Cerrar modal de búsqueda de clientes
+      this.showCustomerModal = false;
+
+      // Cargar el siguiente código de cliente disponible
+      await this.loadNextCustomerCode();
+
+      // Abrir modal de registro rápido
+      this.showAddCustomerModal = true;
+
+      // Enfocar el campo de nombre
+      this.$nextTick(() => {
+        if (this.$refs.customerNameInput) {
+          this.$refs.customerNameInput.focus();
+        }
+      });
+    },
+
+    async loadNextCustomerCode() {
+      try {
+        // Obtener el último cliente creado para generar el siguiente código
+        const response = await api.get('/customers', {
+          params: {
+            limit: 1,
+            sort_by: 'id',
+            sort_order: 'DESC'
+          }
+        });
+
+        if (response.data.success && response.data.data.length > 0) {
+          const lastCustomer = response.data.data[0];
+          const lastCode = lastCustomer.customer_code || '0';
+
+          // Extraer solo números del código
+          const match = lastCode.match(/(\d+)/);
+          if (match) {
+            const nextNumber = parseInt(match[1]) + 1;
+            // Asegurar que sea mínimo 4193
+            this.nextCustomerCode = String(Math.max(nextNumber, 4193));
+          } else {
+            this.nextCustomerCode = '4193';
+          }
+        } else {
+          // Si no hay clientes, empezar desde 4193
+          this.nextCustomerCode = '4193';
+        }
+      } catch (error) {
+        console.error('Error cargando siguiente código de cliente:', error);
+        this.nextCustomerCode = '4193';
+      }
+    },
+
     closeAddCustomerModal() {
       this.showAddCustomerModal = false;
       this.showCustomerModal = true;
+      this.savingCustomer = false;
+      this.nextCustomerCode = '';
       this.newCustomer = {
         code: '',
         razon_social: '',
         nombre_comercial: '',
         beneficiary_type: 'JURIDICA_DOMICILIADA',
-        tipo_identificacion: 'CEDULA',
+        tipo_identificacion: 'RTN',
         cedula: '',
         sar: '',
         tipo_cliente: 'NACIONAL',
@@ -3301,42 +5068,92 @@ export default {
         useConsecutive: true
       };
     },
+
     async saveNewCustomer() {
+      // Validar campos requeridos
+      if (!this.newCustomer.razon_social || !this.newCustomer.cedula) {
+        Swal.fire('Error', 'Por favor complete los campos obligatorios (Nombre y RTN)', 'error');
+        return;
+      }
+
+      // Remover guiones del RTN antes de guardar (guardar solo números)
+      const rtnSoloNumeros = this.newCustomer.cedula.replace(/\D/g, '');
+
+      // Validar que tenga 14 dígitos
+      if (rtnSoloNumeros.length !== 14) {
+        Swal.fire('Error', 'El RTN debe tener 14 dígitos', 'error');
+        return;
+      }
+
+      this.savingCustomer = true;
+
       try {
         const customerData = {
-          customer_code: this.newCustomer.code,
-          name: this.newCustomer.razon_social,
-          commercial_name: this.newCustomer.nombre_comercial,
-          beneficiary_type: this.newCustomer.beneficiary_type,
-          identification_type: this.newCustomer.tipo_identificacion,
-          rtn: this.newCustomer.cedula,
-          sar_id: this.newCustomer.sar,
-          customer_type: this.newCustomer.tipo_cliente,
-          taxpayer_type: this.newCustomer.tipo_contribuyente,
-          email: this.newCustomer.email,
-          phone: this.newCustomer.phone,
-          mobile: this.newCustomer.mobile,
-          address: this.newCustomer.address
+          codigo: this.nextCustomerCode,
+          nombre: this.newCustomer.razon_social,
+          nombre_comercial: this.newCustomer.razon_social, // Usar el mismo nombre
+          doc_identificacion: rtnSoloNumeros, // Guardar solo números sin guiones
+          tipo_beneficiario: '1', // Por defecto
+          codigo_tipo_precio: null,
+          fecha_inicio: null,
+          telefono: null,
+          email: null,
+          direccion: null,
+          descuento_prc: 0,
+          persona_contacto: null,
+          is_active: true
         };
 
         const response = await api.post('/customers', customerData);
         Swal.fire('Éxito', 'Cliente creado exitosamente', 'success');
+
+        // Recargar lista de clientes
         await this.loadCustomers();
+
+        // Seleccionar el nuevo cliente automáticamente
         const newCustomer = this.customers.find(c => c.value === response.data.data.id);
         if (newCustomer) {
           this.selectCustomer(newCustomer);
         }
+
         this.closeAddCustomerModal();
       } catch (error) {
+        console.error('Error guardando cliente:', error);
         Swal.fire('Error', error.response?.data?.message || 'Error al guardar cliente', 'error');
+      } finally {
+        this.savingCustomer = false;
       }
     },
+
+    formatRTN(event) {
+      let value = event.target.value;
+
+      // Remover todo lo que no sea número
+      value = value.replace(/\D/g, '');
+
+      // Limitar a 14 dígitos
+      value = value.substring(0, 14);
+
+      // Aplicar formato: 0000-0000-000000
+      if (value.length > 8) {
+        value = value.substring(0, 4) + '-' + value.substring(4, 8) + '-' + value.substring(8);
+      } else if (value.length > 4) {
+        value = value.substring(0, 4) + '-' + value.substring(4);
+      }
+
+      // Actualizar el valor
+      this.newCustomer.cedula = value;
+    },
+
     selectProduct(product) {
       // Solo llenar el formulario, NO agregar automáticamente
       this.currentProduct.code = product.sku;
       this.currentProduct.name = product.name;
       this.currentProduct.price = product.sale_price || 0;
       this.currentProduct.product_id = product.id;
+      this.currentProduct.category_id = product.category_id;
+      this.currentProduct.subcategory_id = product.subcategory_id;
+      this.currentProduct.image = product.image;
       // Mantener la cantidad que el usuario ya había puesto, o 1 por defecto
       if (!this.currentProduct.quantity || this.currentProduct.quantity === 0) {
         this.currentProduct.quantity = 1;
@@ -3352,6 +5169,36 @@ export default {
         }
       });
     },
+
+    searchProductByCode() {
+      const code = this.currentProduct.code.trim();
+
+      if (!code) {
+        return;
+      }
+
+      // Buscar el producto por código (sku) o código de barras
+      const product = this.products.find(p =>
+        p.sku === code || p.barcode === code
+      );
+
+      if (product) {
+        // Producto encontrado, seleccionarlo
+        this.selectProduct(product);
+      } else {
+        // Producto no encontrado
+        Swal.fire({
+          icon: 'warning',
+          title: 'Producto No Encontrado',
+          text: `No se encontró ningún producto con el código: ${code}`,
+          confirmButtonText: 'OK'
+        });
+
+        // Limpiar el código
+        this.currentProduct.code = '';
+      }
+    },
+
     selectVendor(vendor) {
       this.currentVendor = vendor;
       this.showVendorModal = false;
@@ -3393,7 +5240,10 @@ export default {
         warehouse_id: this.invoice.warehouse_id,
         discount_percent: this.currentProduct.discount_percent || 0,
         tax_percent: this.currentProduct.tax_percent || 15,
-        total: itemTotal
+        total: itemTotal,
+        category_id: this.currentProduct.category_id,
+        subcategory_id: this.currentProduct.subcategory_id,
+        image: this.currentProduct.image
       };
 
       console.log('➕ Adding item to invoice:', newItem);
@@ -3407,13 +5257,25 @@ export default {
         price: 0,
         discount_percent: 0,
         tax_percent: 15,
-        product_id: null
+        product_id: null,
+        category_id: null,
+        subcategory_id: null,
+        image: null
       };
 
-      // Enfocar el input de producto
-      this.focusProductInput();
+      // Quitar el foco del input para que los atajos de teclado funcionen
+      if (document.activeElement) {
+        document.activeElement.blur();
+      }
 
       console.log('✅ Product added. Total items:', this.invoice.items.length);
+    },
+    addProductAndBlur() {
+      this.addProduct();
+      // Asegurarse de quitar el foco
+      if (document.activeElement) {
+        document.activeElement.blur();
+      }
     },
     removeProduct(index) {
       console.log('🗑️ Removing product at index:', index);
@@ -3431,7 +5293,9 @@ export default {
         price: item.price,
         discount_percent: item.discount_percent,
         tax_percent: item.tax_percent,
-        product_id: item.product_id
+        product_id: item.product_id,
+        category_id: item.category_id,
+        subcategory_id: item.subcategory_id
       };
 
       // Seleccionar la bodega
@@ -3454,6 +5318,11 @@ export default {
       const itemTax = itemSubtotal * ((item.tax_percent || 0) / 100);
       item.total = itemSubtotal + itemTax;
     },
+    onWarehouseChange(index) {
+      // El cambio de bodega se guarda automáticamente en el v-model
+      // Aquí podemos agregar lógica adicional si es necesaria, como verificar stock
+      console.log('Bodega cambiada para item', index, 'a', this.invoice.items[index].warehouse_id);
+    },
     saveAdditionalFields() {
       this.showAdditionalFields = false;
       Swal.fire('Guardado', 'Campos adicionales guardados', 'success');
@@ -3466,6 +5335,16 @@ export default {
       this.showVendorModal = false;
       this.showAdditionalFields = false;
       this.showAdditionalOptions = false;
+      this.showTaxExemptionModal = false;
+      this.showAperturaCajaModal = false;
+      this.showEgresoCajaModal = false;
+      this.showRetiroEfectivoModal = false;
+    },
+    handleCashRegisterSuccess(data) {
+      // Callback cuando se completa una operación de caja exitosamente
+      console.log('Operación de caja completada:', data);
+      // Aquí puedes agregar lógica adicional si es necesaria
+      // Por ejemplo, actualizar algún contador o notificación
     },
     formatNumber(value) {
       return new Intl.NumberFormat('es-HN', {
@@ -3481,16 +5360,24 @@ export default {
 
       let resolutionData = {
         cai: '2A9170-F8828A-8815E0-63BE03-090956-9D',
-        prefijo_control: '000-002-01',
-        nro_inicial_control: 30001,
-        nro_final_control: 40000,
-        fecha_fin: '2025-12-30'
+        prefijo_control: '000-002-01-',
+        nro_inicial_control: 40001,
+        nro_final_control: 50000,
+        fecha_fin: '2026-12-28'
       };
 
       try {
         const response = await api.get('/resolutions/active');
         if (response.data && response.data.data) {
           resolutionData = response.data.data;
+          // FORZAR fecha_fin a string correcto
+          if (resolutionData.fecha_fin) {
+            const str = String(resolutionData.fecha_fin);
+            const match = str.match(/(\d{4})-(\d{2})-(\d{2})/);
+            if (match) {
+              resolutionData.fecha_fin = `${match[1]}-${match[2]}-${match[3]}`;
+            }
+          }
         }
       } catch (error) {
         console.warn('No se pudo obtener la resolución activa');
@@ -3513,17 +5400,23 @@ export default {
           totalTax += itemTax;
         }
         subtotal += itemSubtotal;
+        const unitText = item.product_unit || item.unit || 'UNIDAD';
         tableRows += `
           <tr>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(qty)}</td>
-            <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name || item.name}</td>
+            <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name || item.name} <span style="font-weight: 600;">${unitText}</span></td>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(price)}</td>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemTotal)}</td>
           </tr>
         `;
       });
 
-      const discount = parseFloat(this.createdInvoiceData.discount || 0);
+      let discount = parseFloat(this.createdInvoiceData.discount || 0);
+      // Agregar descuentos de cupones y ofertas
+      const couponsDiscount = this.createdInvoiceData.coupons_discount || 0;
+      const offersDiscount = this.createdInvoiceData.offers_discount || 0;
+      discount += couponsDiscount + offersDiscount;
+
       const surcharge = parseFloat(this.createdInvoiceData.surcharge || 0);
       const grandTotal = this.createdInvoiceData.total || (subtotal + totalTax + surcharge - discount);
 
@@ -3608,7 +5501,7 @@ export default {
                 <tr><td class="total-label">I.S.V 15 15%:</td><td class="total-value">L ${this.formatCurrency(totalTax)}</td></tr>
                 <tr><td class="total-label">I.S.V 18 18%:</td><td class="total-value">L 0.00</td></tr>
                 <tr><td class="total-label">RECARGOS:</td><td class="total-value">L ${this.formatCurrency(surcharge)}</td></tr>
-                <tr><td class="total-label">DESCUENTOS Y REBAJAS OTORGADOS:</td><td class="total-value">L 0.00</td></tr>
+                <tr><td class="total-label">DESCUENTOS Y REBAJAS OTORGADOS:</td><td class="total-value">L ${this.formatCurrency(discount)}</td></tr>
                 <tr class="grand-total"><td class="total-label"><strong>TOTAL A PAGAR:</strong></td><td class="total-value"><strong>L<br>${this.formatCurrency(grandTotal)}</strong></td></tr>
                 <tr><td colspan="2" style="text-align: center; padding: 0; font-size: 12px;">.......................................................................................</td></tr>
               </table>
@@ -3622,16 +5515,20 @@ export default {
                 return this.numberToWords(integerPart).toUpperCase() + ' LEMPIRAS CON ' + cents + '/100';
               })()}<br>
               <strong>Rango de facturación Vigente:</strong><br>
-              <strong>Desde:</strong> ${resolutionData.prefijo_control}-${String(resolutionData.nro_inicial_control).padStart(8, '0')}<br>
-              <strong>Hasta:</strong> ${resolutionData.prefijo_control}-${String(resolutionData.nro_final_control).padStart(8, '0')}<br>
-              <strong>Fecha Limite de Emisión Vigente:</strong> ${this.formatDate(resolutionData.fecha_fin) || '31/12/2025'}<br>
-              <strong>No. Correlativo de la Orden de Compra<br>Exenta:</strong><br>
-              <strong>No. Correlativo de la Constancia del Reg<br>Exonerado:</strong><br>
-              <strong>No. Identificativo del Registro SAG:</strong><br>
+              <strong>Desde:</strong> ${resolutionData.prefijo_control}${String(resolutionData.nro_inicial_control).padStart(8, '0')}<br>
+              <strong>Hasta:</strong> ${resolutionData.prefijo_control}${String(resolutionData.nro_final_control).padStart(8, '0')}<br>
+              <strong>Fecha Limite de Emisión Vigente:</strong> ${(() => {
+                const fecha = new Date(resolutionData.fecha_fin);
+                fecha.setDate(fecha.getDate() + 1);
+                return this.formatDate(fecha.toISOString().split('T')[0]);
+              })()}<br>
+              <strong>No. Correlativo de la Orden de Compra<br>Exenta:</strong> ${this.createdInvoiceData.orden_compra || ''}<br>
+              <strong>No. Correlativo de la Constancia del Reg<br>Exonerado:</strong> ${this.createdInvoiceData.constancia_exonerado || ''}<br>
+              <strong>No. Identificativo del Registro SAG:</strong> ${this.createdInvoiceData.registro_sag || ''}<br>
               ${this.formatDateTime(new Date())}
             </div>
             <div class="footer-note">
-              <strong>Entrega:</strong> ${this.formatDate(new Date())}<br>
+              <strong>Entrega:</strong> ${this.formatTodayDate()}<br>
               Original: Cliente/Copia: Obligado Tributario<br>
               <strong>Emisor:</strong> ¡La Factura es beneficio de todos. Exígela!
             </div>
@@ -3656,12 +5553,128 @@ export default {
         maximumFractionDigits: 2
       }).format(value || 0);
     },
+    // Calcular el monto de impuesto para una tasa específica
+    calculateTaxAmount(rate) {
+      const subtotal = this.totals.subtotal || 0;
+      return (subtotal * rate) / 100;
+    },
+    // Aplicar exoneración de impuestos seleccionados
+    openTaxExemptionModal() {
+      // Cerrar el modal de opciones adicionales
+      this.showAdditionalOptions = false;
+
+      // Si el impuesto está actualmente exonerado, pre-seleccionar el impuesto original
+      if (this.invoice.is_tax_exempt === true && this.invoice.tax_rate === 0 && this.invoice.original_tax_rate !== undefined) {
+        // Encontrar el código del impuesto que corresponde a la tasa original
+        const originalTax = this.availableTaxes.find(t => t.rate === this.invoice.original_tax_rate);
+        if (originalTax) {
+          this.selectedTaxesForExemption = [originalTax.code];
+        }
+      } else {
+        // Si no hay exoneración activa, limpiar la selección
+        this.selectedTaxesForExemption = [];
+      }
+
+      // Abrir el modal
+      this.showTaxExemptionModal = true;
+    },
+    applyTaxExemption() {
+      // Si no hay selección y hay una exoneración activa, restaurar el impuesto original
+      if (this.selectedTaxesForExemption.length === 0 && this.invoice.is_tax_exempt === true) {
+        // Restaurar impuesto original
+        if (this.invoice.original_tax_rate !== undefined) {
+          this.invoice.tax_rate = this.invoice.original_tax_rate;
+          this.invoice.is_tax_exempt = false;
+          delete this.invoice.original_tax_rate;
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Exoneración Removida',
+            text: 'Se ha restaurado el impuesto original',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        }
+
+        this.showTaxExemptionModal = false;
+        return;
+      }
+
+      if (this.selectedTaxesForExemption.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Atención',
+          text: 'Debe seleccionar al menos un impuesto para exonerar'
+        });
+        return;
+      }
+
+      // Verificar si alguno de los impuestos seleccionados coincide con el actual
+      const currentTaxRate = this.invoice.tax_rate !== undefined && this.invoice.tax_rate !== null ? this.invoice.tax_rate : 15;
+      const shouldExempt = this.selectedTaxesForExemption.some(taxCode => {
+        const tax = this.availableTaxes.find(t => t.code === taxCode);
+        return tax && (tax.rate === currentTaxRate || tax.rate === 0);
+      });
+
+      if (shouldExempt) {
+        // Guardar el impuesto original si aún no está guardado
+        if (this.invoice.original_tax_rate === undefined) {
+          this.invoice.original_tax_rate = currentTaxRate;
+        }
+
+        // Aplicar exoneración (tasa 0%) - En Vue 3 la reactividad es automática
+        this.invoice.tax_rate = 0;
+        this.invoice.is_tax_exempt = true;
+
+        console.log('Exoneración aplicada - tax_rate:', this.invoice.tax_rate);
+        console.log('Totales después de exoneración:', this.totals);
+
+        // Mostrar mensaje de éxito
+        Swal.fire({
+          icon: 'success',
+          title: 'Exoneración Aplicada',
+          text: 'El impuesto ha sido exonerado para esta factura (0%)',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        // El impuesto seleccionado no coincide con el de la factura
+        Swal.fire({
+          icon: 'info',
+          title: 'Información',
+          text: `La factura tiene un impuesto del ${currentTaxRate}%. Seleccione el impuesto correspondiente.`
+        });
+      }
+
+      // Cerrar modal y limpiar selección
+      this.showTaxExemptionModal = false;
+      this.selectedTaxesForExemption = [];
+    },
     formatDate(dateString) {
       if (!dateString) return '';
-      const date = new Date(dateString);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
+
+      // Si es un objeto Date, formatearlo directamente
+      if (dateString instanceof Date) {
+        const day = String(dateString.getDate()).padStart(2, '0');
+        const month = String(dateString.getMonth() + 1).padStart(2, '0');
+        const year = dateString.getFullYear();
+        return `${day}/${month}/${year}`;
+      }
+
+      // Convertir a string y extraer solo la parte de fecha YYYY-MM-DD usando regex
+      const str = String(dateString);
+      const match = str.match(/(\d{4})-(\d{2})-(\d{2})/);
+
+      if (!match) return '';
+
+      const [_, year, month, day] = match;
+      return `${day}/${month}/${year}`;
+    },
+    formatTodayDate() {
+      const today = new Date();
+      const day = String(today.getDate()).padStart(2, '0');
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const year = today.getFullYear();
       return `${day}/${month}/${year}`;
     },
     redirectToResolutions() {
@@ -3674,10 +5687,11 @@ export default {
       const day = String(date.getDate()).padStart(2, '0');
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
-      const hours = String(date.getHours()).padStart(2, '0');
+      const hours24 = date.getHours();
+      const ampm = hours24 >= 12 ? 'PM' : 'AM';
+      const hours12 = hours24 % 12 || 12; // Convertir a formato 12 horas
       const minutes = String(date.getMinutes()).padStart(2, '0');
-      const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
-      return `${day}/${month}/${year}\n${hours}:${minutes} ${ampm}`;
+      return `${day}/${month}/${year}\n${String(hours12).padStart(2, '0')}:${minutes} ${ampm}`;
     },
     numberToWords(num) {
       const units = ['', 'UNO', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
@@ -3717,93 +5731,449 @@ export default {
       return 'NÚMERO MUY GRANDE';
     },
     async exportToExcel() {
-      try {
-        const XLSX = await import('xlsx');
+      this.showExportMenu = false;
 
-        const data = [
-          ['CERAMICAS TERRAZOS Y PULIDOS UNIVERSAL'],
-          ['FACTURA'],
-          [''],
-          ['Número de Factura:', this.createdInvoiceData.invoice_number],
-          ['Cliente:', this.customerInfo?.name || 'CONSUMIDOR FINAL'],
-          ['RTN:', this.customerInfo?.rtn || '00000000000000'],
-          ['Vendedor:', this.createdInvoiceData.vendor_name || 'VENDEDOR'],
-          [''],
-          ['Cant', 'Producto', 'P/Unit', 'Total']
-        ];
+      const data = [
+        ['FACTURA'],
+        [''],
+        ['Empresa:', this.companyInfo.company_name || 'EMPRESA'],
+        ['Documento:', this.createdInvoiceData.invoice_number],
+        ['Cliente:', this.createdInvoiceData.customer_name || 'CONSUMIDOR FINAL'],
+        ['Fecha:', this.formatDate(this.createdInvoiceData.issue_date || new Date())],
+        [''],
+        ['Producto', 'Cantidad', 'Precio Unit.', 'Total']
+      ];
 
-        this.createdInvoiceData.items.forEach(item => {
-          const qty = parseFloat(item.quantity) || 0;
-          const price = parseFloat(item.unit_price || item.price) || 0;
-          const taxRate = parseFloat(item.tax_rate) || 0;
-          const itemSubtotal = qty * price;
-          const itemTax = itemSubtotal * (taxRate / 100);
-          const itemTotal = itemSubtotal + itemTax;
+      this.createdInvoiceData.items.forEach(item => {
+        const unitText = item.product_unit || item.unit || 'UNIDAD';
+        const qty = parseFloat(item.quantity) || 0;
+        const price = parseFloat(item.unit_price || item.price) || 0;
+        const taxRate = parseFloat(item.tax_rate) || 0;
+        const itemSubtotal = qty * price;
+        const itemTax = itemSubtotal * (taxRate / 100);
+        const itemTotal = itemSubtotal + itemTax;
 
-          data.push([
-            qty,
-            item.product_name || item.name,
-            price.toFixed(2),
-            itemTotal.toFixed(2)
-          ]);
-        });
+        data.push([
+          `${item.product_name || item.name} ${unitText}`,
+          qty,
+          price,
+          itemTotal
+        ]);
+      });
 
-        data.push(['']);
-        data.push(['TOTAL A PAGAR:', 'L ' + this.createdInvoiceData.total.toFixed(2)]);
+      data.push(['']);
+      data.push(['', '', 'TOTAL:', this.createdInvoiceData.total]);
 
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Factura');
-
-        XLSX.writeFile(wb, `Factura_${this.createdInvoiceData.invoice_number}.xlsx`);
-      } catch (error) {
-        console.error('Error al exportar a Excel:', error);
-        alert('Error al exportar a Excel');
-      }
+      const XLSX = await import('xlsx');
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'FACTURA');
+      XLSX.writeFile(wb, `FACTURA_${this.createdInvoiceData.invoice_number}.xlsx`);
     },
     async exportToPDF() {
+      this.showExportMenu = false;
       try {
-        const html2pdf = (await import('html2pdf.js')).default;
+        const fileName = `FACTURA_${this.createdInvoiceData.invoice_number}`;
 
-        const element = this.$refs.invoiceFrame.contentDocument.body;
-        const opt = {
-          margin: 5,
-          filename: `Factura_${this.createdInvoiceData.invoice_number}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: 'mm', format: [80, 200], orientation: 'portrait' }
-        };
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
 
-        html2pdf().set(opt).from(element).save();
-      } catch (error) {
-        console.error('Error al exportar a PDF:', error);
-        alert('Error al exportar a PDF');
-      }
-    },
-    async exportToImage() {
-      try {
+        const htmlContent = this.$refs.invoiceFrame.contentDocument.documentElement.outerHTML;
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const element = iframe.contentDocument.body;
         const html2canvas = (await import('html2canvas')).default;
-
-        const element = this.$refs.invoiceFrame.contentDocument.body;
         const canvas = await html2canvas(element, {
           scale: 2,
           useCORS: true,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          width: 800,
+          windowWidth: 800
         });
 
-        canvas.toBlob((blob) => {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `Factura_${this.createdInvoiceData.invoice_number}.png`;
-          a.click();
-          URL.revokeObjectURL(url);
-        });
+        const imgData = canvas.toDataURL('image/png');
+        const jsPDF = (await import('jspdf')).default;
+        const pdf = new jsPDF('p', 'mm', 'letter');
+        const imgWidth = 216;
+        const pageHeight = 279;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        pdf.save(`${fileName}.pdf`);
+        document.body.removeChild(iframe);
       } catch (error) {
-        console.error('Error al exportar como imagen:', error);
-        alert('Error al exportar como imagen');
+        console.error('Error generating PDF:', error);
+        alert('Error al generar el PDF');
       }
     },
+    async exportToImage() {
+      this.showExportMenu = false;
+      try {
+        const fileName = `FACTURA_${this.createdInvoiceData.invoice_number}`;
+
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
+
+        const htmlContent = this.$refs.invoiceFrame.contentDocument.documentElement.outerHTML;
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const element = iframe.contentDocument.body;
+        const html2canvas = (await import('html2canvas')).default;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 800,
+          windowWidth: 800
+        });
+
+        const link = document.createElement('a');
+        link.download = `${fileName}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        document.body.removeChild(iframe);
+      } catch (error) {
+        console.error('Error generating image:', error);
+        alert('Error al generar la imagen');
+      }
+    },
+    // ===================================================================
+    // MÉTODOS DE ATAJOS DE TECLADO
+    // ===================================================================
+    loadKeyboardShortcuts() {
+      const saved = localStorage.getItem('pos_keyboard_shortcuts');
+      if (saved) {
+        try {
+          const savedShortcuts = JSON.parse(saved);
+          // Merge: mantener los valores por defecto y sobrescribir con los guardados
+          // Esto asegura que los nuevos atajos existan aunque el usuario tenga una versión antigua guardada
+          const defaultShortcuts = {
+            searchClients: { name: 'Búsqueda de Clientes', keys: 'Alt+F1', action: 'openCustomerSearch' },
+            searchProducts: { name: 'Búsqueda de Productos', keys: 'Alt+F2', action: 'openProductSearch' },
+            searchSeller: { name: 'Búsqueda de Vendedor', keys: 'Alt+F3', action: 'openSellerSearch' },
+            saveTransaction: { name: 'Guardar Transacción', keys: 'Alt+F5', action: 'saveInvoice' },
+            saveQuote: { name: 'Guardar Cotización', keys: 'Alt+F6', action: 'saveQuote' },
+            savePending: { name: 'Guardar Op. en Espera', keys: 'Alt+F7', action: 'savePending' },
+            deleteTransaction: { name: 'Eliminar Transacción', keys: 'Alt+F8', action: 'clearInvoice' },
+            addProduct: { name: 'Adicionar Producto', keys: 'Alt+A', action: 'addProduct' },
+            fastPayment: { name: 'Cobro Rápido', keys: 'Alt+F9', action: 'quickCheckout' },
+            detailedPayment: { name: 'Cobro Detallado', keys: 'Alt+F10', action: 'openCheckout' },
+            taxExemption: { name: 'Exoneración ISV', keys: 'Alt+F11', action: 'openTaxExemption' },
+            applyCoupon: { name: 'Aplicar Cupón', keys: 'Alt+C', action: 'openCouponModal' },
+            viewOffers: { name: 'Ver Ofertas', keys: 'Alt+O', action: 'openOffersModal' },
+            changeDocument: { name: 'Cambiar Documento', keys: 'Alt+D', action: 'toggleDocumentType' },
+            changeWarehouse: { name: 'Cambiar Bodega', keys: 'Alt+B', action: 'focusWarehouse' },
+            editShipping: { name: 'Editar Recargos', keys: 'Alt+R', action: 'focusShippingCost' },
+            importDocument: { name: 'Importar Documento', keys: 'Alt+I', action: 'toggleImportDropdown' },
+            additionalOptions: { name: 'Opciones Adicionales', keys: 'Alt+P', action: 'toggleAdditionalOptions' },
+            additionalFields: { name: 'Campos Adicionales', keys: 'Alt+M', action: 'toggleAdditionalFields' }
+          };
+          // Mezclar: por defecto + guardados (los guardados sobrescriben)
+          this.keyboardShortcuts = { ...defaultShortcuts };
+          for (const key in savedShortcuts) {
+            if (this.keyboardShortcuts[key]) {
+              this.keyboardShortcuts[key].keys = savedShortcuts[key].keys || this.keyboardShortcuts[key].keys;
+            }
+          }
+        } catch (e) {
+          console.error('Error loading keyboard shortcuts:', e);
+        }
+      }
+    },
+
+    saveKeyboardShortcuts() {
+      localStorage.setItem('pos_keyboard_shortcuts', JSON.stringify(this.keyboardShortcuts));
+      Swal.fire({
+        icon: 'success',
+        title: 'Guardado',
+        text: 'Los atajos de teclado han sido guardados correctamente',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      this.showKeyboardShortcutsModal = false;
+    },
+
+    resetKeyboardShortcuts() {
+      // Restaurar valores por defecto
+      this.keyboardShortcuts = {
+        searchClients: { name: 'Búsqueda de Clientes', keys: 'Alt+F1', action: 'openCustomerSearch' },
+        searchProducts: { name: 'Búsqueda de Productos', keys: 'Alt+F2', action: 'openProductSearch' },
+        searchSeller: { name: 'Búsqueda de Vendedor', keys: 'Alt+F3', action: 'openSellerSearch' },
+        saveTransaction: { name: 'Guardar Transacción', keys: 'Alt+F5', action: 'saveInvoice' },
+        saveQuote: { name: 'Guardar Cotización', keys: 'Alt+F6', action: 'saveQuote' },
+        savePending: { name: 'Guardar Op. en Espera', keys: 'Alt+F7', action: 'savePending' },
+        deleteTransaction: { name: 'Eliminar Transacción', keys: 'Alt+F8', action: 'clearInvoice' },
+        addProduct: { name: 'Adicionar Producto', keys: 'Alt+A', action: 'addProduct' },
+        fastPayment: { name: 'Cobro Rápido', keys: 'Alt+F9', action: 'quickCheckout' },
+        detailedPayment: { name: 'Cobro Detallado', keys: 'Alt+F10', action: 'openCheckout' },
+        taxExemption: { name: 'Exoneración ISV', keys: 'Alt+F11', action: 'openTaxExemption' },
+        applyCoupon: { name: 'Aplicar Cupón', keys: 'Alt+C', action: 'openCouponModal' },
+        viewOffers: { name: 'Ver Ofertas', keys: 'Alt+O', action: 'openOffersModal' },
+        changeDocument: { name: 'Cambiar Documento', keys: 'Alt+D', action: 'toggleDocumentType' },
+        changeWarehouse: { name: 'Cambiar Bodega', keys: 'Alt+B', action: 'focusWarehouse' },
+        editShipping: { name: 'Editar Recargos', keys: 'Alt+R', action: 'focusShippingCost' },
+        importDocument: { name: 'Importar Documento', keys: 'Alt+I', action: 'toggleImportDropdown' },
+        additionalOptions: { name: 'Opciones Adicionales', keys: 'Alt+P', action: 'toggleAdditionalOptions' },
+        additionalFields: { name: 'Campos Adicionales', keys: 'Alt+M', action: 'toggleAdditionalFields' }
+      };
+      Swal.fire({
+        icon: 'info',
+        title: 'Restaurado',
+        text: 'Los atajos han sido restaurados a sus valores por defecto',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    },
+
+    startRecording(shortcutKey) {
+      this.recordingShortcut = shortcutKey;
+    },
+
+    recordShortcut(event, shortcutKey) {
+      event.preventDefault();
+
+      if (this.recordingShortcut !== shortcutKey) return;
+
+      const keys = [];
+      if (event.altKey) keys.push('Alt');
+      if (event.ctrlKey) keys.push('Ctrl');
+      if (event.shiftKey) keys.push('Shift');
+
+      // Agregar la tecla principal
+      if (event.key && !['Alt', 'Control', 'Shift'].includes(event.key)) {
+        const key = event.key.toUpperCase();
+        if (key.startsWith('F') && !isNaN(key.substring(1))) {
+          keys.push(key); // F1, F2, etc.
+        } else if (key.length === 1) {
+          keys.push(key);
+        }
+      }
+
+      if (keys.length > 1) {
+        this.keyboardShortcuts[shortcutKey].keys = keys.join('+');
+        this.recordingShortcut = null;
+      }
+    },
+
+    handleGlobalKeydown(event) {
+      const key = event.key;
+      const isInInput = event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA';
+
+      // Manejar Escape para cerrar modales
+      if (key === 'Escape') {
+        if (this.showBarcodeScannerModal) { this.closeBarcodeScanner(); return; }
+        if (this.showQuickPaymentModal) { this.showQuickPaymentModal = false; return; }
+        if (this.showDetailedPaymentModal) { this.showDetailedPaymentModal = false; return; }
+        if (this.showQuotePreview) { this.showQuotePreview = false; return; }
+        if (this.showCustomerModal) { this.showCustomerModal = false; return; }
+        if (this.showProductModal) { this.showProductModal = false; return; }
+        if (this.showVendorModal) { this.showVendorModal = false; return; }
+        if (this.showCouponModal) { this.showCouponModal = false; return; }
+        if (this.showOffersModal) { this.showOffersModal = false; return; }
+        if (this.showTaxExemptionModal) { this.showTaxExemptionModal = false; return; }
+        if (this.showAdditionalOptions) { this.showAdditionalOptions = false; return; }
+        if (this.showImportDropdown) { this.showImportDropdown = false; return; }
+      }
+
+      // Atajos para modal de Cobro Rápido
+      if (this.showQuickPaymentModal && !isInInput) {
+        if (key === '1') { this.quickPayment.method = 'TRANSFERENCIA'; event.preventDefault(); return; }
+        if (key === '2') { this.quickPayment.method = 'CHEQUE'; event.preventDefault(); return; }
+        if (key === '3') { this.quickPayment.method = 'TARJ_DEBITO'; event.preventDefault(); return; }
+        if (key === '4') { this.quickPayment.method = 'TARJ_CREDITO'; event.preventDefault(); return; }
+        if (key === '5') { this.quickPayment.method = 'EFECTIVO'; event.preventDefault(); return; }
+        if (key === '6') { this.quickPayment.method = 'LINK_PAGO'; event.preventDefault(); return; }
+        if (key === 'Enter') { this.processQuickPayment(); event.preventDefault(); return; }
+        if (key.toLowerCase() === 'd') { this.switchToDetailedPayment(); event.preventDefault(); return; }
+      }
+
+      // Atajos para modal de Vista Previa Cotización
+      if (this.showQuotePreview && !isInInput) {
+        if (event.altKey && key === 'p') { this.printQuotePreview(); event.preventDefault(); return; }
+        if (event.altKey && key === 'o') { this.showQuoteOptionsDropdown = !this.showQuoteOptionsDropdown; event.preventDefault(); return; }
+        if (event.altKey && key === '1') { this.exportQuoteToPDF(); event.preventDefault(); return; }
+        if (event.altKey && key === '2') { this.exportQuoteToExcel(); event.preventDefault(); return; }
+        if (event.altKey && key === '3') { this.saveQuoteAsImage(); event.preventDefault(); return; }
+      }
+
+      // Atajos para importar documento cuando el dropdown está abierto
+      if (this.showImportDropdown && event.altKey) {
+        if (key === '1') { this.openImportModal('pending-invoice'); this.showImportDropdown = false; event.preventDefault(); return; }
+        if (key === '2') { this.openImportModal('quote'); this.showImportDropdown = false; event.preventDefault(); return; }
+        if (key === '3') { this.openImportModal('online-order'); this.showImportDropdown = false; event.preventDefault(); return; }
+      }
+
+      // Navegación con teclado en modales de búsqueda
+      if (this.showCustomerModal || this.showProductModal || this.showVendorModal) {
+        const list = this.showCustomerModal ? this.paginatedCustomers :
+                     this.showProductModal ? this.paginatedProducts :
+                     this.filteredVendors;
+
+        if (key === 'ArrowDown') {
+          event.preventDefault();
+          this.selectedSearchIndex = Math.min(this.selectedSearchIndex + 1, list.length - 1);
+          return;
+        }
+        if (key === 'ArrowUp') {
+          event.preventDefault();
+          this.selectedSearchIndex = Math.max(this.selectedSearchIndex - 1, 0);
+          return;
+        }
+        if (key === 'Enter' && list[this.selectedSearchIndex]) {
+          event.preventDefault();
+          if (this.showCustomerModal) {
+            this.selectCustomer(list[this.selectedSearchIndex]);
+          } else if (this.showProductModal) {
+            this.selectProduct(list[this.selectedSearchIndex]);
+          } else if (this.showVendorModal) {
+            this.selectVendor(list[this.selectedSearchIndex]);
+          }
+          return;
+        }
+      }
+
+      // No procesar atajos generales si estamos en un input/textarea o en modo grabación
+      if (isInInput) return;
+      if (this.recordingShortcut) return;
+
+      // Enter para adicionar producto (cuando no hay input enfocado)
+      if (key === 'Enter') {
+        this.addProduct();
+        event.preventDefault();
+        return;
+      }
+
+      // Delete para borrar la fila seleccionada
+      if (key === 'Delete' && this.selectedProductRow >= 0 && this.selectedProductRow < this.invoice.items.length) {
+        this.removeProduct(this.selectedProductRow);
+        this.selectedProductRow = Math.max(0, this.selectedProductRow - 1);
+        event.preventDefault();
+        return;
+      }
+
+      const pressedKeys = [];
+      if (event.altKey) pressedKeys.push('Alt');
+      if (event.ctrlKey) pressedKeys.push('Ctrl');
+      if (event.shiftKey) pressedKeys.push('Shift');
+
+      if (key && !['Alt', 'Control', 'Shift'].includes(key)) {
+        const upperKey = key.toUpperCase();
+        if (upperKey.startsWith('F') && !isNaN(upperKey.substring(1))) {
+          pressedKeys.push(upperKey);
+        } else if (upperKey.length === 1) {
+          pressedKeys.push(upperKey);
+        }
+      }
+
+      const pressedCombo = pressedKeys.join('+');
+
+      // Buscar el atajo que coincida
+      for (const [k, shortcut] of Object.entries(this.keyboardShortcuts)) {
+        if (shortcut.keys === pressedCombo) {
+          event.preventDefault();
+          this.executeShortcutAction(shortcut.action);
+          return;
+        }
+      }
+    },
+
+    executeShortcutAction(action) {
+      switch (action) {
+        case 'openCustomerSearch':
+          this.showCustomerModal = true;
+          break;
+        case 'openProductSearch':
+          this.showProductModal = true;
+          break;
+        case 'openSellerSearch':
+          this.showVendorModal = true;
+          break;
+        case 'saveInvoice':
+          if (this.invoice.items.length > 0) {
+            this.saveAsDraft();
+          }
+          break;
+        case 'saveQuote':
+          if (this.invoice.items.length > 0) {
+            this.saveAsQuote();
+          }
+          break;
+        case 'savePending':
+          if (this.invoice.items.length > 0) {
+            this.saveAsPendingInvoice();
+          }
+          break;
+        case 'clearInvoice':
+          this.clearInvoice();
+          break;
+        case 'addProduct':
+          this.addProduct();
+          break;
+        case 'quickCheckout':
+          if (this.invoice.items.length > 0) {
+            this.showQuickPaymentModal = true;
+          }
+          break;
+        case 'openCheckout':
+          if (this.invoice.items.length > 0) {
+            this.showDetailedPaymentModal = true;
+          }
+          break;
+        case 'openTaxExemption':
+          this.showTaxExemptionModal = true;
+          break;
+        case 'openCouponModal':
+          this.showCouponModal = true;
+          this.showAdditionalOptions = false;
+          break;
+        case 'openOffersModal':
+          this.showOffersModal = true;
+          this.showAdditionalOptions = false;
+          break;
+        case 'toggleDocumentType':
+          this.toggleDocumentType();
+          break;
+        case 'focusWarehouse':
+          this.$nextTick(() => {
+            if (this.$refs.warehouseSelect) {
+              this.$refs.warehouseSelect.focus();
+            }
+          });
+          break;
+        case 'focusShippingCost':
+          this.$nextTick(() => {
+            if (this.$refs.shippingCostInput) {
+              this.$refs.shippingCostInput.focus();
+              this.$refs.shippingCostInput.select();
+            }
+          });
+          break;
+        case 'toggleImportDropdown':
+          this.showImportDropdown = !this.showImportDropdown;
+          break;
+        case 'toggleAdditionalOptions':
+          this.showAdditionalOptions = !this.showAdditionalOptions;
+          break;
+        case 'toggleAdditionalFields':
+          this.showAdditionalFields = !this.showAdditionalFields;
+          break;
+      }
+    },
+
     handleClickOutside(event) {
       // Cerrar el dropdown si se hace click fuera del botón
       const dropdown = event.target.closest('.btn-group');
@@ -3831,17 +6201,23 @@ export default {
           totalTax += itemTax;
         }
         subtotal += itemSubtotal;
+        const unitText = item.product_unit || item.unit || 'UNIDAD';
         tableRows += `
           <tr>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(qty)}</td>
-            <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name || item.name}</td>
+            <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name || item.name} <span style="font-weight: 600;">${unitText}</span></td>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(price)}</td>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemTotal)}</td>
           </tr>
         `;
       });
 
-      const discount = parseFloat(this.createdInvoiceData.discount || 0);
+      let discount = parseFloat(this.createdInvoiceData.discount || 0);
+      // Agregar descuentos de cupones y ofertas
+      const couponsDiscount = this.createdInvoiceData.coupons_discount || 0;
+      const offersDiscount = this.createdInvoiceData.offers_discount || 0;
+      discount += couponsDiscount + offersDiscount;
+
       const surcharge = parseFloat(this.createdInvoiceData.surcharge || 0);
       const grandTotal = this.createdInvoiceData.total || (subtotal + totalTax + surcharge - discount);
 
@@ -4051,7 +6427,7 @@ export default {
               <tr><td class="total-label">I.S.V 15 15%:</td><td class="total-value">L ${this.formatCurrency(totalTax)}</td></tr>
               <tr><td class="total-label">I.S.V 18 18%:</td><td class="total-value">L 0.00</td></tr>
               <tr><td class="total-label">RECARGOS:</td><td class="total-value">L ${this.formatCurrency(surcharge)}</td></tr>
-              <tr><td class="total-label">DESCUENTOS Y REBAJAS OTORGADOS:</td><td class="total-value">L 0.00</td></tr>
+              <tr><td class="total-label">DESCUENTOS Y REBAJAS OTORGADOS:</td><td class="total-value">L ${this.formatCurrency(discount)}</td></tr>
               <tr class="grand-total"><td class="total-label"><strong>TOTAL A PAGAR:</strong></td><td class="total-value"><strong>L<br>${this.formatCurrency(grandTotal)}</strong></td></tr>
               <tr><td colspan="2" style="text-align: center; padding: 0; font-size: 12px;">.......................................................................................</td></tr>
             </table>
@@ -4065,16 +6441,16 @@ export default {
               return this.numberToWords(integerPart).toUpperCase() + ' LEMPIRAS CON ' + cents + '/100';
             })()}<br>
             <strong>Rango de facturación Vigente:</strong><br>
-            <strong>Desde:</strong> ${this.createdInvoiceData.prefijo_control}-${String(this.createdInvoiceData.nro_inicial_control).padStart(8, '0')}<br>
-            <strong>Hasta:</strong> ${this.createdInvoiceData.prefijo_control}-${String(this.createdInvoiceData.nro_final_control).padStart(8, '0')}<br>
-            <strong>Fecha Limite de Emisión Vigente:</strong> ${this.formatDate(this.createdInvoiceData.fecha_fin) || '31/12/2025'}<br>
-            <strong>No. Correlativo de la Orden de Compra<br>Exenta:</strong><br>
-            <strong>No. Correlativo de la Constancia del Reg<br>Exonerado:</strong><br>
-            <strong>No. Identificativo del Registro SAG:</strong><br>
+            <strong>Desde:</strong> ${this.createdInvoiceData.prefijo_control}${String(this.createdInvoiceData.nro_inicial_control).padStart(8, '0')}<br>
+            <strong>Hasta:</strong> ${this.createdInvoiceData.prefijo_control}${String(this.createdInvoiceData.nro_final_control).padStart(8, '0')}<br>
+            <strong>Fecha Limite de Emisión Vigente:</strong> ${this.formatDate(this.createdInvoiceData.fecha_fin)}<br>
+            <strong>No. Correlativo de la Orden de Compra<br>Exenta:</strong> ${this.createdInvoiceData.orden_compra || ''}<br>
+            <strong>No. Correlativo de la Constancia del Reg<br>Exonerado:</strong> ${this.createdInvoiceData.constancia_exonerado || ''}<br>
+            <strong>No. Identificativo del Registro SAG:</strong> ${this.createdInvoiceData.registro_sag || ''}<br>
             ${this.formatDateTime(new Date())}
           </div>
           <div class="footer-note">
-            <strong>Entrega:</strong> ${this.formatDate(new Date())}<br>
+            <strong>Entrega:</strong> ${this.formatTodayDate()}<br>
             Original: Cliente/Copia: Obligado Tributario<br>
             <strong>Emisor:</strong> ¡La Factura es beneficio de todos. Exígela!
           </div>
@@ -4145,9 +6521,14 @@ export default {
     },
     async loadDocuments() {
       try {
-        const endpoint = this.importDocumentType === 'pending-invoice'
-          ? '/pending-invoices'
-          : '/quotes';
+        let endpoint;
+        if (this.importDocumentType === 'pending-invoice') {
+          endpoint = '/pending-invoices';
+        } else if (this.importDocumentType === 'quote') {
+          endpoint = '/quotes';
+        } else if (this.importDocumentType === 'online-order') {
+          endpoint = '/orders';
+        }
 
         const response = await api.get(endpoint);
         this.documents = response.data.data || [];
@@ -4158,9 +6539,14 @@ export default {
     },
     async viewDocumentDetails(doc) {
       try {
-        const endpoint = this.importDocumentType === 'pending-invoice'
-          ? `/pending-invoices/${doc.id}`
-          : `/quotes/${doc.id}`;
+        let endpoint;
+        if (this.importDocumentType === 'pending-invoice') {
+          endpoint = `/pending-invoices/${doc.id}`;
+        } else if (this.importDocumentType === 'quote') {
+          endpoint = `/quotes/${doc.id}`;
+        } else if (this.importDocumentType === 'online-order') {
+          endpoint = `/orders/${doc.id}`;
+        }
 
         const response = await api.get(endpoint);
         const docData = response.data.data;
@@ -4177,12 +6563,12 @@ export default {
         itemsHtml += '</tbody></table>';
 
         Swal.fire({
-          title: docData.document_number || docData.quote_number,
+          title: docData.document_number || docData.quote_number || docData.order_number,
           html: `
             <div class="text-start">
               <p><strong>Cliente:</strong> ${docData.customer_name}</p>
               <p><strong>Fecha:</strong> ${this.formatDate(docData.created_at)}</p>
-              <p><strong>Total:</strong> L ${this.formatCurrency(docData.total)}</p>
+              <p><strong>Total:</strong> L ${this.formatCurrency(docData.total || docData.total_amount)}</p>
               <hr>
               <h6>Productos:</h6>
               ${itemsHtml}
@@ -4203,9 +6589,14 @@ export default {
       }
 
       try {
-        const endpoint = this.importDocumentType === 'pending-invoice'
-          ? `/pending-invoices/${this.selectedDocumentId}`
-          : `/quotes/${this.selectedDocumentId}`;
+        let endpoint;
+        if (this.importDocumentType === 'pending-invoice') {
+          endpoint = `/pending-invoices/${this.selectedDocumentId}`;
+        } else if (this.importDocumentType === 'quote') {
+          endpoint = `/quotes/${this.selectedDocumentId}`;
+        } else if (this.importDocumentType === 'online-order') {
+          endpoint = `/orders/${this.selectedDocumentId}`;
+        }
 
         const response = await api.get(endpoint);
         const docData = response.data.data;
@@ -4265,7 +6656,7 @@ export default {
         this.importedDocument = {
           id: docData.id,
           type: this.importDocumentType,
-          number: docData.document_number || docData.quote_number
+          number: docData.document_number || docData.quote_number || docData.order_number
         };
 
         // Close modal
@@ -4302,61 +6693,65 @@ export default {
 
     async applyCoupon() {
       try {
-        if (!this.couponCode) {
-          Swal.fire('Error', 'Ingrese un código de cupón', 'warning');
+        if (!this.couponCode.trim()) {
+          this.couponError = 'Por favor ingresa un código de cupón';
           return;
         }
 
-        // Buscar el cupón por código
-        const response = await api.get(`/coupons/validate/${this.couponCode}`);
-        if (response.data && response.data.data) {
-          const coupon = response.data.data;
+        if (this.invoice.items.length === 0) {
+          this.couponError = 'El carrito está vacío';
+          return;
+        }
 
-          // Validar si el cupón es aplicable
-          if (!coupon.is_active) {
-            Swal.fire('Error', 'Este cupón no está activo', 'error');
-            return;
+        // Verificar si el cupón ya está aplicado
+        const couponCode = this.couponCode.trim().toUpperCase();
+        if (this.appliedCoupons.some(c => c.code.toUpperCase() === couponCode)) {
+          this.couponError = 'Este cupón ya está aplicado';
+          return;
+        }
+
+        this.couponError = '';
+        this.isValidatingCoupon = true;
+
+        // Preparar datos del carrito en el formato del ecommerce
+        const cartData = {
+          code: this.couponCode.trim(),
+          cart: {
+            items: this.invoice.items.map(item => ({
+              product_id: item.product_id,
+              price: item.price,
+              quantity: item.quantity,
+              category_id: item.category_id,
+              subcategory_id: item.subcategory_id
+            }))
           }
+        };
 
-          const now = new Date();
-          const validUntil = new Date(coupon.valid_until);
-          if (validUntil < now) {
-            Swal.fire('Error', 'Este cupón ha expirado', 'error');
-            return;
-          }
+        // Usar axios directamente sin interceptores para evitar que se agregue store_id
+        const response = await axios.post('http://localhost:3000/api/v1/ecommerce/cart/validate-coupon', cartData);
 
-          // Aplicar el cupón
-          this.appliedCoupon = coupon;
-
-          // Aplicar descuento según el tipo
-          if (coupon.discount_type === 'percentage') {
-            // Aplicar descuento porcentual a todos los items
-            this.invoice.items.forEach((item, index) => {
-              item.discount_percent = parseFloat(coupon.discount_value);
-              this.calculateItemTotal(index);
-            });
-          } else if (coupon.discount_type === 'fixed') {
-            // Aplicar descuento fijo al total
-            const discountPerItem = parseFloat(coupon.discount_value) / this.invoice.items.length;
-            this.invoice.items.forEach((item, index) => {
-              const itemTotal = item.price * item.quantity;
-              item.discount_percent = (discountPerItem / itemTotal) * 100;
-              this.calculateItemTotal(index);
-            });
-          }
+        if (response.data.success) {
+          const newCoupon = response.data.data.coupon;
+          this.appliedCoupons.push(newCoupon);
+          this.couponCode = '';
+          this.couponError = '';
 
           Swal.fire({
             icon: 'success',
             title: 'Cupón Aplicado',
-            text: `Se ha aplicado el cupón ${coupon.code}`,
+            text: `¡Cupón "${newCoupon.code}" aplicado! Descuento: L ${newCoupon.discount_amount.toFixed(2)}`,
             timer: 2000
           });
-
-          this.couponCode = '';
         }
       } catch (error) {
         console.error('Error applying coupon:', error);
-        Swal.fire('Error', 'Cupón no válido o no encontrado', 'error');
+        if (error.response?.data?.message) {
+          this.couponError = error.response.data.message;
+        } else {
+          this.couponError = 'Error al validar el cupón. Inténtalo de nuevo.';
+        }
+      } finally {
+        this.isValidatingCoupon = false;
       }
     },
 
@@ -4365,15 +6760,9 @@ export default {
       this.applyCoupon();
     },
 
-    removeCoupon() {
-      // Remover descuentos aplicados
-      this.invoice.items.forEach((item, index) => {
-        item.discount_percent = 0;
-        this.calculateItemTotal(index);
-      });
-
-      this.appliedCoupon = null;
-      this.couponCode = '';
+    removeCoupon(couponCode) {
+      this.appliedCoupons = this.appliedCoupons.filter(c => c.code !== couponCode);
+      this.couponError = '';
 
       Swal.fire({
         icon: 'info',
@@ -4383,9 +6772,69 @@ export default {
       });
     },
 
+    async revalidateCoupons() {
+      // Revalidar todos los cupones aplicados con los items actuales
+      const validCoupons = [];
+      const invalidCoupons = [];
+
+      for (const coupon of this.appliedCoupons) {
+        try {
+          const cartData = {
+            code: coupon.code,
+            cart: {
+              items: this.invoice.items.map(item => ({
+                product_id: item.product_id,
+                price: item.price,
+                quantity: item.quantity,
+                category_id: item.category_id,
+                subcategory_id: item.subcategory_id
+              }))
+            }
+          };
+
+          const response = await axios.post('http://localhost:3000/api/v1/ecommerce/cart/validate-coupon', cartData);
+
+          if (response.data.success) {
+            // Cupón aún válido, actualizar descuento
+            validCoupons.push(response.data.data.coupon);
+          }
+        } catch (error) {
+          // Cupón ya no es válido
+          invalidCoupons.push(coupon);
+        }
+      }
+
+      // Actualizar lista de cupones aplicados
+      this.appliedCoupons = validCoupons;
+
+      // Notificar si se quitaron cupones
+      if (invalidCoupons.length > 0) {
+        const couponNames = invalidCoupons.map(c => c.code).join(', ');
+        Swal.fire({
+          icon: 'warning',
+          title: 'Cupones Removidos',
+          text: `Los siguientes cupones ya no son válidos y fueron removidos: ${couponNames}`,
+          timer: 3000
+        });
+      }
+    },
+
+    async viewCouponDetails(coupon) {
+      try {
+        // Cargar detalles completos del cupón desde el backend
+        const response = await api.get(`/coupons/${coupon.id}`);
+        this.selectedCouponDetails = response.data.data;
+        this.showCouponDetailsModal = true;
+      } catch (error) {
+        console.error('Error loading coupon details:', error);
+        Swal.fire('Error', 'No se pudo cargar los detalles del cupón', 'error');
+      }
+    },
+
     closeCouponModal() {
       this.showCouponModal = false;
       this.couponCode = '';
+      this.couponError = '';
     },
 
     // ===================================================================
@@ -4403,35 +6852,48 @@ export default {
       }
     },
 
-    viewOfferDetails(offer) {
-      let productsHtml = '';
-
-      if (offer.applies_to === 'all') {
-        productsHtml = '<p>Esta oferta aplica a todos los productos</p>';
-      } else if (offer.products && offer.products.length > 0) {
-        productsHtml = '<ul class="text-left">';
-        offer.products.forEach(p => {
-          productsHtml += `<li>${p.product_name} - ${p.product_code}</li>`;
-        });
-        productsHtml += '</ul>';
+    async loadActiveOffers() {
+      if (this.invoice.items.length === 0) {
+        this.activeOffers = [];
+        return;
       }
 
-      Swal.fire({
-        title: offer.name,
-        html: `
-          <div class="text-left">
-            <p><strong>Descripción:</strong> ${offer.description}</p>
-            <p><strong>Tipo:</strong> ${offer.offer_type}</p>
-            <p><strong>Descuento:</strong> ${offer.discount_type === 'percentage' ? offer.discount_value + '%' : 'L ' + offer.discount_value}</p>
-            <p><strong>Válido hasta:</strong> ${this.formatDate(offer.valid_until)}</p>
-            <hr>
-            <p><strong>Productos incluidos:</strong></p>
-            ${productsHtml}
-          </div>
-        `,
-        icon: 'info',
-        confirmButtonText: 'Cerrar'
-      });
+      try {
+        const cartData = {
+          cart: {
+            items: this.invoice.items.map(item => ({
+              product_id: item.product_id,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              category_id: item.category_id,
+              subcategory_id: item.subcategory_id
+            }))
+          }
+        };
+
+        // Usar axios directamente sin interceptores para evitar que se agregue store_id
+        const response = await axios.post('http://localhost:3000/api/v1/ecommerce/cart/active-offers', cartData);
+
+        if (response.data.success) {
+          this.activeOffers = response.data.data.offers || [];
+        }
+      } catch (error) {
+        console.error('Error loading active offers:', error);
+        this.activeOffers = [];
+      }
+    },
+
+    async viewOfferDetails(offer) {
+      try {
+        // Cargar detalles completos de la oferta desde el backend
+        const response = await api.get(`/offers/${offer.id}`);
+        this.selectedOfferDetails = response.data.data;
+        this.showOfferDetailsModal = true;
+      } catch (error) {
+        console.error('Error loading offer details:', error);
+        Swal.fire('Error', 'No se pudo cargar los detalles de la oferta', 'error');
+      }
     },
 
     closeOffersModal() {
@@ -4439,6 +6901,173 @@ export default {
       this.offersSearch = '';
       this.offersTypeFilter = '';
       this.offersStatusFilter = 'active';
+    },
+
+    // ===================================================================
+    // MÉTODOS PARA MODAL DE INFORMACIÓN DEL PRODUCTO
+    // ===================================================================
+    async showProductInfo(item) {
+      try {
+        // Hacer requests para obtener información completa del producto
+        const [productResponse, stockResponse] = await Promise.all([
+          api.get(`/products/${item.product_id}`),
+          api.get(`/products/stock/current?product_id=${item.product_id}`)
+        ]);
+
+        if (productResponse.data.success) {
+          const productData = productResponse.data.data;
+
+          // Obtener datos de stock
+          let stockData = [];
+          if (stockResponse.data.data && stockResponse.data.data.stock) {
+            if (Array.isArray(stockResponse.data.data.stock)) {
+              stockData = stockResponse.data.data.stock;
+            } else if (typeof stockResponse.data.data.stock === 'object') {
+              stockData = Object.values(stockResponse.data.data.stock);
+            }
+          }
+
+          // Formatear precios (6 niveles de precio)
+          const prices = [];
+          for (let i = 0; i < 6; i++) {
+            const priceKey = i === 0 ? 'price_1' : `price_${i + 1}`;
+            const net = parseFloat(productData[priceKey]) || 0;
+            const cost = parseFloat(productData.cost) || 0;
+            const taxRate = parseFloat(productData.tax_rate) || 15;
+
+            // Calcular utilidad
+            let profit = 0;
+            if (cost > 0 && net > 0) {
+              profit = ((net - cost) / cost) * 100;
+            }
+
+            // Calcular total con impuesto
+            const totalVenta = net * (1 + taxRate / 100);
+
+            prices.push({
+              label: `PRECIO #${i + 1}`,
+              utilidad: profit.toFixed(2),
+              bruto: net,
+              total_venta: totalVenta
+            });
+          }
+
+          // Calcular totales de stock
+          const stockTotals = this.calculateStockTotals(stockData);
+
+          // Formatear la información del producto
+          this.selectedProductInfo = {
+            code: productData.code,
+            name: productData.name,
+            description: productData.description,
+            image: productData.image,
+            category_name: productData.category_name,
+            subcategory_name: productData.subcategory_name,
+            brand_name: productData.brand_name,
+            model: productData.model,
+            weight: productData.weight,
+            prices: prices,
+            stock: this.formatStock(stockData),
+            total_existencias: stockTotals.total,
+            total_minimo: stockTotals.minimo,
+            total_maximo: stockTotals.maximo
+          };
+
+          this.showProductInfoModal = true;
+        }
+      } catch (error) {
+        console.error('Error loading product info:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo cargar la información del producto'
+        });
+      }
+    },
+
+    closeProductInfoModal() {
+      this.showProductInfoModal = false;
+      this.selectedProductInfo = null;
+    },
+
+    showProductInfoFromSearch(product) {
+      // Crear un item temporal con la estructura necesaria
+      const tempItem = {
+        product_id: product.id
+      };
+      this.showProductInfo(tempItem);
+    },
+
+    formatPrices(prices, taxRate) {
+      if (!prices || !Array.isArray(prices)) return [];
+
+      const priceLabels = {
+        'sale': 'PRECIO #1',
+        'price2': 'PRECIO #2',
+        'price3': 'PRECIO #3',
+        'price4': 'PRECIO #4',
+        'price5': 'PRECIO #5',
+        'price6': 'PRECIO #6'
+      };
+
+      return prices.map(price => {
+        const bruto = parseFloat(price.price) || 0;
+        const utilidad = parseFloat(price.profit_margin) || 0;
+        const impuesto = parseFloat(taxRate) || 15;
+        const total_venta = bruto * (1 + impuesto / 100);
+
+        return {
+          type: price.price_type,
+          label: priceLabels[price.price_type] || price.price_type.toUpperCase(),
+          utilidad: utilidad.toFixed(2),
+          bruto: bruto,
+          total_venta: total_venta
+        };
+      });
+    },
+
+    formatStock(stockData) {
+      if (!stockData || !Array.isArray(stockData)) return [];
+
+      return stockData.map(stock => ({
+        bodega: stock.warehouse_name || 'N/A',
+        existencia_actual: parseFloat(stock.quantity || 0).toFixed(2),
+        minimo: parseFloat(stock.min_stock || 0).toFixed(3),
+        maximo: parseFloat(stock.max_stock || 0).toFixed(3)
+      }));
+    },
+
+    calculateTotalStock(stockData) {
+      if (!stockData || !Array.isArray(stockData)) return 0;
+
+      const total = stockData.reduce((sum, stock) => {
+        return sum + (parseFloat(stock.quantity) || 0);
+      }, 0);
+
+      return total.toFixed(2);
+    },
+
+    calculateStockTotals(stockData) {
+      if (!stockData || !Array.isArray(stockData)) {
+        return {
+          total: '0.00',
+          minimo: '0.000',
+          maximo: '0.000'
+        };
+      }
+
+      const totals = stockData.reduce((acc, stock) => {
+        acc.total += parseFloat(stock.quantity) || 0;
+        acc.minimo += parseFloat(stock.min_stock) || 0;
+        acc.maximo += parseFloat(stock.max_stock) || 0;
+        return acc;
+      }, { total: 0, minimo: 0, maximo: 0 });
+
+      return {
+        total: totals.total.toFixed(2),
+        minimo: totals.minimo.toFixed(3),
+        maximo: totals.maximo.toFixed(3)
+      };
     },
 
     // ===================================================================
@@ -4501,6 +7130,17 @@ export default {
 </script>
 
 <style scoped>
+/* Selected product row */
+.selected-product-row {
+  background-color: #e3f2fd !important;
+  border-left: 3px solid #2196F3 !important;
+}
+
+.search-row-selected {
+  background-color: #e3f2fd !important;
+  border-left: 3px solid #2196F3 !important;
+}
+
 /* Purple button for import */
 .btn-purple {
   background-color: #6f42c1;

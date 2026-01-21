@@ -4,7 +4,9 @@
       <div class="modal-content">
         <div class="modal-header bg-dark text-white">
           <h5 class="modal-title text-white">Búsqueda de datos - Productos</h5>
-          <button type="button" class="btn-close" @click="close"></button>
+          <button type="button" class="btn btn-danger btn-sm rounded-circle" @click="close" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
+            <i class="ti ti-x" style="font-size: 1.2rem; color: white;"></i>
+          </button>
         </div>
         <div class="modal-body">
           <!-- Filtros -->
@@ -88,14 +90,17 @@
                   @dblclick="selectProduct(product)"
                   style="cursor: pointer;">
                   <td class="text-center">
-                    <button class="btn btn-sm btn-outline-secondary" @click="selectProduct(product)">
+                    <button class="btn btn-sm btn-outline-primary" @click.stop="showProductInfo(product)">
                       + INFO
                     </button>
                   </td>
                   <td class="text-center">
-                    <div class="product-img-mini">
-                      <span class="text-muted small">NO<br>DISPONIBLE</span>
-                    </div>
+                    <img
+                      :src="product.image || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22%3E%3Crect width=%2260%22 height=%2260%22 fill=%22%23ddd%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2210%22 fill=%22%23999%22%3ESIN IMG%3C/text%3E%3C/svg%3E'"
+                      :alt="product.name"
+                      style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;"
+                      @error="handleImageError"
+                    >
                   </td>
                   <td>{{ product.sku }}</td>
                   <td>{{ product.name }}</td>
@@ -232,12 +237,23 @@ export default {
     }
   },
   methods: {
+    handleImageError(event) {
+      // Prevenir bucle infinito: solo intentar una vez
+      if (event.target.dataset.errorHandled) {
+        return;
+      }
+      event.target.dataset.errorHandled = 'true';
+      event.target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22%3E%3Crect width=%2260%22 height=%2260%22 fill=%22%23ddd%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2210%22 fill=%22%23999%22%3ESIN IMG%3C/text%3E%3C/svg%3E';
+    },
     close() {
       this.$emit('close');
     },
     selectProduct(product) {
       this.$emit('select', product);
       this.close();
+    },
+    showProductInfo(product) {
+      this.$emit('show-info', product);
     },
     formatNumber(value) {
       return new Intl.NumberFormat('es-HN', {

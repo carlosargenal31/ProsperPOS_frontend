@@ -639,7 +639,7 @@ import axios from "axios";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
-import { LOGO_BASE64 } from '@/assets/img/logo.js';
+import api from '@/utils/axios';
 
 export default {
   name: "SoldItemsReport",
@@ -1136,17 +1136,61 @@ export default {
       this.selectedProduct = null;
       this.filters.product_id = "";
     },
-    async loadCompanyInfo() {
+    async getCompanyLogo() {
+      if (!this.companyInfo?.logo_url) {
+        return '';
+      }
+
+      const dbLogoUrl = this.companyInfo.logo_url;
+      if (!dbLogoUrl.startsWith('http')) {
+        return '';
+      }
+
       try {
-        const response = await axios.get("/api/v1/dashboard/company-info", this.getAuthHeaders());
-        if (response.data.success) {
-          this.companyInfo = response.data.data || {};
+        const response = await api.get('/image-proxy', { params: { url: dbLogoUrl } });
+        if (response.data.success && response.data.data.base64) {
+          return response.data.data.base64;
         }
       } catch (error) {
-        console.error("Error loading company info:", error);
+        console.error('Error al cargar logo:', error);
+      }
+
+      return '';
+    },
+    async loadCompanyInfo() {
+      try {
+        const response = await api.get('/companies/default');
+        if (response.data && response.data.success) {
+          this.companyInfo = response.data.data;
+        }
+      } catch (error) {
+        console.error('Error loading company info:', error);
+        // Fallback: intentar con endpoint público
+        try {
+          const publicResponse = await api.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            this.companyInfo = publicResponse.data.data;
+          }
+        } catch (publicError) {
+          console.error('Error loading public company info:', publicError);
+          this.companyInfo = {
+            company_name: 'ProsperPOS',
+            commercial_name: 'ProsperPOS',
+            direccion: 'Honduras',
+            address: 'Honduras',
+            telefono: 'N/A',
+            phone: 'N/A',
+            rtn: 'N/A',
+            email: 'info@prosperpos.com'
+          };
+        }
       }
     },
-    buildSoldItemsHTML() {
+    async buildSoldItemsHTML() {
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
       // Generar HTML de tabla de productos vendidos
       const itemRows = this.soldItems.map(item => {
         let row = `
@@ -1349,13 +1393,13 @@ export default {
         <body>
           <div class="header-section">
             <div class="company-info">
-              <img src="${LOGO_BASE64}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">
+              ${hasLogo ? `<img src="${logoUrl}" style="max-width: 180px; height: auto; margin-bottom: 8px;" alt="Logo">` : ''}
               <div class="company-details">
-                <strong>${this.companyInfo.business_description || this.companyInfo.description || this.companyInfo.company_name || 'Cerámicas Terrazos y Pulidos'}</strong><br>
-                <strong>RTN:</strong> ${this.companyInfo.rtn || '01061977002516'}<br>
-                <strong>Dirección:</strong> ${this.companyInfo.direccion || this.companyInfo.address || 'Casa Matriz, Barrio La Merced, Avenida 14 de Julio entre 15 y 16 calle frente a Repuestos del Atlántico, La Ceiba, Atlántida'}<br>
-                <strong>Tel:</strong> ${this.companyInfo.telefono || this.companyInfo.phone || '+504 2440-0037'} | <strong>Móvil:</strong> ${this.companyInfo.telefono_movil || this.companyInfo.phone_mobile || '+504 9875-2725'}<br>
-                <strong>Email:</strong> ${this.companyInfo.email || 'mauricio_argenal@hotmail.com'}
+                <strong>${this.companyInfo.commercial_name || this.companyInfo.company_name || 'EMPRESA'}</strong><br>
+                <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}${this.companyInfo.whatsapp ? ` | <strong>Móvil:</strong> ${this.companyInfo.whatsapp}` : ''}<br>
+                <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
               </div>
             </div>
             <div class="report-box">
@@ -1469,7 +1513,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildSoldItemsHTML();
+        const htmlContent = await this.buildSoldItemsHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -1524,7 +1568,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildSoldItemsHTML();
+        const htmlContent = await this.buildSoldItemsHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -1550,10 +1594,10 @@ export default {
         alert('Error al generar la imagen');
       }
     },
-    printReport() {
+    async printReport() {
       this.showSaveReportModal = false;
       const printWindow = window.open('', '_blank');
-      const html = this.buildSoldItemsHTML();
+      const html = await this.buildSoldItemsHTML();
 
       const printHtml = html.replace('</body>', `
         <script>

@@ -1216,11 +1216,10 @@
 </template>
 
 <script>
-import api from "@/utils/axios";
+import api from '@/utils/axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
-import { LOGO_BASE64 } from '@/assets/img/logo.js';
 
 export default {
   name: 'PhysicalInventory',
@@ -1229,14 +1228,7 @@ export default {
       loading: false,
       inventoryData: [],
       showSaveReportModal: false,
-      companyInfo: {
-        company_name: 'Cerámicas Terrazos y Pulidos Universal',
-        rtn: '01061977002516',
-        direccion: 'Casa Matriz, Barrio La Merced, Avenida 14 de Julio entre 15 y 16 calle frente a Repuestos del Atlántico. La Ceiba, Atlántida',
-        telefono: '+504 2440-0037',
-        telefono_movil: '+504 9875-2725',
-        email: 'mauricio_argenal@hotmail.com'
-      },
+      companyInfo: {},
       totals: {
         total_registros: 0,
         cantidad_total: 0,
@@ -1297,7 +1289,8 @@ export default {
     }
   },
   mounted() {
-    this.loadCatalogs()
+    this.loadCatalogs();
+    this.loadCompanyInfo();
   },
   methods: {
     async loadCatalogs() {
@@ -1337,6 +1330,56 @@ export default {
           title: 'Error',
           text: 'No se pudieron cargar los catálogos'
         })
+      }
+    },
+    async getCompanyLogo() {
+      if (!this.companyInfo?.logo_url) {
+        return '';
+      }
+
+      const dbLogoUrl = this.companyInfo.logo_url;
+      if (!dbLogoUrl.startsWith('http')) {
+        return '';
+      }
+
+      try {
+        const response = await api.get('/image-proxy', { params: { url: dbLogoUrl } });
+        if (response.data.success && response.data.data.base64) {
+          return response.data.data.base64;
+        }
+      } catch (error) {
+        console.error('Error al cargar logo:', error);
+      }
+
+      return '';
+    },
+    async loadCompanyInfo() {
+      try {
+        const response = await api.get('/companies/default');
+        if (response.data && response.data.success) {
+          this.companyInfo = response.data.data;
+        }
+      } catch (error) {
+        console.error('Error loading company info:', error);
+        // Fallback: intentar con endpoint público
+        try {
+          const publicResponse = await api.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            this.companyInfo = publicResponse.data.data;
+          }
+        } catch (publicError) {
+          console.error('Error loading public company info:', publicError);
+          this.companyInfo = {
+            company_name: 'ProsperPOS',
+            commercial_name: 'ProsperPOS',
+            direccion: 'Honduras',
+            address: 'Honduras',
+            telefono: 'N/A',
+            phone: 'N/A',
+            rtn: 'N/A',
+            email: 'info@prosperpos.com'
+          };
+        }
       }
     },
     async loadInventory() {
@@ -1597,7 +1640,11 @@ export default {
         return aName.localeCompare(bName)
       })
     },
-    buildInventoryHTML() {
+    async buildInventoryHTML() {
+      // Obtener logo desde la base de datos
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
       const dateGenerated = new Date().toLocaleString('es-HN', {
         year: 'numeric',
         month: '2-digit',
@@ -1863,12 +1910,12 @@ export default {
         <body>
           <div class="header-section">
             <div class="company-info">
-              <img src="${LOGO_BASE64}" alt="Logo">
+              ${hasLogo ? `<img src="${logoUrl}" alt="Logo">` : ''}
               <div class="company-details">
-                ${this.companyInfo.business_description || this.companyInfo.description || 'Cerámicas Terrazos y Pulidos'}<br>
+                ${this.companyInfo.commercial_name || this.companyInfo.company_name || 'EMPRESA'}<br>
                 <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
-                <strong>Dirección:</strong> ${this.companyInfo.direccion || 'Sin dirección'}<br>
-                <strong>Tel:</strong> ${this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.telefono_movil || this.companyInfo.phone_mobile || 'N/A'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}${this.companyInfo.whatsapp ? ` | <strong>Móvil:</strong> ${this.companyInfo.whatsapp}` : ''}<br>
                 <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
               </div>
             </div>
@@ -2019,7 +2066,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildInventoryHTML();
+        const htmlContent = await this.buildInventoryHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -2072,7 +2119,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildInventoryHTML();
+        const htmlContent = await this.buildInventoryHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 
@@ -2108,7 +2155,7 @@ export default {
         iframe.style.height = '600px';
         document.body.appendChild(iframe);
 
-        const htmlContent = this.buildInventoryHTML();
+        const htmlContent = await this.buildInventoryHTML();
         iframe.contentDocument.write(htmlContent);
         iframe.contentDocument.close();
 

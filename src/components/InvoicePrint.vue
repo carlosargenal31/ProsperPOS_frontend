@@ -43,7 +43,7 @@
       <tbody>
         <tr v-for="(item, index) in invoiceData.items" :key="index">
           <td class="text-center">{{ formatQuantity(item.quantity) }}</td>
-          <td>{{ item.product_name || item.name }}</td>
+          <td>{{ item.product_name || item.name }} <strong>{{ item.product_unit || item.unit || 'UNIDAD' }}</strong></td>
           <td class="text-end">{{ formatCurrency(item.price) }}</td>
           <td class="text-end">{{ formatCurrency(item.total) }}</td>
         </tr>

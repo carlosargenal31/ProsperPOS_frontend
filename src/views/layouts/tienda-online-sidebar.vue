@@ -27,6 +27,12 @@
             <span>Pedidos en Línea</span>
           </router-link>
         </li>
+        <li :class="{ 'active': $route.path === '/tienda-online/opiniones' || $route.path.startsWith('/tienda-online/opiniones/') }">
+          <router-link to="/tienda-online/opiniones">
+            <i class="ti ti-message-2 fs-16 me-2"></i>
+            <span>Opiniones de Clientes</span>
+          </router-link>
+        </li>
         <li :class="{ 'active': $route.path === '/tienda-online/configuracion' }">
           <router-link to="/tienda-online/configuracion">
             <i class="ti ti-settings fs-16 me-2"></i>
