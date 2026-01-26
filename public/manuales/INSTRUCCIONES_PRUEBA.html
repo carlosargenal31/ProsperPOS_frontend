@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instrucciones - Sistema de Manuales</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #FF9F43;
+            border-bottom: 3px solid #FF9F43;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 30px;
+        }
+        .file-list {
+            background: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid #FF9F43;
+            margin: 20px 0;
+        }
+        .file-list li {
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .important {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Sistema de Manuales de Usuario - ProsperPOS</h1>
+
+        <div class="success">
+            <strong>✅ Sistema Implementado Correctamente</strong>
+            <p>El sistema de manuales ha sido configurado y está listo para usar.</p>
+        </div>
+
+        <h2>📋 Archivos PDF Requeridos</h2>
+
+        <p>Para que el sistema funcione completamente, necesitas crear y colocar los siguientes archivos PDF en esta carpeta:</p>
+
+        <div class="file-list">
+            <ul>
+                <li><strong>manual-administrador.pdf</strong> - Para usuarios Super Admin y Admin</li>
+                <li><strong>manual-vendedor.pdf</strong> - Para usuarios Vendedor (cashier)</li>
+                <li><strong>manual-bodega.pdf</strong> - Para usuarios de Bodega (warehouse)</li>
+                <li><strong>manual-tienda-online-cliente.pdf</strong> - Guía para clientes de la tienda</li>
+                <li><strong>manual-tienda-online-gestion.pdf</strong> - Guía de gestión de tienda online</li>
+            </ul>
+        </div>
+
+        <div class="important">
+            <strong>⚠️ IMPORTANTE:</strong>
+            <ul>
+                <li>Los nombres de los archivos deben ser <strong>exactamente</strong> como se muestran arriba</li>
+                <li>Todo en minúsculas</li>
+                <li>Con guiones (-) en lugar de espacios</li>
+                <li>Extensión .pdf</li>
+            </ul>
+        </div>
+
+        <h2>🎯 Cómo Funciona</h2>
+
+        <h3>Sección "Ayuda" (Menú Principal)</h3>
+        <ul>
+            <li><strong>Administradores</strong> verán: "Manual de Usuario - Administrador"</li>
+            <li><strong>Vendedores</strong> verán: "Manual de Usuario - Vendedor"</li>
+            <li><strong>Personal de Bodega</strong> verá: "Manual de Usuario - Personal de Bodega"</li>
+        </ul>
+
+        <h3>Módulo "Tienda en Línea"</h3>
+        <p>Todos los usuarios que accedan al módulo de Tienda en Línea verán:</p>
+        <ul>
+            <li>"Manual de Tienda en Línea (Vista Cliente)"</li>
+            <li>"Manual de Gestión de Tienda en Línea"</li>
+        </ul>
+        <p>Estos manuales aparecen en la sección "Acciones", debajo de "Ver Tienda Online".</p>
+
+        <h2>🔍 Cómo Probar</h2>
+
+        <ol>
+            <li>Coloca los archivos PDF en esta carpeta (<code>template/public/manuales/</code>)</li>
+            <li>Inicia sesión con un usuario de prueba (admin, vendedor, almacenista, etc.)</li>
+            <li>Ve a la sección "Ayuda" en el menú lateral</li>
+            <li>Verifica que solo aparece el manual correspondiente a tu rol</li>
+            <li>Haz clic en el manual para descargarlo</li>
+            <li>Para tienda online: Ve al módulo "Tienda en Línea" y verifica los manuales en "Acciones"</li>
+        </ol>
+
+        <h2>👥 Usuarios de Prueba</h2>
+
+        <p>Puedes probar con estos usuarios del sistema:</p>
+
+        <div class="file-list">
+            <ul>
+                <li><strong>admin</strong> - Ver manual de administrador</li>
+                <li><strong>vendedor</strong> - Ver manual de vendedor</li>
+                <li><strong>almacenista</strong> - Ver manual de bodega</li>
+            </ul>
+        </div>
+
+        <h2>📁 Estructura de Archivos</h2>
+
+        <pre style="background: #f4f4f4; padding: 15px; border-radius: 4px; overflow-x: auto;">
+template/
+  └── public/
+      └── manuales/
+          ├── README.md
+          ├── INSTRUCCIONES_PRUEBA.html (este archivo)
+          ├── manual-administrador.pdf          ← AGREGAR
+          ├── manual-vendedor.pdf               ← AGREGAR
+          ├── manual-bodega.pdf                 ← AGREGAR
+          ├── manual-tienda-online-cliente.pdf  ← AGREGAR
+          └── manual-tienda-online-gestion.pdf  ← AGREGAR
+        </pre>
+
+        <h2>🛠️ Solución de Problemas</h2>
+
+        <h3>El manual no se descarga</h3>
+        <ul>
+            <li>Verifica que el archivo PDF existe en esta carpeta</li>
+            <li>Revisa que el nombre del archivo sea exacto</li>
+            <li>Abre la consola del navegador (F12) para ver errores</li>
+        </ul>
+
+        <h3>El manual no aparece en el menú</h3>
+        <ul>
+            <li>Verifica que el usuario tiene el rol correcto</li>
+            <li>Cierra sesión y vuelve a iniciar para refrescar los permisos</li>
+            <li>Revisa la consola del navegador por errores</li>
+        </ul>
+
+        <h2>📖 Documentación Completa</h2>
+
+        <p>Para más detalles, revisa el archivo <code>SISTEMA_MANUALES_USUARIO.md</code> en la raíz del proyecto.</p>
+
+        <div class="success" style="margin-top: 40px;">
+            <strong>🎉 ¡Todo Listo!</strong>
+            <p>Solo falta que agregues los archivos PDF y el sistema estará completamente funcional.</p>
+        </div>
+    </div>
+</body>
+</html>

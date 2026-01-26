@@ -213,7 +213,7 @@
 
                 <!-- Información del Documento -->
                 <div class="d-flex justify-content-around border p-1 mb-2" style="font-size: 10px;">
-                  <span><strong>Documento:</strong> {{ selectedDocument.credit_note_number || selectedDocument.document_number || selectedDocument.correlative || 'N/A' }}</span>
+                  <span><strong>Nro. Nota Crédito:</strong> {{ selectedDocument.credit_note_number || selectedDocument.correlative || selectedDocument.document_number || selectedDocument.full_number || 'N/A' }}</span>
                   <span><strong>Factura Original:</strong> {{ selectedDocument.invoice_number || 'N/A' }}</span>
                   <span><strong>Fecha:</strong> {{ formatDate(selectedDocument.emission_date || selectedDocument.issue_date) }}</span>
                 </div>
@@ -325,7 +325,7 @@
                 </table>
 
                 <div class="mb-1" style="font-size: 10px;">
-                  <strong>TOTAL:</strong> {{ numberToWords(selectedDocument.total) }} L {{ String(Math.floor((selectedDocument.total % 1) * 100)).padStart(2, '0') }}/100
+                  <strong>TOTAL:</strong> {{ numberToWords(selectedDocument.total) }} L {{ String(Math.round((selectedDocument.total % 1) * 100)).padStart(2, '0') }}/100
                 </div>
 
                 <div class="text-center mb-1" style="font-size: 9px;">
@@ -833,20 +833,43 @@ export default {
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(qty)}</td>
             <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name} <span style="font-weight: 600;">${unitText}</span></td>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(price)}</td>
-            <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemTotal)}</td>
+            <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemAfterDiscount)}</td>
           </tr>
         `;
       });
 
+      // DEBUG: Ver datos del documento
+      console.log('=== DEBUG DESCUENTOS (buildDocumentHTML - Ticket 80mm) ===');
+      console.log('selectedDocument.discount:', this.selectedDocument.discount);
+      console.log('selectedDocument.discount_amount:', this.selectedDocument.discount_amount);
+      console.log('selectedDocument.total_discount:', this.selectedDocument.total_discount);
+      console.log('selectedDocument.recargo:', this.selectedDocument.recargo);
+      console.log('selectedDocument.shipping_cost:', this.selectedDocument.shipping_cost);
+      console.log('totalDiscount (calculado de items):', totalDiscount);
+
       // Usar los descuentos y recargos del documento si existen, sino usar los calculados
-      const documentDiscount = parseFloat(this.selectedDocument.discount || this.selectedDocument.total_discount) || 0;
-      const documentSurcharges = parseFloat(this.selectedDocument.surcharges || this.selectedDocument.surcharge) || 0;
+      const documentDiscount = parseFloat(this.selectedDocument.descuento || this.selectedDocument.discount || this.selectedDocument.discount_amount || this.selectedDocument.total_discount) || 0;
+      const documentSurcharges = parseFloat(this.selectedDocument.recargo || this.selectedDocument.surcharges || this.selectedDocument.surcharge || this.selectedDocument.shipping_cost) || 0;
 
       // Si hay descuentos a nivel de documento, usarlos en lugar de los calculados
       const finalDiscount = documentDiscount > 0 ? documentDiscount : totalDiscount;
       const finalSurcharges = documentSurcharges;
 
+      // RECALCULAR el impuesto correctamente: 15% sobre (subtotal - descuentos totales)
+      const subtotalAfterDiscounts = subtotal - finalDiscount;
+      const recalculatedTax = subtotalAfterDiscounts * 0.15;
+      totalTax = recalculatedTax;
+
+      // Ajustar taxableAmount restando el descuento global
+      const taxableAmountAfterDiscount = subtotalAfterDiscounts;
+
       const grandTotal = subtotal - finalDiscount + totalTax + finalSurcharges;
+
+      console.log('documentDiscount:', documentDiscount);
+      console.log('finalDiscount:', finalDiscount);
+      console.log('documentSurcharges:', documentSurcharges);
+      console.log('finalSurcharges:', finalSurcharges);
+      console.log('=========================================');
 
       // Obtener logo desde la base de datos
       const logoUrl = await this.getCompanyLogo();
@@ -1079,40 +1102,44 @@ export default {
             <div class="totals-section">
               <table class="totals-table">
                 <tr>
-                  <td class="total-label">Importe Exonerado:</td>
-                  <td class="total-value">L 0.00</td>
+                  <td class="total-label">Subtotal Bruto:</td>
+                  <td class="total-value">L ${this.formatCurrency(this.selectedDocument.subtotal_bruto || this.selectedDocument.subtotal || subtotal)}</td>
+                </tr>
+                <tr>
+                  <td class="total-label">Descuentos y Rebajas Otorgados:</td>
+                  <td class="total-value">L ${this.formatCurrency(this.selectedDocument.descuento || this.selectedDocument.discount || finalDiscount)}</td>
                 </tr>
                 <tr>
                   <td class="total-label">Importe Exento:</td>
-                  <td class="total-value">L 0.00</td>
+                  <td class="total-value">L ${this.formatCurrency(this.selectedDocument.importe_exento || 0)}</td>
                 </tr>
                 <tr>
-                  <td class="total-label">Gravado 15%</td>
-                  <td class="total-value">L ${this.formatCurrency(taxableAmount)}</td>
+                  <td class="total-label">Importe Exonerado:</td>
+                  <td class="total-value">L ${this.formatCurrency(this.selectedDocument.importe_exonerado || 0)}</td>
                 </tr>
                 <tr>
-                  <td class="total-label">Gravado 18%</td>
-                  <td class="total-value">L 0.00</td>
+                  <td class="total-label">Importe Gravado 15%:</td>
+                  <td class="total-value">L ${this.formatCurrency(this.selectedDocument.importe_gravado_15 || (subtotal - finalDiscount))}</td>
                 </tr>
                 <tr>
-                  <td class="total-label">I.S.V 15 15%:</td>
-                  <td class="total-value">L ${this.formatCurrency(totalTax)}</td>
+                  <td class="total-label">Importe Gravado 18%:</td>
+                  <td class="total-value">L ${this.formatCurrency(this.selectedDocument.importe_gravado_18 || 0)}</td>
                 </tr>
                 <tr>
-                  <td class="total-label">I.S.V 18 18%:</td>
-                  <td class="total-value">L 0.00</td>
+                  <td class="total-label">ISV 15%:</td>
+                  <td class="total-value">L ${this.formatCurrency(this.selectedDocument.isv_15 || this.selectedDocument.tax || totalTax)}</td>
                 </tr>
                 <tr>
-                  <td class="total-label">RECARGOS:</td>
-                  <td class="total-value">L ${this.formatCurrency(finalSurcharges)}</td>
+                  <td class="total-label">ISV 18%:</td>
+                  <td class="total-value">L ${this.formatCurrency(this.selectedDocument.isv_18 || 0)}</td>
                 </tr>
                 <tr>
-                  <td class="total-label">DESCUENTOS Y REBAJAS OTORGADOS:</td>
-                  <td class="total-value">L 0.00</td>
+                  <td class="total-label">Recargos:</td>
+                  <td class="total-value">L ${this.formatCurrency(this.selectedDocument.recargo || this.selectedDocument.shipping_cost || finalSurcharges)}</td>
                 </tr>
                 <tr class="grand-total">
                   <td class="total-label"><strong>TOTAL A PAGAR:</strong></td>
-                  <td class="total-value"><strong>L<br>${this.formatCurrency(this.selectedDocument.total || grandTotal)}</strong></td>
+                  <td class="total-value"><strong>L<br>${this.formatCurrency(this.selectedDocument.total || this.selectedDocument.total_final || grandTotal)}</strong></td>
                 </tr>
                 <tr>
                   <td colspan="2" style="text-align: center; padding: 0; font-size: 12px;">.......................................................................................</td>
@@ -1127,7 +1154,7 @@ export default {
               <strong>Valor en letras:</strong> ${(() => {
                 const total = this.selectedDocument.total || grandTotal;
                 const integerPart = Math.floor(total);
-                const cents = String(Math.floor((total % 1) * 100)).padStart(2, '0');
+                const cents = String(Math.round((total % 1) * 100)).padStart(2, '0');
                 return this.numberToWords(integerPart).toUpperCase() + ' LEMPIRAS CON ' + cents + '/100';
               })()}<br>
               <strong>Rango de facturación Vigente:</strong><br>
@@ -1202,16 +1229,39 @@ export default {
             <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_name} <span style="font-weight: 600;">${unitText}</span></td>
             <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${this.formatCurrency(qty)}</td>
             <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-size: 10px;">L ${this.formatCurrency(price)}</td>
-            <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 10px;">L ${this.formatCurrency(itemTotal)}</td>
+            <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 10px;">L ${this.formatCurrency(itemAfterDiscount)}</td>
           </tr>
         `;
       });
 
-      const documentDiscount = parseFloat(this.selectedDocument.discount || this.selectedDocument.total_discount) || 0;
-      const documentSurcharges = parseFloat(this.selectedDocument.surcharges || this.selectedDocument.surcharge) || 0;
+      // DEBUG: Ver datos del documento
+      console.log('=== DEBUG DESCUENTOS (buildLetterFormatHTML) ===');
+      console.log('selectedDocument.discount:', this.selectedDocument.discount);
+      console.log('selectedDocument.discount_amount:', this.selectedDocument.discount_amount);
+      console.log('selectedDocument.total_discount:', this.selectedDocument.total_discount);
+      console.log('selectedDocument.surcharges:', this.selectedDocument.surcharges);
+      console.log('selectedDocument.surcharge:', this.selectedDocument.surcharge);
+      console.log('selectedDocument.recargo:', this.selectedDocument.recargo);
+      console.log('selectedDocument.shipping_cost:', this.selectedDocument.shipping_cost);
+      console.log('totalDiscount (calculado de items):', totalDiscount);
+
+      const documentDiscount = parseFloat(this.selectedDocument.descuento || this.selectedDocument.discount || this.selectedDocument.discount_amount || this.selectedDocument.total_discount) || 0;
+      const documentSurcharges = parseFloat(this.selectedDocument.recargo || this.selectedDocument.surcharges || this.selectedDocument.surcharge || this.selectedDocument.shipping_cost) || 0;
       const finalDiscount = documentDiscount > 0 ? documentDiscount : totalDiscount;
       const finalSurcharges = documentSurcharges;
+
+      // RECALCULAR el impuesto correctamente: 15% sobre (subtotal - descuentos totales)
+      const subtotalAfterDiscounts = subtotal - finalDiscount;
+      const recalculatedTax = subtotalAfterDiscounts * 0.15;
+      totalTax = recalculatedTax;
+
       const grandTotal = subtotal - finalDiscount + totalTax + finalSurcharges;
+
+      console.log('documentDiscount:', documentDiscount);
+      console.log('finalDiscount:', finalDiscount);
+      console.log('documentSurcharges:', documentSurcharges);
+      console.log('finalSurcharges:', finalSurcharges);
+      console.log('=========================================');
 
       // Obtener logo desde la base de datos
       const logoUrl = await this.getCompanyLogo();
@@ -1455,10 +1505,12 @@ export default {
                 </div>
               </div>
               <div class="invoice-header">
-                <div class="invoice-title">${docTitle}: ${this.selectedDocument.correlative || this.selectedDocument.document_number || this.selectedDocument.full_number || 'N/A'}</div>
+                <div class="invoice-title">${docTitle}: ${this.selectedDocumentType === 'NOTA DE CREDITO' ? (this.selectedDocument.credit_note_number || this.selectedDocument.credit_note_correlative || this.selectedDocument.correlative || 'N/A') : (this.selectedDocument.correlative || this.selectedDocument.document_number || this.selectedDocument.full_number || 'N/A')}</div>
                 <div class="invoice-meta">
                   <strong>#Control Interno:</strong> ${(() => {
-                    const num = this.selectedDocument.correlative || this.selectedDocument.document_number || this.selectedDocument.full_number || '0';
+                    const num = this.selectedDocumentType === 'NOTA DE CREDITO'
+                      ? (this.selectedDocument.credit_note_number || this.selectedDocument.credit_note_correlative || this.selectedDocument.correlative || '0')
+                      : (this.selectedDocument.correlative || this.selectedDocument.document_number || this.selectedDocument.full_number || '0');
                     const numStr = String(num);
                     return /^[0-9]+$/.test(numStr) ? numStr.padStart(10, '0') : numStr;
                   })()}<br>
@@ -1468,9 +1520,9 @@ export default {
                   <strong>Condiciones de la Transacción:</strong> ${this.selectedDocument.payment_terms || 'Contado'}<br>
                   <strong>Entrega:</strong> ${this.formatDate(this.selectedDocument.emission_date || this.selectedDocument.issue_date || this.selectedDocument.quote_date || this.selectedDocument.created_at)}<br>
                   ${this.selectedDocument.invoice_number && this.selectedDocumentType !== 'DEVOLUCION' && this.selectedDocumentType !== 'NOTA DE CREDITO' ? `<strong>Factura Orig.:</strong> ${this.selectedDocument.invoice_number}<br>` : ''}
-                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong> ${this.selectedDocument.orden_compra || 'N/A'}<br>
-                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong> ${this.selectedDocument.constancia_exonerado || 'N/A'}<br>
-                  <strong>No. Identificativo del Registro SAG:</strong> ${this.selectedDocument.registro_sag || 'N/A'}
+                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong> ${this.selectedDocument.orden_compra || ''}<br>
+                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong> ${this.selectedDocument.constancia_exonerado || ''}<br>
+                  <strong>No. Identificativo del Registro SAG:</strong> ${this.selectedDocument.registro_sag || ''}
                 </div>
               </div>
             </div>
@@ -1492,7 +1544,7 @@ export default {
             <div class="totals-section">
               <div class="totals-left">
                 <div style="margin-bottom: 15px;">
-                  <strong>TOTAL:</strong> ${this.numberToWords(this.selectedDocument.total || grandTotal).toUpperCase()} LEMPIRAS ${String(Math.floor(((this.selectedDocument.total || grandTotal) % 1) * 100)).padStart(2, '0')}/100
+                  <strong>TOTAL:</strong> ${this.numberToWords(this.selectedDocument.total || grandTotal).toUpperCase()} LEMPIRAS ${String(Math.round(((this.selectedDocument.total || grandTotal) % 1) * 100)).padStart(2, '0')}/100
                 </div>
                 <div style="margin-top: auto; padding-top: 40px; text-align: center;">
                   <div style="border-top: 2px solid #000; width: 250px; margin: 0 auto 10px;"></div>
@@ -1507,40 +1559,44 @@ export default {
               </div>
               <div class="totals-box">
                 <div class="total-row">
-                  <span class="label">Importe Exonerado:</span>
-                  <span class="value">L ${this.formatCurrency(this.selectedDocument.exempt_amount || 0)}</span>
+                  <span class="label">Subtotal Bruto:</span>
+                  <span class="value">L ${this.formatCurrency(this.selectedDocument.subtotal_bruto || this.selectedDocument.subtotal || subtotal)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Descuentos y Rebajas Otorgados:</span>
+                  <span class="value">L ${this.formatCurrency(this.selectedDocument.descuento || this.selectedDocument.discount || finalDiscount)}</span>
                 </div>
                 <div class="total-row">
                   <span class="label">Importe Exento:</span>
-                  <span class="value">L ${this.formatCurrency(this.selectedDocument.tax_exempt_amount || 0)}</span>
+                  <span class="value">L ${this.formatCurrency(this.selectedDocument.importe_exento || 0)}</span>
                 </div>
                 <div class="total-row">
-                  <span class="label">Gravado 15%</span>
-                  <span class="value">L ${this.formatCurrency(subtotal - finalDiscount)}</span>
+                  <span class="label">Importe Exonerado:</span>
+                  <span class="value">L ${this.formatCurrency(this.selectedDocument.importe_exonerado || 0)}</span>
                 </div>
                 <div class="total-row">
-                  <span class="label">Gravado 18%</span>
-                  <span class="value">L 0.00</span>
+                  <span class="label">Importe Gravado 15%:</span>
+                  <span class="value">L ${this.formatCurrency(this.selectedDocument.importe_gravado_15 || (subtotal - finalDiscount))}</span>
                 </div>
                 <div class="total-row">
-                  <span class="label">I.S.V 15 15%:</span>
-                  <span class="value">L ${this.formatCurrency(totalTax)}</span>
+                  <span class="label">Importe Gravado 18%:</span>
+                  <span class="value">L ${this.formatCurrency(this.selectedDocument.importe_gravado_18 || 0)}</span>
                 </div>
                 <div class="total-row">
-                  <span class="label">I.S.V 18 18%:</span>
-                  <span class="value">L 0.00</span>
+                  <span class="label">ISV 15%:</span>
+                  <span class="value">L ${this.formatCurrency(this.selectedDocument.isv_15 || this.selectedDocument.tax || totalTax)}</span>
                 </div>
                 <div class="total-row">
-                  <span class="label">RECARGOS:</span>
-                  <span class="value">L ${this.formatCurrency(finalSurcharges)}</span>
+                  <span class="label">ISV 18%:</span>
+                  <span class="value">L ${this.formatCurrency(this.selectedDocument.isv_18 || 0)}</span>
                 </div>
                 <div class="total-row">
-                  <span class="label">DESCUENTOS Y REBAJAS OTORGADOS:</span>
-                  <span class="value">L ${this.formatCurrency(finalDiscount)}</span>
+                  <span class="label">Recargos:</span>
+                  <span class="value">L ${this.formatCurrency(this.selectedDocument.recargo || this.selectedDocument.shipping_cost || finalSurcharges)}</span>
                 </div>
                 <div class="total-row grand-total">
                   <span class="label"><strong>TOTAL:</strong></span>
-                  <span class="value"><strong>L ${this.formatCurrency(this.selectedDocument.total || grandTotal)}</strong></span>
+                  <span class="value"><strong>L ${this.formatCurrency(this.selectedDocument.total || this.selectedDocument.total_final || grandTotal)}</strong></span>
                 </div>
               </div>
             </div>
@@ -1893,6 +1949,8 @@ export default {
                 <p><strong>Cliente:</strong> ${this.selectedDocument.customer_name || 'N/A'}</p>
                 <p><strong>RTN:</strong> ${this.selectedDocument.customer_rtn || 'N/A'}</p>
                 <p><strong>Dirección:</strong> ${this.selectedDocument.destination_address || this.selectedDocument.customer_address || 'N/A'}</p>
+                <p><strong>Ciudad:</strong> ${this.selectedDocument.destination_city || 'N/A'}</p>
+                <p><strong>Departamento:</strong> ${this.selectedDocument.destination_state || 'N/A'}</p>
                 ${this.selectedDocument.orden_compra ? `<p><strong>Orden de Compra:</strong> ${this.selectedDocument.orden_compra}</p>` : ''}
                 ${this.selectedDocument.constancia_exonerado ? `<p><strong>Constancia Exonerado:</strong> ${this.selectedDocument.constancia_exonerado}</p>` : ''}
                 ${this.selectedDocument.registro_sag ? `<p><strong>Registro SAG:</strong> ${this.selectedDocument.registro_sag}</p>` : ''}
@@ -2040,12 +2098,14 @@ export default {
       const classMap = {
         'paid': 'bg-success',
         'pending': 'bg-warning',
+        'partial': 'bg-info',
         'active': 'bg-info',
         'expired': 'bg-danger',
         'overdue': 'bg-danger',
         'converted to invoice': 'bg-success',
         'converted_to_invoice': 'bg-success',
         'cancelled': 'bg-danger',
+        'returned': 'bg-danger',
         'Completada': 'bg-success'
       };
       return classMap[status] || 'bg-secondary';

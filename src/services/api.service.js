@@ -137,6 +137,19 @@ export const userService = {
     return response.data;
   },
 
+  async uploadUserAvatar(userId, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('userId', userId);
+
+    const response = await apiClient.post('/upload/user/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+
   async updateMyProfile(userData) {
     const response = await apiClient.put('/users/me', userData);
     return response.data;

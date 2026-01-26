@@ -24,6 +24,7 @@
         </ul>
         <div class="page-btn d-flex gap-2">
           <a
+            v-if="!isVendedor"
             href="#"
             class="btn btn-primary"
             data-bs-toggle="modal"
@@ -32,7 +33,7 @@
           >
             <i class="ti ti-circle-plus me-1"></i>Agregar Nueva Oferta
           </a>
-          <button class="btn btn-success" @click="showSaveReportModal = true">
+          <button v-if="!isVendedor" class="btn btn-success" @click="showSaveReportModal = true">
             <i class="ti ti-download me-1"></i>Guardar Reporte
           </button>
         </div>
@@ -124,6 +125,7 @@
                         <i data-feather="eye" class="feather-eye"></i>
                       </a>
                       <a
+                        v-if="!isVendedor"
                         class="me-2 p-2"
                         href="#"
                         @click.prevent="openEditModal(offer)"
@@ -133,6 +135,7 @@
                         <i data-feather="edit" class="feather-edit"></i>
                       </a>
                       <a
+                        v-if="!isVendedor"
                         class="confirm-text p-2"
                         href="#"
                         @click.prevent="openDeleteModal(offer)"
@@ -200,6 +203,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import api from '@/utils/axios';
+import { getCurrentUser } from '@/utils/permissions';
 
 export default {
   components: {
@@ -219,6 +223,20 @@ export default {
     };
   },
   computed: {
+    currentUser() {
+      return getCurrentUser();
+    },
+    isVendedor() {
+      if (!this.currentUser || !this.currentUser.roles) return false;
+      return (
+        this.currentUser.roles.includes('cashier') ||
+        this.currentUser.roles.includes('vendedor') ||
+        this.currentUser.roles.includes('warehouse') ||
+        this.currentUser.roles.includes('almacenista') ||
+        this.currentUser.roles.includes('bodega') ||
+        this.currentUser.roles.includes('personal_de_bodega')
+      );
+    },
     sortedOffers() {
       if (!this.offers || !Array.isArray(this.offers) || this.offers.length === 0) return [];
 
@@ -356,7 +374,23 @@ export default {
       }).format(value);
     },
 
+    isOfferExpired(offer) {
+      // Verificar si la oferta tiene límite de fecha y si ya expiró
+      if (offer.limitar_fecha && offer.fecha_hasta) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const fechaHasta = new Date(offer.fecha_hasta);
+        fechaHasta.setHours(23, 59, 59, 999);
+        return today > fechaHasta;
+      }
+      return false;
+    },
+
     getStatusClass(offer) {
+      // Primero verificar si está expirada
+      if (this.isOfferExpired(offer)) {
+        return 'badge bg-secondary';
+      }
       if (offer.suspendida) {
         return 'badge bg-warning';
       }
@@ -364,6 +398,10 @@ export default {
     },
 
     getStatusText(offer) {
+      // Primero verificar si está expirada
+      if (this.isOfferExpired(offer)) {
+        return 'EXPIRADO';
+      }
       if (offer.suspendida) {
         return 'SUSPENDIDO';
       }

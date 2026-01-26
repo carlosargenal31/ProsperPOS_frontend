@@ -1294,43 +1294,79 @@ export default {
   },
   methods: {
     async loadCatalogs() {
+      let loadedCount = 0;
+
+      // Cargar categorías
       try {
-        const [categoriesRes, subcategoriesRes, warehousesRes, brandsRes, productsRes] = await Promise.all([
-          api.get('/categories'),
-          api.get('/subcategories'),
-          api.get('/warehouses'),
-          api.get('/brands'),
-          api.get('/products/search/all', { params: { status: 'active' } })
-        ])
-
+        const categoriesRes = await api.get('/categories');
         if (categoriesRes.data.success) {
-          this.groups = categoriesRes.data.data || []
+          this.groups = categoriesRes.data.data || [];
+          loadedCount++;
         }
-        if (subcategoriesRes.data.success) {
-          this.subgroups = subcategoriesRes.data.data || []
-        }
-        if (warehousesRes.data.success) {
-          this.warehouses = warehousesRes.data.data || []
-        }
-        if (brandsRes.data.success) {
-          this.brands = brandsRes.data.data || []
-        }
-        if (productsRes.data.success) {
-          this.products = productsRes.data.data || []
-          this.filteredProducts = this.products
-          console.log(`Productos cargados: ${this.products.length}`)
-        }
-
-        this.filteredCategories = this.groups
-        this.filteredSubcategories = this.subgroups
       } catch (error) {
-        console.error('Error al cargar catálogos:', error)
-        this.$swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudieron cargar los catálogos'
-        })
+        console.warn('No se pudieron cargar categorías:', error.response?.status);
+        this.groups = [];
       }
+
+      // Cargar subcategorías
+      try {
+        const subcategoriesRes = await api.get('/subcategories');
+        if (subcategoriesRes.data.success) {
+          this.subgroups = subcategoriesRes.data.data || [];
+          loadedCount++;
+        }
+      } catch (error) {
+        console.warn('No se pudieron cargar subcategorías:', error.response?.status);
+        this.subgroups = [];
+      }
+
+      // Cargar bodegas
+      try {
+        const warehousesRes = await api.get('/warehouses');
+        if (warehousesRes.data.success) {
+          this.warehouses = warehousesRes.data.data || [];
+          loadedCount++;
+        }
+      } catch (error) {
+        console.warn('No se pudieron cargar bodegas:', error.response?.status);
+        this.warehouses = [];
+      }
+
+      // Cargar marcas
+      try {
+        const brandsRes = await api.get('/brands');
+        if (brandsRes.data.success) {
+          this.brands = brandsRes.data.data || [];
+          loadedCount++;
+        }
+      } catch (error) {
+        console.warn('No se pudieron cargar marcas:', error.response?.status);
+        this.brands = [];
+      }
+
+      // Cargar productos (crítico)
+      try {
+        const productsRes = await api.get('/products/search/all', { params: { status: 'active' } });
+        if (productsRes.data.success) {
+          this.products = productsRes.data.data || [];
+          this.filteredProducts = this.products;
+          loadedCount++;
+          console.log(`Productos cargados: ${this.products.length}`);
+        }
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+        // Solo mostrar error si no se pudieron cargar los productos
+        if (loadedCount === 0) {
+          this.$swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudieron cargar los productos. Verifica tus permisos.'
+          });
+        }
+      }
+
+      this.filteredCategories = this.groups;
+      this.filteredSubcategories = this.subgroups;
     },
     async getCompanyLogo() {
       if (!this.companyInfo?.logo_url) {

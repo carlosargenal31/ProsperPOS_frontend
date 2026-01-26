@@ -6,7 +6,7 @@
         <ul>
           <li class="submenu-open">
             <ul>
-              <li v-for="menu in Settings" :key="menu.title" class="submenu">
+              <li v-for="menu in filteredSettings" :key="menu.title" class="submenu">
                 <a
                   href="javascript:void(0);"
                   @click="toggleSubMenu(menu)"
@@ -38,12 +38,45 @@
 
 <script>
 import Settings from "@/assets/json/settings.json";
+import { getCurrentUser } from "@/utils/permissions";
 
 export default {
   data() {
     return {
       Settings: Settings,
     };
+  },
+  computed: {
+    currentUser() {
+      return getCurrentUser();
+    },
+    isVendedorOrBodega() {
+      if (!this.currentUser || !this.currentUser.roles) return false;
+      return (
+        this.currentUser.roles.includes('cashier') ||
+        this.currentUser.roles.includes('vendedor') ||
+        this.currentUser.roles.includes('warehouse') ||
+        this.currentUser.roles.includes('almacenista') ||
+        this.currentUser.roles.includes('bodega')
+      );
+    },
+    filteredSettings() {
+      if (!this.isVendedorOrBodega) {
+        // Admin ve todo
+        return this.Settings;
+      }
+
+      // Vendedor y Bodega: solo ven Ajustes Generales con Seguridad
+      return this.Settings.map(menu => {
+        if (menu.title === 'Ajustes Generales') {
+          return {
+            ...menu,
+            subMenu: menu.subMenu.filter(sub => sub.title === 'Seguridad')
+          };
+        }
+        return null;
+      }).filter(menu => menu !== null && menu.subMenu.length > 0);
+    }
   },
   methods: {
     toggleSubMenu(menu) {

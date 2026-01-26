@@ -105,7 +105,7 @@
                 </div>
               </div>
 
-              <!-- Segunda fila: Producto y Botón -->
+              <!-- Segunda fila: Producto -->
               <div class="row align-items-end">
                 <div class="col-md-6">
                   <div class="mb-3">
@@ -129,6 +129,26 @@
                 </div>
                 <div class="col-md-6">
                   <div class="mb-3">
+                    <label class="form-label fw-medium">Opciones de Vista</label>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        v-model="groupedByWarehouses"
+                        id="groupByWarehouses"
+                      />
+                      <label class="form-check-label" for="groupByWarehouses">
+                        <i class="ti ti-building-warehouse me-1"></i> Agrupar por Bodegas
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tercera fila: Botón -->
+              <div class="row">
+                <div class="col-12">
+                  <div class="mb-3">
                     <button
                       class="btn btn-warning w-100 fw-medium shadow-sm"
                       type="submit"
@@ -138,7 +158,9 @@
                       <span v-if="loading">
                         <i class="ti ti-loader spin"></i> Cargando...
                       </span>
-                      <span v-else>Generar Reporte</span>
+                      <span v-else>
+                        <i class="ti ti-file-analytics me-1"></i> Generar Reporte
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -172,13 +194,148 @@
               <p class="mt-3 text-muted">Cargando datos...</p>
             </div>
 
-            <!-- Table Data -->
+            <!-- Table Data - Agrupado por Bodega -->
+            <div v-else-if="groupedByWarehouses">
+              <div v-for="warehouse in stockData" :key="warehouse.warehouse_id" class="mb-4">
+                <div class="px-4 py-3" style="background-color: #f0f7ff; border-left: 4px solid #ff9800;">
+                  <h5 class="mb-0 fw-bold" style="color: #ff9800;">
+                    <i class="ti ti-building-warehouse me-2"></i>{{ warehouse.warehouse_name }}
+                  </h5>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="table datatable mb-0">
+                    <thead style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                      <tr>
+                        <th class="fw-semibold py-3 px-4">Código</th>
+                        <th class="fw-semibold py-3">Nombre del Producto</th>
+                        <th class="fw-semibold py-3">Categoría / Subcategoría</th>
+                        <th class="fw-semibold py-3 text-center">Cant. Inicial</th>
+                        <th class="fw-semibold py-3 text-center">Cargos</th>
+                        <th class="fw-semibold py-3 text-center">Descargos</th>
+                        <th class="fw-semibold py-3 text-center">Ventas</th>
+                        <th class="fw-semibold py-3 text-center">Stock Final</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="item in warehouse.items"
+                        :key="`${warehouse.warehouse_id}-${item.id}`"
+                        style="border-bottom: 1px solid #f0f0f0;"
+                      >
+                        <td class="px-4 py-3">
+                          <span class="badge bg-light text-dark fw-medium">{{ item.sku }}</span>
+                        </td>
+                        <td class="py-3">
+                          <div class="d-flex align-items-center">
+                            <a
+                              v-if="item.image"
+                              class="avatar avatar-md"
+                              style="width: 40px; height: 40px;"
+                            >
+                              <img
+                                :src="getImageUrl(item.image)"
+                                class="img-fluid rounded"
+                                :alt="item.product_name"
+                                style="object-fit: cover;"
+                                @error="onImageError"
+                              />
+                            </a>
+                            <div
+                              class="avatar avatar-md bg-light text-muted"
+                              v-else
+                              style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"
+                            >
+                              <i class="ti ti-package"></i>
+                            </div>
+                            <div class="ms-3">
+                              <p class="text-dark mb-0 fw-medium">
+                                {{ item.product_name }}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="py-3">
+                          <div>
+                            <span v-if="item.category_name" class="badge bg-info bg-opacity-10 text-info me-1">
+                              <i class="ti ti-category me-1"></i>{{ item.category_name }}
+                            </span>
+                            <span v-if="item.subcategory_name" class="badge bg-secondary bg-opacity-10 text-secondary">
+                              <i class="ti ti-tag me-1"></i>{{ item.subcategory_name }}
+                            </span>
+                          </div>
+                        </td>
+                        <td class="text-center py-3">
+                          <span class="text-muted">{{ formatNumber(item.initial_quantity) }}</span>
+                        </td>
+                        <td class="text-center py-3">
+                          <span class="text-success fw-medium">{{ formatNumber(item.added_quantity) }}</span>
+                        </td>
+                        <td class="text-center py-3">
+                          <span class="text-danger fw-medium">{{ formatNumber(item.defective_quantity) }}</span>
+                        </td>
+                        <td class="text-center py-3">
+                          <span class="text-primary fw-medium">{{ formatNumber(item.sold_quantity) }}</span>
+                        </td>
+                        <td class="text-center py-3">
+                          <span class="fw-bold">{{ formatNumber(item.final_quantity) }}</span>
+                        </td>
+                      </tr>
+
+                      <!-- Subtotales por bodega -->
+                      <tr style="background-color: #fff9e6; font-weight: bold; border-top: 2px solid #ff9800;">
+                        <td colspan="3" class="px-4 py-3">
+                          <span class="fw-bold">SUBTOTAL - {{ warehouse.warehouse_name }}</span>
+                        </td>
+                        <td class="text-center py-3">
+                          <span class="text-muted fw-bold">{{ formatNumber(warehouse.totals.initial_quantity) }}</span>
+                        </td>
+                        <td class="text-center py-3">
+                          <span class="text-success fw-bold">{{ formatNumber(warehouse.totals.added_quantity) }}</span>
+                        </td>
+                        <td class="text-center py-3">
+                          <span class="text-danger fw-bold">{{ formatNumber(warehouse.totals.defective_quantity) }}</span>
+                        </td>
+                        <td class="text-center py-3">
+                          <span class="text-primary fw-bold">{{ formatNumber(warehouse.totals.sold_quantity) }}</span>
+                        </td>
+                        <td class="text-center py-3">
+                          <span class="fw-bold">{{ formatNumber(warehouse.totals.final_quantity) }}</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Totales Generales -->
+              <div class="px-4 py-3" style="background-color: #f8f9fa; border-left: 4px solid #4caf50;">
+                <div class="table-responsive">
+                  <table class="table mb-0">
+                    <thead>
+                      <tr style="background-color: #e8f5e9; color: #2e7d32; border: 2px solid #4caf50;">
+                        <th class="fw-bold py-3 px-4" colspan="3" style="font-size: 1.1em;">TOTALES GENERALES</th>
+                        <th class="text-center py-3 fw-bold">{{ formatNumber(totals.initial_quantity) }}</th>
+                        <th class="text-center py-3 fw-bold">{{ formatNumber(totals.added_quantity) }}</th>
+                        <th class="text-center py-3 fw-bold">{{ formatNumber(totals.defective_quantity) }}</th>
+                        <th class="text-center py-3 fw-bold">{{ formatNumber(totals.sold_quantity) }}</th>
+                        <th class="text-center py-3 fw-bold">{{ formatNumber(totals.final_quantity) }}</th>
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Table Data - Sin Agrupar -->
             <div v-else class="table-responsive">
               <table class="table datatable mb-0">
                 <thead style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
                   <tr>
                     <th class="fw-semibold py-3 px-4">Código</th>
                     <th class="fw-semibold py-3">Nombre del Producto</th>
+                    <th class="fw-semibold py-3">Bodega</th>
+                    <th class="fw-semibold py-3">Categoría / Subcategoría</th>
                     <th class="fw-semibold py-3 text-center">Cant. Inicial</th>
                     <th class="fw-semibold py-3 text-center">Cargos</th>
                     <th class="fw-semibold py-3 text-center">Descargos</th>
@@ -189,7 +346,7 @@
                 <tbody>
                   <!-- No hay datos -->
                   <tr v-if="stockData.length === 0">
-                    <td colspan="7" class="text-center py-5">
+                    <td colspan="9" class="text-center py-5">
                       <i class="ti ti-package-off" style="font-size: 48px; color: #ccc;"></i>
                       <p class="mt-3 text-muted">No se encontraron datos para los filtros seleccionados</p>
                     </td>
@@ -198,7 +355,7 @@
                   <!-- Filas de datos -->
                   <tr
                     v-for="item in stockData"
-                    :key="item.id"
+                    :key="`${item.warehouse_id}-${item.id}`"
                     style="border-bottom: 1px solid #f0f0f0;"
                   >
                     <td class="px-4 py-3">
@@ -230,10 +387,22 @@
                           <p class="text-dark mb-0 fw-medium">
                             {{ item.product_name }}
                           </p>
-                          <small v-if="item.category_name" class="text-muted">
-                            {{ item.category_name }}
-                          </small>
                         </div>
+                      </div>
+                    </td>
+                    <td class="py-3">
+                      <span class="badge bg-warning bg-opacity-10 text-warning">
+                        <i class="ti ti-building-warehouse me-1"></i>{{ item.warehouse_name }}
+                      </span>
+                    </td>
+                    <td class="py-3">
+                      <div>
+                        <span v-if="item.category_name" class="badge bg-info bg-opacity-10 text-info me-1">
+                          <i class="ti ti-category me-1"></i>{{ item.category_name }}
+                        </span>
+                        <span v-if="item.subcategory_name" class="badge bg-secondary bg-opacity-10 text-secondary">
+                          <i class="ti ti-tag me-1"></i>{{ item.subcategory_name }}
+                        </span>
                       </div>
                     </td>
                     <td class="text-center py-3">
@@ -258,7 +427,7 @@
                     v-if="totals"
                     style="background-color: #f8f9fa; font-weight: bold; border-top: 2px solid #dee2e6;"
                   >
-                    <td colspan="2" class="px-4 py-3">
+                    <td colspan="4" class="px-4 py-3">
                       <span class="fw-bold">TOTALES</span>
                     </td>
                     <td class="text-center py-3">
@@ -514,6 +683,7 @@ export default {
       filteredProducts: [],
       stockData: [],
       totals: null,
+      groupedByWarehouses: true, // Por defecto agrupar por bodegas
       dateFrom: moment().startOf("month").format("YYYY-MM-DD"),
       dateTo: moment().endOf("month").format("YYYY-MM-DD"),
       dateRangeDisplay: "",
@@ -781,6 +951,7 @@ export default {
         const params = {
           date_from: this.dateFrom,
           date_to: this.dateTo,
+          group_by_warehouses: this.groupedByWarehouses,
         };
 
         if (this.selectedCategory && this.selectedCategory.id) {
@@ -800,11 +971,15 @@ export default {
         if (response.data.success) {
           this.stockData = response.data.data.data || [];
           this.totals = response.data.data.totals || null;
+          this.groupedByWarehouses = response.data.data.grouped_by_warehouses || false;
 
           if (this.stockData.length === 0) {
             message.info("No se encontraron datos para los filtros seleccionados");
           } else {
-            message.success(`Se cargaron ${this.stockData.length} productos`);
+            const itemCount = this.groupedByWarehouses
+              ? this.stockData.reduce((sum, warehouse) => sum + warehouse.items.length, 0)
+              : this.stockData.length;
+            message.success(`Se cargaron ${itemCount} productos`);
           }
         }
       } catch (error) {
@@ -929,30 +1104,78 @@ export default {
       let stockRows = '';
 
       // Generar filas de productos
-      this.stockData.forEach(item => {
-        stockRows += `
-          <tr>
-            <td>${item.sku || ''}</td>
-            <td>${item.product_name || ''}</td>
-            <td class="text-right">${this.formatNumber(item.initial_quantity)}</td>
-            <td class="text-right" style="color: #16a34a;">${this.formatNumber(item.added_quantity)}</td>
-            <td class="text-right" style="color: #dc2626;">${this.formatNumber(item.defective_quantity)}</td>
-            <td class="text-right" style="color: #2563eb;">${this.formatNumber(item.sold_quantity)}</td>
-            <td class="text-right"><strong>${this.formatNumber(item.final_quantity)}</strong></td>
-          </tr>
-        `;
-      });
+      if (this.groupedByWarehouses) {
+        // Formato agrupado por bodegas
+        this.stockData.forEach(warehouse => {
+          // Header de bodega
+          stockRows += `
+            <tr style="background: #f0f7ff; font-weight: bold;">
+              <td colspan="8" style="padding: 10px; border-bottom: 2px solid #ff9800;">
+                <i>🏢</i> ${warehouse.warehouse_name}
+              </td>
+            </tr>
+          `;
 
-      // Fila de totales
+          // Items de la bodega
+          warehouse.items.forEach(item => {
+            const categoryInfo = [item.category_name, item.subcategory_name].filter(Boolean).join(' / ');
+            stockRows += `
+              <tr>
+                <td>${item.sku || ''}</td>
+                <td>${item.product_name || ''}</td>
+                <td style="font-size: 8px;">${categoryInfo || '-'}</td>
+                <td class="text-right">${this.formatNumber(item.initial_quantity)}</td>
+                <td class="text-right" style="color: #16a34a;">${this.formatNumber(item.added_quantity)}</td>
+                <td class="text-right" style="color: #dc2626;">${this.formatNumber(item.defective_quantity)}</td>
+                <td class="text-right" style="color: #2563eb;">${this.formatNumber(item.sold_quantity)}</td>
+                <td class="text-right"><strong>${this.formatNumber(item.final_quantity)}</strong></td>
+              </tr>
+            `;
+          });
+
+          // Subtotal de bodega
+          stockRows += `
+            <tr style="background: #fff9e6; font-weight: bold;">
+              <td colspan="3" style="text-align: right;">SUBTOTAL - ${warehouse.warehouse_name}:</td>
+              <td class="text-right">${this.formatNumber(warehouse.totals.initial_quantity)}</td>
+              <td class="text-right" style="color: #16a34a;">${this.formatNumber(warehouse.totals.added_quantity)}</td>
+              <td class="text-right" style="color: #dc2626;">${this.formatNumber(warehouse.totals.defective_quantity)}</td>
+              <td class="text-right" style="color: #2563eb;">${this.formatNumber(warehouse.totals.sold_quantity)}</td>
+              <td class="text-right"><strong>${this.formatNumber(warehouse.totals.final_quantity)}</strong></td>
+            </tr>
+          `;
+        });
+      } else {
+        // Formato sin agrupar
+        this.stockData.forEach(item => {
+          const categoryInfo = [item.category_name, item.subcategory_name].filter(Boolean).join(' / ');
+          stockRows += `
+            <tr>
+              <td>${item.sku || ''}</td>
+              <td>${item.product_name || ''}</td>
+              <td style="font-size: 8px;">${item.warehouse_name || '-'}</td>
+              <td style="font-size: 8px;">${categoryInfo || '-'}</td>
+              <td class="text-right">${this.formatNumber(item.initial_quantity)}</td>
+              <td class="text-right" style="color: #16a34a;">${this.formatNumber(item.added_quantity)}</td>
+              <td class="text-right" style="color: #dc2626;">${this.formatNumber(item.defective_quantity)}</td>
+              <td class="text-right" style="color: #2563eb;">${this.formatNumber(item.sold_quantity)}</td>
+              <td class="text-right"><strong>${this.formatNumber(item.final_quantity)}</strong></td>
+            </tr>
+          `;
+        });
+      }
+
+      // Fila de totales generales
       if (this.totals) {
+        const colspanCount = this.groupedByWarehouses ? 3 : 4;
         stockRows += `
-          <tr style="background: #f3f4f6; font-weight: bold;">
-            <td colspan="2" style="text-align: right;">TOTALES:</td>
-            <td class="text-right">${this.formatNumber(this.totals.initial_quantity)}</td>
-            <td class="text-right" style="color: #16a34a;">${this.formatNumber(this.totals.added_quantity)}</td>
-            <td class="text-right" style="color: #dc2626;">${this.formatNumber(this.totals.defective_quantity)}</td>
-            <td class="text-right" style="color: #2563eb;">${this.formatNumber(this.totals.sold_quantity)}</td>
-            <td class="text-right"><strong>${this.formatNumber(this.totals.final_quantity)}</strong></td>
+          <tr style="background: #e8f5e9; color: #2e7d32; font-weight: bold; border: 2px solid #4caf50;">
+            <td colspan="${colspanCount}" style="text-align: right; font-size: 11px;">TOTALES GENERALES:</td>
+            <td class="text-right" style="font-size: 10px;">${this.formatNumber(this.totals.initial_quantity)}</td>
+            <td class="text-right" style="font-size: 10px;">${this.formatNumber(this.totals.added_quantity)}</td>
+            <td class="text-right" style="font-size: 10px;">${this.formatNumber(this.totals.defective_quantity)}</td>
+            <td class="text-right" style="font-size: 10px;">${this.formatNumber(this.totals.sold_quantity)}</td>
+            <td class="text-right" style="font-size: 10px;"><strong>${this.formatNumber(this.totals.final_quantity)}</strong></td>
           </tr>
         `;
       }
@@ -1068,6 +1291,10 @@ export default {
               <tr>
                 <th>Código</th>
                 <th>Nombre del Producto</th>
+                ${this.groupedByWarehouses
+                  ? '<th>Categoría / Subcategoría</th>'
+                  : '<th>Bodega</th><th>Categoría / Subcategoría</th>'
+                }
                 <th class="text-right">Cant. Inicial</th>
                 <th class="text-right">Cargos</th>
                 <th class="text-right">Descargos</th>
@@ -1091,11 +1318,11 @@ export default {
         const wb = XLSX.utils.book_new();
 
         const headerData = [
-          ['Cerámicas Terrazos y Pulidos'],
-          ['RTN: 01061977002516'],
-          ['Casa Matriz, Barrio La Merced, Avenida 14 de Julio entre 15 y 16 calle frente a Repuestos del Atlántico. La Ceiba, Atlántida'],
-          ['Tel: +504 2440-0037 | Móvil: +504 9875-2725'],
-          ['Email: mauricio_argenal@hotmail.com'],
+          [this.companyInfo.commercial_name || this.companyInfo.company_name || 'ProsperPOS'],
+          [`RTN: ${this.companyInfo.rtn || 'N/A'}`],
+          [this.companyInfo.address || this.companyInfo.direccion || 'N/A'],
+          [`Tel: ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}`],
+          [`Email: ${this.companyInfo.email || 'N/A'}`],
           [''],
           ['REPORTE DE HISTORIAL DE EXISTENCIAS'],
           [`Periodo: ${this.dateRangeDisplay}`],
@@ -1106,23 +1333,85 @@ export default {
         const ws = XLSX.utils.aoa_to_sheet(headerData);
 
         const data = [];
-        this.stockData.forEach(item => {
-          data.push({
-            codigo: item.sku || '',
-            nombre: item.product_name || '',
-            cant_inicial: parseFloat(item.initial_quantity || 0),
-            cargos: parseFloat(item.added_quantity || 0),
-            descargos: parseFloat(item.defective_quantity || 0),
-            ventas: parseFloat(item.sold_quantity || 0),
-            stock_final: parseFloat(item.final_quantity || 0)
-          });
-        });
 
-        // Agregar totales
+        if (this.groupedByWarehouses) {
+          // Formato agrupado por bodegas
+          this.stockData.forEach(warehouse => {
+            // Header de bodega
+            data.push({
+              codigo: `BODEGA: ${warehouse.warehouse_name}`,
+              nombre: '',
+              categoria: '',
+              cant_inicial: '',
+              cargos: '',
+              descargos: '',
+              ventas: '',
+              stock_final: ''
+            });
+
+            // Items de la bodega
+            warehouse.items.forEach(item => {
+              const categoryInfo = [item.category_name, item.subcategory_name].filter(Boolean).join(' / ');
+              data.push({
+                codigo: item.sku || '',
+                nombre: item.product_name || '',
+                categoria: categoryInfo || '-',
+                cant_inicial: parseFloat(item.initial_quantity || 0),
+                cargos: parseFloat(item.added_quantity || 0),
+                descargos: parseFloat(item.defective_quantity || 0),
+                ventas: parseFloat(item.sold_quantity || 0),
+                stock_final: parseFloat(item.final_quantity || 0)
+              });
+            });
+
+            // Subtotal de bodega
+            data.push({
+              codigo: '',
+              nombre: '',
+              categoria: `SUBTOTAL - ${warehouse.warehouse_name}`,
+              cant_inicial: parseFloat(warehouse.totals.initial_quantity || 0),
+              cargos: parseFloat(warehouse.totals.added_quantity || 0),
+              descargos: parseFloat(warehouse.totals.defective_quantity || 0),
+              ventas: parseFloat(warehouse.totals.sold_quantity || 0),
+              stock_final: parseFloat(warehouse.totals.final_quantity || 0)
+            });
+
+            // Línea en blanco entre bodegas
+            data.push({
+              codigo: '',
+              nombre: '',
+              categoria: '',
+              cant_inicial: '',
+              cargos: '',
+              descargos: '',
+              ventas: '',
+              stock_final: ''
+            });
+          });
+        } else {
+          // Formato sin agrupar
+          this.stockData.forEach(item => {
+            const categoryInfo = [item.category_name, item.subcategory_name].filter(Boolean).join(' / ');
+            data.push({
+              codigo: item.sku || '',
+              nombre: item.product_name || '',
+              bodega: item.warehouse_name || '-',
+              categoria: categoryInfo || '-',
+              cant_inicial: parseFloat(item.initial_quantity || 0),
+              cargos: parseFloat(item.added_quantity || 0),
+              descargos: parseFloat(item.defective_quantity || 0),
+              ventas: parseFloat(item.sold_quantity || 0),
+              stock_final: parseFloat(item.final_quantity || 0)
+            });
+          });
+        }
+
+        // Agregar totales generales
         if (this.totals) {
           data.push({
             codigo: '',
-            nombre: 'TOTALES',
+            nombre: '',
+            ...(this.groupedByWarehouses ? { categoria: 'TOTALES GENERALES' } : { bodega: '', categoria: 'TOTALES GENERALES' }),
             cant_inicial: parseFloat(this.totals.initial_quantity || 0),
             cargos: parseFloat(this.totals.added_quantity || 0),
             descargos: parseFloat(this.totals.defective_quantity || 0),

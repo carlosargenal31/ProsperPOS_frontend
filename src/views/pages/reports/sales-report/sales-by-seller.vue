@@ -38,7 +38,7 @@
             <div class="col-md-3">
               <div class="mb-3">
                 <label class="form-label">Vendedor</label>
-                <select class="form-select" v-model="filters.seller_id">
+                <select class="form-select" v-model="filters.seller_id" :disabled="isSellerFieldDisabled">
                   <option value="all">Todos</option>
                   <option v-for="user in users" :key="user.id" :value="user.id">
                     {{ user.first_name }} {{ user.last_name }}
@@ -49,7 +49,7 @@
             <div class="col-md-3">
               <div class="mb-3">
                 <label class="form-label">Sucursal</label>
-                <select class="form-select" v-model="filters.branch_id">
+                <select class="form-select" v-model="filters.branch_id" :disabled="isBranchFieldDisabled">
                   <option value="all">Todos</option>
                   <option v-for="branch in branches" :key="branch.id" :value="branch.id">
                     {{ branch.nombre }}
@@ -84,30 +84,27 @@
               <thead class="table-light">
                 <tr>
                   <th>Vendedor</th>
-                  <th class="text-end">Neto</th>
-                  <th class="text-end">Total+ISV</th>
+                  <th class="text-end">Total Ventas</th>
                   <th class="text-end">Devuelto</th>
-                  <th class="text-end">Cobrado</th>
-                  <th class="text-end">Cant.Facturas</th>
+                  <th class="text-end">Total Ventas Netas</th>
+                  <th class="text-end">Cant.</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="seller in reportData.sellers" :key="seller.seller_id">
                   <td class="text-primary fw-bold">{{ seller.seller_name }}</td>
-                  <td class="text-end">{{ formatCurrency(seller.neto) }}</td>
-                  <td class="text-end">{{ formatCurrency(seller.total_con_isv) }}</td>
-                  <td class="text-end">{{ formatCurrency(seller.devuelto) }}</td>
-                  <td class="text-end">{{ formatCurrency(seller.cobrado) }}</td>
+                  <td class="text-end">L {{ formatCurrency(seller.total_con_isv) }}</td>
+                  <td class="text-end">L {{ formatCurrency(seller.devuelto) }}</td>
+                  <td class="text-end fw-bold text-success">L {{ formatCurrency((parseFloat(seller.total_con_isv) || 0) - (parseFloat(seller.devuelto) || 0)) }}</td>
                   <td class="text-end">{{ seller.total_invoices }}</td>
                 </tr>
               </tbody>
               <tfoot class="table-light fw-bold">
                 <tr>
                   <td class="text-end">TOTALES</td>
-                  <td class="text-end">{{ formatCurrency(reportData.totals.neto) }}</td>
-                  <td class="text-end">{{ formatCurrency(reportData.totals.total_con_isv) }}</td>
-                  <td class="text-end">{{ formatCurrency(reportData.totals.devuelto) }}</td>
-                  <td class="text-end">{{ formatCurrency(reportData.totals.cobrado) }}</td>
+                  <td class="text-end">L {{ formatCurrency(reportData.totals.total_con_isv) }}</td>
+                  <td class="text-end">L {{ formatCurrency(reportData.totals.devuelto) }}</td>
+                  <td class="text-end text-success">L {{ formatCurrency((parseFloat(reportData.totals.total_con_isv) || 0) - (parseFloat(reportData.totals.devuelto) || 0)) }}</td>
                   <td class="text-end">{{ reportData.totals.total_invoices }}</td>
                 </tr>
               </tfoot>
@@ -182,30 +179,27 @@
               <thead style="background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);">
                 <tr class="text-white">
                   <th style="padding: 8px;">VENDEDOR</th>
-                  <th class="text-end" style="padding: 8px;">NETO</th>
-                  <th class="text-end" style="padding: 8px;">TOTAL+ISV</th>
+                  <th class="text-end" style="padding: 8px;">TOTAL VENTAS</th>
                   <th class="text-end" style="padding: 8px;">DEVUELTO</th>
-                  <th class="text-end" style="padding: 8px;">COBRADO</th>
+                  <th class="text-end" style="padding: 8px;">TOTAL VENTAS NETAS</th>
                   <th class="text-end" style="padding: 8px;">CANT.</th>
                 </tr>
               </thead>
               <tbody v-if="reportData">
                 <tr v-for="seller in reportData.sellers" :key="seller.seller_id">
                   <td style="padding: 6px;">{{ seller.seller_name }}</td>
-                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(seller.neto) }}</td>
                   <td class="text-end" style="padding: 6px;">L {{ formatCurrency(seller.total_con_isv) }}</td>
                   <td class="text-end" style="padding: 6px;">L {{ formatCurrency(seller.devuelto) }}</td>
-                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(seller.cobrado) }}</td>
+                  <td class="text-end" style="padding: 6px; color: #16a34a; font-weight: bold;">L {{ formatCurrency((parseFloat(seller.total_con_isv) || 0) - (parseFloat(seller.devuelto) || 0)) }}</td>
                   <td class="text-end" style="padding: 6px;">{{ seller.total_invoices }}</td>
                 </tr>
               </tbody>
               <tfoot v-if="reportData" style="background: #f3f4f6; font-weight: bold;">
                 <tr>
                   <td style="padding: 8px; text-align: right;">TOTALES:</td>
-                  <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.neto) }}</td>
                   <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.total_con_isv) }}</td>
                   <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.devuelto) }}</td>
-                  <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.cobrado) }}</td>
+                  <td class="text-end" style="padding: 8px; color: #16a34a;">L {{ formatCurrency((parseFloat(reportData.totals.total_con_isv) || 0) - (parseFloat(reportData.totals.devuelto) || 0)) }}</td>
                   <td class="text-end" style="padding: 8px;">{{ reportData.totals.total_invoices }}</td>
                 </tr>
               </tfoot>
@@ -239,6 +233,7 @@ import api from '@/utils/axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
+import { getCurrentUser } from '@/utils/permissions';
 
 export default {
   data() {
@@ -264,10 +259,39 @@ export default {
       }
     };
   },
+  computed: {
+    currentUser() {
+      return getCurrentUser();
+    },
+    isVendedor() {
+      if (!this.currentUser || !this.currentUser.roles) return false;
+      return this.currentUser.roles.includes('cashier') || this.currentUser.roles.includes('vendedor');
+    },
+    isBodega() {
+      if (!this.currentUser || !this.currentUser.roles) return false;
+      return this.currentUser.roles.includes('warehouse') || this.currentUser.roles.includes('almacenista') || this.currentUser.roles.includes('bodega');
+    },
+    isSellerFieldDisabled() {
+      return this.isVendedor;
+    },
+    isBranchFieldDisabled() {
+      return this.isVendedor || this.isBodega;
+    }
+  },
   mounted() {
     this.loadUsers();
     this.loadBranches();
     this.loadCompanyInfo();
+
+    // Si es vendedor, establecer su propio ID como filtro
+    if (this.isVendedor && this.currentUser) {
+      this.filters.seller_id = this.currentUser.id;
+    }
+
+    // Si es bodega, establecer su sucursal
+    if (this.isBodega && this.currentUser && this.currentUser.branch_id) {
+      this.filters.branch_id = this.currentUser.branch_id;
+    }
   },
   watch: {
     async showPrintModal(newVal) {
@@ -482,22 +506,23 @@ export default {
         ['Vendedor:', sellerFilterText],
         ['Sucursal:', branchFilterText],
         [''],
-        ['Vendedor', 'Neto', 'Total+ISV', 'Devuelto', 'Cobrado', 'Cant.Facturas']
+        ['Vendedor', 'Total Ventas', 'Devuelto', 'Total Ventas Netas', 'Cant.']
       ];
 
       this.reportData.sellers.forEach(seller => {
+        const ventasNetas = (parseFloat(seller.total_con_isv) || 0) - (parseFloat(seller.devuelto) || 0);
         data.push([
           seller.seller_name,
-          seller.neto,
           seller.total_con_isv,
           seller.devuelto,
-          seller.cobrado,
+          ventasNetas,
           seller.total_invoices
         ]);
       });
 
+      const totalVentasNetas = (parseFloat(this.reportData.totals.total_con_isv) || 0) - (parseFloat(this.reportData.totals.devuelto) || 0);
       data.push(['']);
-      data.push(['TOTALES', this.reportData.totals.neto, this.reportData.totals.total_con_isv, this.reportData.totals.devuelto, this.reportData.totals.cobrado, this.reportData.totals.total_invoices]);
+      data.push(['TOTALES', this.reportData.totals.total_con_isv, this.reportData.totals.devuelto, totalVentasNetas, this.reportData.totals.total_invoices]);
 
       const ws = XLSX.utils.aoa_to_sheet(data);
       const wb = XLSX.utils.book_new();
@@ -595,17 +620,18 @@ export default {
 
       let tableRows = '';
       this.reportData.sellers.forEach(seller => {
+        const ventasNetas = (parseFloat(seller.total_con_isv) || 0) - (parseFloat(seller.devuelto) || 0);
         tableRows += `
           <tr>
             <td style="padding: 6px;">${seller.seller_name}</td>
-            <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(seller.neto)}</td>
             <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(seller.total_con_isv)}</td>
             <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(seller.devuelto)}</td>
-            <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(seller.cobrado)}</td>
+            <td style="padding: 6px; text-align: right; color: #16a34a; font-weight: bold;">L ${this.formatCurrency(ventasNetas)}</td>
             <td style="padding: 6px; text-align: right;">${seller.total_invoices}</td>
           </tr>
         `;
       });
+      const totalVentasNetas = (parseFloat(this.reportData.totals.total_con_isv) || 0) - (parseFloat(this.reportData.totals.devuelto) || 0);
 
       return `
         <!DOCTYPE html>
@@ -743,10 +769,9 @@ export default {
             <thead>
               <tr>
                 <th>VENDEDOR</th>
-                <th class="text-right">NETO</th>
-                <th class="text-right">TOTAL+ISV</th>
+                <th class="text-right">TOTAL VENTAS</th>
                 <th class="text-right">DEVUELTO</th>
-                <th class="text-right">COBRADO</th>
+                <th class="text-right">TOTAL VENTAS NETAS</th>
                 <th class="text-right">CANT.</th>
               </tr>
             </thead>
@@ -756,10 +781,9 @@ export default {
             <tfoot>
               <tr>
                 <td style="text-align: right;">TOTALES:</td>
-                <td class="text-right">L ${this.formatCurrency(this.reportData.totals.neto)}</td>
                 <td class="text-right">L ${this.formatCurrency(this.reportData.totals.total_con_isv)}</td>
                 <td class="text-right">L ${this.formatCurrency(this.reportData.totals.devuelto)}</td>
-                <td class="text-right">L ${this.formatCurrency(this.reportData.totals.cobrado)}</td>
+                <td class="text-right" style="color: #16a34a;">L ${this.formatCurrency(totalVentasNetas)}</td>
                 <td class="text-right">${this.reportData.totals.total_invoices}</td>
               </tr>
             </tfoot>

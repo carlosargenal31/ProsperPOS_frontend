@@ -26,8 +26,8 @@ export function hasPermission(permission) {
   const user = getCurrentUser();
   if (!user) return false;
 
-  // Super admins y admins tienen todos los permisos
-  if (user.roles && (user.roles.includes('super_admin') || user.roles.includes('admin'))) {
+  // Super admins y admins tienen todos los permisos (acepta inglés y español)
+  if (user.roles && (user.roles.includes('super_admin') || user.roles.includes('admin') || user.roles.includes('administrador'))) {
     return true;
   }
 
@@ -109,8 +109,8 @@ export function canAccessModule(module) {
   const user = getCurrentUser();
   if (!user) return false;
 
-  // Super admins y admins pueden acceder a todo
-  if (user.roles && (user.roles.includes('super_admin') || user.roles.includes('admin'))) {
+  // Super admins y admins pueden acceder a todo (acepta inglés y español)
+  if (user.roles && (user.roles.includes('super_admin') || user.roles.includes('admin') || user.roles.includes('administrador'))) {
     return true;
   }
 

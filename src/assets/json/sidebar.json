@@ -450,7 +450,6 @@
             "hasSubRoute": false,
             "showSubRoute": false
           }
-
         ]
       },
       {
@@ -489,13 +488,6 @@
             "showSubRoute": false
           }
         ]
-      },
-      {
-        "menuValue": "Cerrar Sesión",
-        "icon": "ti ti-logout",
-        "route": "/",
-        "hasSubRoute": false,
-        "showSubRoute": false
       }
     ]
   },
@@ -505,18 +497,36 @@
     "separateRoute": false,
     "menu": [
       {
-        "menuValue": "Manual de Usuario",
-        "icon": "ti ti-file-text",
-        "route": "/users/users-list",
-        "active_link": "/users/users-list",
+        "menuValue": "Manual Administrador",
+        "icon": "ti ti-book",
+        "isManual": true,
+        "manualFile": "manual-administrador.pdf",
+        "requiredRoles": ["super_admin", "admin"],
         "hasSubRoute": false,
         "showSubRoute": false
       },
       {
-        "menuValue": "Manual Tecnico",
-        "icon": "ti ti-file-text",
-        "route": "/users/users-list",
-        "active_link": "/users/users-list",
+        "menuValue": "Manual Vendedor",
+        "icon": "ti ti-book",
+        "isManual": true,
+        "manualFile": "manual-vendedor.pdf",
+        "requiredRoles": ["cashier", "vendedor"],
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Manual Bodega",
+        "icon": "ti ti-book",
+        "isManual": true,
+        "manualFile": "manual-bodega.pdf",
+        "requiredRoles": ["warehouse", "bodega", "almacenista", "personal_de_bodega"],
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Cerrar Sesión",
+        "icon": "fe fe-power",
+        "route": "/",
         "hasSubRoute": false,
         "showSubRoute": false
       }

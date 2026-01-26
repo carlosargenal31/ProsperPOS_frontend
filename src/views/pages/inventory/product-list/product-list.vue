@@ -12,53 +12,53 @@
           </div>
         </div>
         <ul class="table-top-head">
-          <li>
-            <a 
+          <li v-if="!isVendedor">
+            <a
               href="javascript:void(0);"
               @click="exportToPDF"
-              data-bs-toggle="tooltip" 
-              data-bs-placement="top" 
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
               title="Exportar PDF"
             >
               <img src="@/assets/img/icons/pdf.svg" alt="PDF">
             </a>
           </li>
-          <li>
-            <a 
+          <li v-if="!isVendedor">
+            <a
               href="javascript:void(0);"
               @click="exportToExcel"
-              data-bs-toggle="tooltip" 
-              data-bs-placement="top" 
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
               title="Exportar Excel"
             >
               <img src="@/assets/img/icons/excel.svg" alt="Excel">
             </a>
           </li>
           <li>
-            <a 
+            <a
               href="javascript:void(0);"
               @click="refreshData"
-              data-bs-toggle="tooltip" 
-              data-bs-placement="top" 
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
               title="Actualizar"
             >
               <i class="ti ti-refresh"></i>
             </a>
           </li>
           <li>
-            <a 
+            <a
               href="javascript:void(0);"
               @click="toggleHeader"
-              data-bs-toggle="tooltip" 
-              data-bs-placement="top" 
-              title="Contraer" 
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="Contraer"
               id="collapse-header"
             >
               <i class="ti ti-chevron-up"></i>
             </a>
           </li>
         </ul>
-        <div class="page-btn d-flex position-relative">
+        <div v-if="!isVendedor" class="page-btn d-flex position-relative">
           <button
             type="button"
             class="btn btn-primary d-flex align-items-center"
@@ -90,16 +90,6 @@
               Registro Rápido
             </a>
           </div>
-        </div>
-        <div class="page-btn import d-flex">
-          <a 
-            href="javascript:void(0);"
-            @click="showImportModal"
-            class="btn btn-secondary color d-flex align-items-center"
-          >
-            <vue-feather type="download" class="me-2"></vue-feather>
-            Importar Productos
-          </a>
         </div>
       </div>
 
@@ -288,6 +278,7 @@
                         <vue-feather type="eye" class="action-eye"></vue-feather>
                       </a>
                       <a
+                        v-if="!isVendedor"
                         class="me-2 p-2"
                         href="javascript:void(0);"
                         @click="editProduct(record.id)"
@@ -296,6 +287,7 @@
                         <vue-feather type="edit"></vue-feather>
                       </a>
                       <a
+                        v-if="!isVendedor"
                         class="p-2"
                         href="javascript:void(0);"
                         @click="confirmDelete(record)"
@@ -643,6 +635,7 @@ import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/utils/axios';
 import { message } from 'ant-design-vue';
+import { getCurrentUser } from '@/utils/permissions';
 
 export default {
   name: 'ProductList',
@@ -704,6 +697,20 @@ export default {
       limit: 15,
       total: 0,
       pages: 0
+    });
+
+    // Computed property para verificar si es vendedor o bodega (solo lectura)
+    const currentUser = computed(() => getCurrentUser());
+    const isVendedor = computed(() => {
+      if (!currentUser.value || !currentUser.value.roles) return false;
+      return (
+        currentUser.value.roles.includes('cashier') ||
+        currentUser.value.roles.includes('vendedor') ||
+        currentUser.value.roles.includes('warehouse') ||
+        currentUser.value.roles.includes('almacenista') ||
+        currentUser.value.roles.includes('bodega') ||
+        currentUser.value.roles.includes('personal_de_bodega')
+      );
     });
 
     // Definición de columnas - usando server-side sorting con 3 estados
@@ -1438,6 +1445,7 @@ export default {
       pagination,
       columns,
       tableSorter,
+      isVendedor,
       filteredSubcategories,
       quickFilteredSubcategories,
       visiblePages,

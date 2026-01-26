@@ -1190,7 +1190,7 @@ export default {
                 <div class="invoice-title">${docTitle}</div>
                 <div class="invoice-meta">
                   <strong>#Control Interno:</strong> ${doc.document_number}<br>
-                  <strong>Sucursal:</strong> ${doc.warehouse_name || 'Principal'}<br>
+                  <strong>Bodega:</strong> ${doc.warehouse_name || 'Principal'}<br>
                   <strong>Emisión:</strong> ${this.formatDate(doc.registration_date)}<br>
                   <strong>Estado:</strong> ${doc.status}
                 </div>

@@ -52,6 +52,18 @@
           </a>
         </li>
         <li>
+          <a href="javascript:void(0);" @click="handleManualDownload('manual-tienda-online-cliente.pdf')">
+            <i class="ti ti-book fs-16 me-2"></i>
+            <span>Manual Cliente Tienda</span>
+          </a>
+        </li>
+        <li>
+          <a href="javascript:void(0);" @click="handleManualDownload('manual-tienda-online-gestion.pdf')">
+            <i class="ti ti-book fs-16 me-2"></i>
+            <span>Manual Gestión Tienda</span>
+          </a>
+        </li>
+        <li>
           <router-link to="/dashboard/admin-dashboard">
             <i class="ti ti-arrow-back fs-16 me-2"></i>
             <span>Volver al Dashboard</span>
@@ -63,8 +75,22 @@
 </template>
 
 <script>
+import { downloadManual } from '@/utils/manual-download';
+
 export default {
-  name: 'TiendaOnlineSidebar'
+  name: 'TiendaOnlineSidebar',
+  methods: {
+    /**
+     * Manejar descarga de manuales
+     */
+    handleManualDownload(manualFile) {
+      if (!manualFile) {
+        console.error('No se especificó un archivo de manual');
+        return;
+      }
+      downloadManual(manualFile);
+    }
+  }
 }
 </script>
 

@@ -593,7 +593,7 @@
 
                     <!-- Tabla de productos agregados -->
                     <div class="alert alert-info" role="alert">
-                      <i class="ti ti-info-circle"></i> Para los productos que tengan el descuento en "cero" se tomará el descuento base de la cup�n.
+                      <i class="ti ti-info-circle"></i> Para los productos que tengan el descuento en "cero" se tomará el descuento base del cupón.
                     </div>
 
                     <div class="table-responsive">
@@ -647,6 +647,91 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Días -->
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label class="form-label">Días</label>
+                      <div class="d-flex flex-wrap gap-2">
+                        <div class="form-check form-check-inline">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="todos"
+                            @change="toggleAllDays"
+                            :checked="formData.aplica_lunes && formData.aplica_martes && formData.aplica_miercoles && formData.aplica_jueves && formData.aplica_viernes && formData.aplica_sabado && formData.aplica_domingo"
+                          />
+                          <label class="form-check-label" for="todos">Todos</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="lunes"
+                            v-model="formData.aplica_lunes"
+                          />
+                          <label class="form-check-label" for="lunes">Lunes</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="martes"
+                            v-model="formData.aplica_martes"
+                          />
+                          <label class="form-check-label" for="martes">Martes</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="miercoles"
+                            v-model="formData.aplica_miercoles"
+                          />
+                          <label class="form-check-label" for="miercoles">Miércoles</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="jueves"
+                            v-model="formData.aplica_jueves"
+                          />
+                          <label class="form-check-label" for="jueves">Jueves</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="viernes"
+                            v-model="formData.aplica_viernes"
+                          />
+                          <label class="form-check-label" for="viernes">Viernes</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="sabado"
+                            v-model="formData.aplica_sabado"
+                          />
+                          <label class="form-check-label" for="sabado">Sábado</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="domingo"
+                            v-model="formData.aplica_domingo"
+                          />
+                          <label class="form-check-label" for="domingo">Domingo</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -1432,12 +1517,12 @@ export default {
 
         // Determinar si es creación o actualización
         if (this.formData.id) {
-          // Actualizar cup�n existente
+          // Actualizar cupón existente
           await axios.put(`http://localhost:3000/api/v1/coupons/${this.formData.id}`, dataToSend, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
         } else {
-          // Crear nueva cup�n
+          // Crear nuevo cupón
           await axios.post('http://localhost:3000/api/v1/coupons', dataToSend, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
@@ -1457,7 +1542,7 @@ export default {
           Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
-            text: this.formData.id ? 'cup�n actualizada exitosamente' : 'cup�n creada exitosamente',
+            text: this.formData.id ? 'Cupón actualizado exitosamente' : 'Cupón creado exitosamente',
             confirmButtonColor: '#28a745',
             timer: 2000,
             showConfirmButton: false
@@ -1468,7 +1553,7 @@ export default {
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.message || 'Error al guardar la cup�n',
+          text: error.response?.data?.message || 'Error al guardar el cupón',
           confirmButtonColor: '#dc3545'
         });
       } finally {

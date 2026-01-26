@@ -339,7 +339,7 @@
                   <th class="text-end">Cantidad</th>
                   <th class="text-end">Precio</th>
                   <th v-if="filters.show_costs" class="text-end">Costo Unit.</th>
-                  <th class="text-end">Total Neto</th>
+                  <th class="text-end">Total Bruto</th>
                   <th class="text-end">Impuesto</th>
                   <th class="text-end">Total Final</th>
                   <th v-if="filters.show_costs" class="text-end">Costo Total</th>
@@ -1248,7 +1248,7 @@ export default {
       if (this.filters.show_costs) headers += `<th style="padding: 8px; font-size: 9px; text-align: right;">Costo Unit.</th>`;
 
       headers += `
-        <th style="padding: 8px; font-size: 9px; text-align: right;">Total Neto</th>
+        <th style="padding: 8px; font-size: 9px; text-align: right;">Total Bruto</th>
         <th style="padding: 8px; font-size: 9px; text-align: right;">Impuesto</th>
         <th style="padding: 8px; font-size: 9px; text-align: right;">Total Final</th>`;
 
@@ -1465,7 +1465,7 @@ export default {
 
           if (this.filters.show_costs) row['Costo Unit.'] = parseFloat(item.costo || 0);
 
-          row['Total Neto'] = parseFloat(item.total_neto || 0);
+          row['Total Bruto'] = parseFloat(item.total_neto || 0);
           row['Impuesto'] = parseFloat(item.impuesto || 0);
           row['Total Final'] = parseFloat(item.total_final || 0);
 
@@ -1483,7 +1483,7 @@ export default {
         totalsRow['Cantidad'] = this.totals.total_cantidad;
         totalsRow['Precio'] = '';
         if (this.filters.show_costs) totalsRow['Costo Unit.'] = '';
-        totalsRow['Total Neto'] = this.totals.total_neto;
+        totalsRow['Total Bruto'] = this.totals.total_neto;
         totalsRow['Impuesto'] = this.totals.total_impuesto;
         totalsRow['Total Final'] = this.totals.total_final;
         if (this.filters.show_costs) totalsRow['Costo Total'] = this.totals.total_costo;

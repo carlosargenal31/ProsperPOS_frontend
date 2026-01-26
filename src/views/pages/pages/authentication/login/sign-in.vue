@@ -242,9 +242,22 @@ export default {
           // Mostrar mensaje de éxito
           successMessage.value = 'Inicio de sesión exitoso. Redirigiendo...';
 
-          // Redirigir al dashboard después de 1 segundo
+          // Redirigir según el rol del usuario
           setTimeout(() => {
-            router.push('/dashboard/admin-dashboard');
+            const userRoles = user.roles || [];
+
+            // Vendedor va directo a POS Facturación (acepta 'cashier' o 'vendedor')
+            if (userRoles.includes('cashier') || userRoles.includes('vendedor')) {
+              router.push('/pos-invoice');
+            }
+            // Bodega va a Inventario (acepta 'warehouse', 'almacenista', 'bodega' o 'personal_de_bodega')
+            else if (userRoles.includes('warehouse') || userRoles.includes('almacenista') || userRoles.includes('bodega') || userRoles.includes('personal_de_bodega')) {
+              router.push('/inventory/product-list');
+            }
+            // Admin y otros van al dashboard
+            else {
+              router.push('/dashboard/admin-dashboard');
+            }
           }, 1000);
         } else {
           errorMessage.value = response.data.message || 'Error al iniciar sesión';
@@ -302,11 +315,11 @@ export default {
       showPassword.value = !showPassword.value;
     };
 
-    // Auto-llenar en desarrollo
-    if (isDevelopment.value) {
-      formData.email = 'admin@prosperpos.com';
-      formData.password = 'Admin1234';
-    }
+    // Auto-llenar en desarrollo (DESACTIVADO)
+    // if (isDevelopment.value) {
+    //   formData.email = 'admin@prosperpos.com';
+    //   formData.password = 'Admin1234';
+    // }
 
     return {
       loading,

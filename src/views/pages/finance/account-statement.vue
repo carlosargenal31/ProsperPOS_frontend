@@ -79,6 +79,8 @@
                 <option value="active">ACTIVO</option>
                 <option value="pending">PENDIENTE</option>
                 <option value="converted_to_invoice">IMPORTADO</option>
+                <option value="converted_to_quote">CONVERTIDO A COTIZACIÓN</option>
+                <option value="converted_to_pending">CONVERTIDO A PENDIENTE</option>
                 <option value="expired">VENCIDO</option>
                 <option value="returned">DEVUELTO</option>
                 <option value="completed">COMPLETADO</option>
@@ -2567,6 +2569,8 @@ export default {
         'active': 'ACTIVO',
         'converted_to_invoice': 'IMPORTADO',
         'imported': 'IMPORTADO',
+        'converted_to_quote': 'CONVERTIDO A COTIZACIÓN',
+        'converted_to_pending': 'CONVERTIDO A PENDIENTE',
         'overdue': 'VENCIDO',
         'expired': 'VENCIDO',
         'cancelled': 'CANCELADO',
@@ -2580,13 +2584,16 @@ export default {
         'paid': 'bg-success',
         'pending': 'bg-warning',
         'partial': 'bg-info',
-        'active': 'bg-success',        // ACTIVO en verde
-        'overdue': 'bg-danger',         // VENCIDO en rojo
-        'expired': 'bg-danger',         // VENCIDO en rojo
+        'active': 'bg-success',
+        'overdue': 'bg-danger',
+        'expired': 'bg-danger',
         'imported': 'bg-primary',
+        'converted_to_invoice': 'bg-primary',
+        'converted_to_quote': 'bg-info',
+        'converted_to_pending': 'bg-primary',
         'cancelled': 'bg-secondary',
         'returned': 'bg-danger',
-        'completed': 'bg-success'       // COMPLETADO en verde
+        'completed': 'bg-success'
       };
       return classes[status] || 'bg-secondary';
     },

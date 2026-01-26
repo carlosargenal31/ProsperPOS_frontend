@@ -18,17 +18,61 @@
         <div class="modal-body">
           <form @submit.prevent="handleSubmit" id="userForm">
             <div class="row">
+              <!-- Avatar -->
+              <div class="col-12 mb-4">
+                <div class="text-center">
+                  <label class="form-label d-block">Foto de Perfil</label>
+                  <div class="avatar-upload-wrapper">
+                    <div class="avatar avatar-xxl mx-auto mb-3 position-relative">
+                      <img
+                        :src="avatarPreview || form.avatar || getDefaultAvatar()"
+                        alt="Avatar"
+                        class="rounded-circle"
+                        style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #667eea;"
+                      />
+                      <label
+                        for="avatar-upload"
+                        class="position-absolute bottom-0 end-0 btn btn-sm btn-primary rounded-circle p-2"
+                        style="width: 40px; height: 40px; cursor: pointer;"
+                        title="Cambiar foto"
+                      >
+                        <i class="ti ti-camera"></i>
+                      </label>
+                    </div>
+                    <input
+                      type="file"
+                      id="avatar-upload"
+                      class="d-none"
+                      accept="image/*"
+                      @change="handleAvatarChange"
+                    />
+                    <small class="text-muted">
+                      Formatos: JPG, PNG, GIF (Max: 2MB)
+                    </small>
+                    <div v-if="avatarFile" class="mt-2">
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        @click="removeAvatar"
+                      >
+                        <i class="ti ti-x me-1"></i>Remover foto
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Nombre -->
               <div class="col-md-6 mb-3">
                 <label class="form-label">
                   Nombre <span class="text-danger">*</span>
                 </label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  v-model="form.first_name" 
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.first_name"
                   placeholder="Ingrese el nombre"
-                  required 
+                  required
                 />
               </div>
 
@@ -246,8 +290,11 @@ export default {
         store_id: '',
         password: '',
         confirm_password: '',
-        status: 'active'
+        status: 'active',
+        avatar: ''
       },
+      avatarFile: null,
+      avatarPreview: null,
       showPassword: false,
       isSaving: false,
       formError: ''
@@ -268,12 +315,15 @@ export default {
             store_id: newVal.store_id || '',
             status: newVal.status || 'active',
             password: '',
-            confirm_password: ''
+            confirm_password: '',
+            avatar: newVal.avatar || ''
           };
+          this.avatarPreview = null;
+          this.avatarFile = null;
         }
       }
     },
-    
+
     editMode(newVal) {
       if (!newVal) {
         this.resetForm();
@@ -300,7 +350,7 @@ export default {
 
       try {
         let response;
-        
+
         if (this.editMode) {
           // Actualizar usuario existente
           const updateData = {
@@ -312,8 +362,13 @@ export default {
             store_id: this.form.store_id ? parseInt(this.form.store_id) : null,
             status: this.form.status
           };
-          
+
           response = await userService.updateUser(this.userData.id, updateData);
+
+          // Subir avatar si hay uno nuevo
+          if (this.avatarFile) {
+            await userService.uploadUserAvatar(this.userData.id, this.avatarFile);
+          }
         } else {
           // Crear nuevo usuario
           const newUserData = {
@@ -325,8 +380,13 @@ export default {
             store_id: this.form.store_id ? parseInt(this.form.store_id) : null,
             password: this.form.password
           };
-          
+
           response = await userService.createUser(newUserData);
+
+          // Subir avatar si hay uno
+          if (response.success && this.avatarFile && response.data.id) {
+            await userService.uploadUserAvatar(response.data.id, this.avatarFile);
+          }
         }
 
         if (response.success) {
@@ -355,6 +415,56 @@ export default {
         this.isSaving = false;
       }
     },
+
+    handleAvatarChange(event) {
+      const file = event.target.files[0];
+
+      if (!file) return;
+
+      // Validar tipo de archivo
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        this.formError = 'Formato de imagen no válido. Use JPG, PNG, GIF o WebP';
+        return;
+      }
+
+      // Validar tamaño (max 2MB)
+      const maxSize = 2 * 1024 * 1024; // 2MB en bytes
+      if (file.size > maxSize) {
+        this.formError = 'La imagen es demasiado grande. Tamaño máximo: 2MB';
+        return;
+      }
+
+      // Guardar archivo y crear preview
+      this.avatarFile = file;
+      this.formError = '';
+
+      // Crear preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.avatarPreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+
+    removeAvatar() {
+      this.avatarFile = null;
+      this.avatarPreview = null;
+
+      // Limpiar el input de archivo
+      const fileInput = document.getElementById('avatar-upload');
+      if (fileInput) {
+        fileInput.value = '';
+      }
+    },
+
+    getDefaultAvatar() {
+      const fullName = `${this.form.first_name} ${this.form.last_name}`.trim();
+      if (fullName) {
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=667eea&color=fff&size=400`;
+      }
+      return 'https://ui-avatars.com/api/?name=Usuario&background=667eea&color=fff&size=400';
+    },
     
     resetForm() {
       this.form = {
@@ -366,10 +476,19 @@ export default {
         store_id: '',
         password: '',
         confirm_password: '',
-        status: 'active'
+        status: 'active',
+        avatar: ''
       };
+      this.avatarFile = null;
+      this.avatarPreview = null;
       this.showPassword = false;
       this.formError = '';
+
+      // Limpiar el input de archivo
+      const fileInput = document.getElementById('avatar-upload');
+      if (fileInput) {
+        fileInput.value = '';
+      }
     }
   }
 };

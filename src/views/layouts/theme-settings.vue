@@ -38,19 +38,8 @@
                                     <label for="miniLayout">
                                         <span class="d-block mb-2 layout-img">
                                             <img src="@/assets/img/theme/mini.svg" alt="img">
-                                        </span>                                    
+                                        </span>
                                         <span class="layout-type">Mini</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="theme-layout mb-3">
-                                    <input type="radio" name="LayoutTheme" id="twocolumnLayout" value="twocolumn" >
-                                    <label for="twocolumnLayout">
-                                        <span class="d-block mb-2 layout-img">
-                                            <img src="@/assets/img/theme/two-column.svg" alt="img">
-                                        </span>                                    
-                                        <span class="layout-type">Dos Columnas</span>
                                     </label>
                                 </div>
                             </div>
@@ -60,7 +49,7 @@
                                     <label for="horizontalLayout">
                                         <span class="d-block mb-2 layout-img">
                                             <img src="@/assets/img/theme/horizontal.svg" alt="img">
-                                        </span>                                    
+                                        </span>
                                         <span class="layout-type">Horizontal</span>
                                     </label>
                                 </div>
@@ -92,33 +81,6 @@
                     </div>
                 </div>
             </div> 
-            <div class="accordion-item border px-3 layout-select">
-                <h2 class="accordion-header">
-                    <button class="accordion-button text-dark fs-16 bg-transparent px-0 py-3" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarsetting" aria-expanded="true">
-                        Ancho del Diseño
-                    </button>
-                </h2>
-                <div id="sidebarsetting" class="accordion-collapse collapse show">
-                    <div class="accordion-body px-0 py-3 border-top">
-                        <div class="d-flex align-items-center">
-                            <div class="theme-width m-1 me-2">
-                                <input type="radio" name="width" id="fluidWidth" value="fluid" checked>
-                                <label for="fluidWidth" class="d-block rounded fs-12">
-                                    <i class="ti ti-layout-list me-1"></i>
-                                    Diseño Fluido
-                                </label>
-                            </div>
-                            <div class="theme-width m-1">
-                                <input type="radio" name="width" id="boxWidth" value="box">
-                                <label for="boxWidth" class="d-block rounded fs-12">
-                                 <i class="ti ti-layout-distribute-horizontal me-1"></i>
-                                    Diseño en Caja
-                                </label>
-                            </div>
-                        </div>  
-                    </div>
-                </div>
-            </div>
             <div class="accordion-item border px-3">
                 <h2 class="accordion-header">
                     <button class="accordion-button text-dark fs-16 px-0 py-3 bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#colorsetting" aria-expanded="true">
@@ -477,12 +439,10 @@ export default {
       const layoutRadios = document.querySelectorAll('input[name="LayoutTheme"]');
       const topbarRadios = document.querySelectorAll('input[name="topbar"]');
       const sidebarBgRadios = document.querySelectorAll('input[name="sidebarbg"]');
-      const widthRadios = document.querySelectorAll('input[name="width"]');
       const resetButton = document.getElementById('resetbutton');
-      const sidebarBgContainer = document.getElementById('sidebarbgContainer');
       const sidebarElement = document.querySelector('.sidebar');
 
-      function setThemeAndSidebarTheme(theme, sidebarTheme, color, layout, topbar, width) {
+      function setThemeAndSidebarTheme(theme, sidebarTheme, color, layout, topbar) {
         if (!sidebarElement) {
           console.error('Sidebar element not found');
           return;
@@ -493,13 +453,11 @@ export default {
         document.documentElement.setAttribute('data-color', color);
         document.documentElement.setAttribute('data-layout', layout);
         document.documentElement.setAttribute('data-topbar', topbar);
-        document.documentElement.setAttribute('data-width', width);
+        document.documentElement.setAttribute('data-width', 'fluid');
 
-        let layout_mini = 0;
         if (layout === 'mini') {
           document.body.classList.add("mini-sidebar");
           document.body.classList.remove("menu-horizontal");
-          layout_mini = 1;
         } else if (layout === 'horizontal') {
           document.body.classList.add("menu-horizontal");
           document.body.classList.remove("mini-sidebar");
@@ -513,28 +471,12 @@ export default {
           document.body.classList.remove("mini-sidebar", "menu-horizontal");
         }
 
-        if (width === 'box') {
-          document.body.classList.add("layout-box-mode");
-          document.body.classList.add("mini-sidebar");
-          layout_mini = 1;
-        } else {
-          if (layout_mini == 0) {
-            document.body.classList.remove("mini-sidebar");
-          }
-          document.body.classList.remove("layout-box-mode");
-        }
-
-        if ((width === 'box' && layout === 'horizontal') || (width === 'box' && layout === 'horizontal-overlay') ||
-          (width === 'box' && layout === 'horizontal-single') || (width === 'box' && layout === 'without-header')) {
-          document.body.classList.remove("mini-sidebar");
-        }
-
         localStorage.setItem('theme', theme);
         localStorage.setItem('sidebarTheme', sidebarTheme);
         localStorage.setItem('color', color);
         localStorage.setItem('layout', layout);
         localStorage.setItem('topbar', topbar);
-        localStorage.setItem('width', width);
+        localStorage.setItem('width', 'fluid');
       }
 
       function handleSidebarBgChange() {
@@ -564,7 +506,6 @@ export default {
       function handleInputChange() {
         const theme = document.querySelector('input[name="theme"]:checked').value;
         const layout = document.querySelector('input[name="LayoutTheme"]:checked').value;
-        const width = document.querySelector('input[name="width"]:checked').value;
 
         let color = localStorage.getItem('primaryRGB');
         let sidebarTheme = localStorage.getItem('sidebarRGB');
@@ -588,11 +529,11 @@ export default {
           topbar = 'all';
         }
 
-        setThemeAndSidebarTheme(theme, sidebarTheme, color, layout, topbar, width);
+        setThemeAndSidebarTheme(theme, sidebarTheme, color, layout, topbar);
       }
 
       function resetThemeAndSidebarThemeAndColorAndBg() {
-        setThemeAndSidebarTheme('light', 'light', 'primary', 'default', 'white', 'white', 'default', 'fluid', 'enable');
+        setThemeAndSidebarTheme('light', 'light', 'primary', 'default', 'white');
         document.body.removeAttribute('data-sidebarbg');
         document.body.removeAttribute('data-topbarbg');
 
@@ -601,7 +542,6 @@ export default {
         document.getElementById('primaryColor').checked = true;
         document.getElementById('defaultLayout').checked = true;
         document.getElementById('whiteTopbar').checked = true;
-        document.getElementById('fluidWidth').checked = true;
 
         const checkedSidebarBg = document.querySelector('input[name="sidebarbg"]:checked');
         if (checkedSidebarBg) {
@@ -623,7 +563,6 @@ export default {
       colorRadios.forEach(radio => radio.addEventListener('change', handleInputChange));
       layoutRadios.forEach(radio => radio.addEventListener('change', handleInputChange));
       topbarRadios.forEach(radio => radio.addEventListener('change', handleInputChange));
-      widthRadios.forEach(radio => radio.addEventListener('change', handleInputChange));
       sidebarBgRadios.forEach(radio => radio.addEventListener('change', handleSidebarBgChange));
       resetButton.addEventListener('click', resetThemeAndSidebarThemeAndColorAndBg);
 
@@ -632,7 +571,6 @@ export default {
       let savedColor = localStorage.getItem('color');
       const savedLayout = localStorage.getItem('layout') || 'default';
       let savedTopbar = localStorage.getItem('topbar');
-      const savedWidth = localStorage.getItem('width') || 'fluid';
       const savedSidebarBg = localStorage.getItem('sidebarBg') || null;
       const savedTopbarBg = localStorage.getItem('topbarbg') || null;
 
@@ -663,7 +601,7 @@ export default {
         html.style.setProperty("--sidebar-rgb", savedSidebarPickr);
       }
 
-      setThemeAndSidebarTheme(savedTheme, savedSidebarTheme, savedColor, savedLayout, savedTopbar, savedWidth);
+      setThemeAndSidebarTheme(savedTheme, savedSidebarTheme, savedColor, savedLayout, savedTopbar);
 
       if (savedSidebarBg) {
         document.body.setAttribute('data-sidebarbg', savedSidebarBg);
@@ -692,18 +630,11 @@ export default {
       if (document.getElementById(`${savedTopbar}Topbar`)) {
         document.getElementById(`${savedTopbar}Topbar`).checked = true;
       }
-      if (document.getElementById(`${savedWidth}Width`)) {
-        document.getElementById(`${savedWidth}Width`).checked = true;
-      }
       if (savedSidebarBg && document.getElementById(`${savedSidebarBg}`)) {
         document.getElementById(`${savedSidebarBg}`).checked = true;
       }
       if (savedTopbarBg && document.getElementById(`${savedTopbarBg}`)) {
         document.getElementById(`${savedTopbarBg}`).checked = true;
-      }
-
-      if (savedLayout !== 'box' && sidebarBgContainer) {
-        sidebarBgContainer.classList.remove('show');
       }
     });
 

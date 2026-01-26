@@ -216,24 +216,24 @@
                     <div class="col-6 text-end"><strong>{{ totalQuantity.toFixed(2) }}</strong></div>
                   </div>
                   <div class="row mb-2">
+                    <div class="col-6"><span>Monto Bruto</span></div>
+                    <div class="col-6 text-end"><strong>L {{ formatCurrency(totals.grossAmount) }}</strong></div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-6"><span>Descuento</span></div>
+                    <div class="col-6 text-end"><strong class="text-danger">- L {{ formatCurrency(totals.discount) }}</strong></div>
+                  </div>
+                  <div class="row mb-2">
                     <div class="col-6"><span>Subtotal</span></div>
                     <div class="col-6 text-end"><strong>L {{ formatCurrency(totals.subtotal) }}</strong></div>
                   </div>
                   <div class="row mb-2">
-                    <div class="col-6"><span>Recargo</span></div>
-                    <div class="col-6 text-end"><strong>L {{ formatCurrency(totals.surcharge) }}</strong></div>
-                  </div>
-                  <div class="row mb-2">
-                    <div class="col-6"><span>Propina</span></div>
-                    <div class="col-6 text-end"><strong>L {{ formatCurrency(totals.tip) }}</strong></div>
-                  </div>
-                  <div class="row mb-2">
-                    <div class="col-6"><span>Descuento</span></div>
-                    <div class="col-6 text-end"><strong>L {{ formatCurrency(totals.discount) }}</strong></div>
-                  </div>
-                  <div class="row mb-3">
                     <div class="col-6"><span>ISV</span></div>
                     <div class="col-6 text-end"><strong>L {{ formatCurrency(totals.tax) }}</strong></div>
+                  </div>
+                  <div class="row mb-3">
+                    <div class="col-6"><span>Recargo</span></div>
+                    <div class="col-6 text-end"><strong>L {{ formatCurrency(totals.surcharge) }}</strong></div>
                   </div>
                   <div class="row border-top pt-3">
                     <div class="col-6"><h3 class="text-danger mb-0">TOTAL</h3></div>
@@ -401,24 +401,24 @@
               <strong>{{ totalQuantity }}</strong>
             </div>
             <div class="d-flex justify-content-between mb-2">
+              <span>Monto Bruto</span>
+              <strong>L {{ formatCurrency(totals.grossAmount) }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span>Descuento</span>
+              <strong class="text-danger">- L {{ formatCurrency(totals.discount) }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
               <span>Subtotal</span>
               <strong>L {{ formatCurrency(totals.subtotal) }}</strong>
             </div>
             <div class="d-flex justify-content-between mb-2">
-              <span>Recargo</span>
-              <strong>L {{ formatCurrency(totals.surcharge) }}</strong>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-              <span>Propina</span>
-              <strong>L {{ formatCurrency(totals.tip) }}</strong>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-              <span>Descuento</span>
-              <strong>L {{ formatCurrency(totals.discount) }}</strong>
-            </div>
-            <div class="d-flex justify-content-between mb-3">
               <span>ISV</span>
               <strong>L {{ formatCurrency(totals.tax) }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+              <span>Recargo</span>
+              <strong>L {{ formatCurrency(totals.surcharge) }}</strong>
             </div>
             <div class="d-flex justify-content-between border-top pt-3 mt-2">
               <strong class="h2 text-danger">TOTAL</strong>
@@ -443,29 +443,6 @@
             <textarea class="form-control" v-model="returnForm.notes" rows="3"></textarea>
           </div>
 
-          <div class="form-check mb-2">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              v-model="returnForm.return_money"
-              id="returnMoney"
-            />
-            <label class="form-check-label" for="returnMoney">
-              Devolver Dinero
-            </label>
-          </div>
-
-          <div class="form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              v-model="returnForm.affect_sales_book"
-              id="affectSalesBook"
-            />
-            <label class="form-check-label" for="affectSalesBook">
-              Afecta Libro de Ventas
-            </label>
-          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="showReturnModal = false">
@@ -533,9 +510,9 @@
 
             <!-- Información del Documento -->
             <div class="d-flex justify-content-around border p-1 mb-2" style="font-size: 10px;">
-              <span><strong>Nro. Nota Crédito:</strong> {{ processedReturn.credit_note_number || 'N/A' }}</span>
+              <span><strong>Nro. Nota Crédito:</strong> {{ processedReturn.credit_note_number || processedReturn.credit_note_correlative || 'N/A' }}</span>
               <span><strong>Factura Original:</strong> {{ processedReturn.invoice_number }}</span>
-              <span><strong>Fecha:</strong> {{ formatDate(processedReturn.emission_date) }}</span>
+              <span><strong>Fecha:</strong> {{ formatDatePlusOne(processedReturn.emission_date) }}</span>
             </div>
 
             <div class="mb-2" style="font-size: 10px;">
@@ -610,13 +587,13 @@
             <div class="d-flex justify-content-around border p-1 mb-2" style="font-size: 10px;">
               <span><strong>DEVOLUCIÓN:</strong> {{ processedReturn.return_correlative }}</span>
               <span><strong>Doc/Devuelto:</strong> {{ processedReturn.invoice_number }}</span>
-              <span><strong>Fecha:</strong> {{ formatDate(processedReturn.emission_date) }}</span>
+              <span><strong>Fecha:</strong> {{ formatDatePlusOne(processedReturn.emission_date) }}</span>
             </div>
 
             <div class="mb-2" style="font-size: 10px;">
               <strong>Cliente:</strong> {{ processedReturn.customer_name }}<br>
               <strong>RTN:</strong> {{ processedReturn.customer_rtn || '00000000000000' }}<br>
-              <strong>Condiciones:</strong> Contado | <strong>Entrega:</strong> {{ formatDate(processedReturn.emission_date) }}
+              <strong>Condiciones:</strong> Contado | <strong>Entrega:</strong> {{ formatDatePlusOne(processedReturn.emission_date) }}
             </div>
 
             <!-- Tabla de Productos -->
@@ -833,41 +810,44 @@ export default {
       return this.returnItems.reduce((sum, item) => sum + parseFloat(item.return_quantity || 0), 0);
     },
     totals() {
-      let subtotal = 0;
-      let totalDiscount = 0;
-      let tax = 0;
+      let grossAmount = 0; // Monto bruto (precio * cantidad)
+      let taxRate = 15; // Tasa de impuesto por defecto
 
       this.returnItems.forEach(item => {
         const qty = parseFloat(item.return_quantity) || 0;
         const price = parseFloat(item.unit_price) || 0;
-        const discountValue = parseFloat(item.discount_value) || 0;
-        const taxRate = parseFloat(item.tax_rate) || 0;
 
-        // Calcular el subtotal del item (precio * cantidad)
-        const itemTotal = qty * price;
+        // Calcular el monto bruto del item (precio * cantidad)
+        const itemGross = qty * price;
+        grossAmount += itemGross;
 
-        // Calcular el descuento del item
-        const itemDiscount = itemTotal * (discountValue / 100);
-
-        // Subtotal después del descuento
-        const itemSubtotal = itemTotal - itemDiscount;
-
-        // Calcular el impuesto sobre el subtotal
-        const itemTax = itemSubtotal * (taxRate / 100);
-
-        subtotal += itemTotal;
-        totalDiscount += itemDiscount;
-        tax += itemTax;
+        // Obtener tasa de impuesto del primer item
+        if (item.tax_rate) {
+          taxRate = parseFloat(item.tax_rate) || 15;
+        }
       });
 
-      const total = (subtotal - totalDiscount) + tax;
+      // Obtener recargo y descuento de la factura original
+      // shipping_cost es el RECARGO en la base de datos
+      // discount_amount es el DESCUENTO total de la factura
+      const invoiceSurcharge = parseFloat(this.selectedInvoice?.shipping_cost || 0);
+      const invoiceDiscount = parseFloat(this.selectedInvoice?.discount_amount || 0);
+
+      // Subtotal = monto bruto - descuento
+      const subtotal = grossAmount - invoiceDiscount;
+
+      // ISV se calcula sobre el subtotal (después del descuento)
+      const tax = subtotal * (taxRate / 100);
+
+      // Total = subtotal + ISV + recargo
+      const total = subtotal + tax + invoiceSurcharge;
 
       return {
-        subtotal: subtotal - totalDiscount,  // Subtotal ya con descuento aplicado
-        surcharge: 0,
-        tip: 0,
-        discount: totalDiscount,
-        tax: tax,
+        grossAmount: grossAmount,   // Monto bruto
+        discount: invoiceDiscount,  // Descuento
+        subtotal: subtotal,         // Subtotal (con descuento)
+        tax: tax,                   // ISV (sobre subtotal)
+        surcharge: invoiceSurcharge, // Recargo
         total: total
       };
     }
@@ -1008,7 +988,6 @@ export default {
       }
     },
     async selectInvoice(invoice) {
-      this.selectedInvoice = invoice;
       this.showInvoiceModal = false;
 
       // Load invoice details with items
@@ -1020,6 +999,11 @@ export default {
 
         if (response.data.success) {
           const invoiceData = response.data.data;
+          // Guardar todos los datos de la factura incluyendo shipping_cost y discount_amount
+          this.selectedInvoice = {
+            ...invoice,
+            ...invoiceData
+          };
           this.returnItems = (invoiceData.items || []).map(item => ({
             ...item,
             return_quantity: this.returnType === 'total' ? item.quantity : 0,
@@ -1027,9 +1011,12 @@ export default {
             warehouse_id: item.warehouse_id || (this.warehouses.length > 0 ? this.warehouses[0].id : null),
             warehouse_name: item.warehouse_name || 'BODEGA 101 TIENDA'
           }));
+        } else {
+          this.selectedInvoice = invoice;
         }
       } catch (error) {
         console.error('Error loading invoice details:', error);
+        this.selectedInvoice = invoice;
       }
     },
     selectAllProducts() {
@@ -1041,7 +1028,6 @@ export default {
       const qty = parseFloat(item.return_quantity) || 0;
       const price = parseFloat(item.unit_price) || 0;
       const discountValue = parseFloat(item.discount_value) || 0;
-      const taxRate = parseFloat(item.tax_rate) || 0;
 
       // Subtotal del item
       const itemTotal = qty * price;
@@ -1049,14 +1035,11 @@ export default {
       // Descuento
       const itemDiscount = itemTotal * (discountValue / 100);
 
-      // Subtotal después del descuento
+      // Subtotal después del descuento (SIN impuesto)
       const itemSubtotal = itemTotal - itemDiscount;
 
-      // Impuesto
-      const itemTax = itemSubtotal * (taxRate / 100);
-
-      // Total del item
-      return itemSubtotal + itemTax;
+      // Retornar subtotal SIN impuesto
+      return itemSubtotal;
     },
     clearSelection() {
       this.selectedInvoice = null;
@@ -1108,7 +1091,10 @@ export default {
             notes: this.returnForm.notes,
             items: this.returnItems.filter(item => item.return_quantity > 0),
             totals: { ...this.totals },
-            resolution_data: returnData.resolution_data
+            resolution_data: returnData.resolution_data,
+            // Recargo y descuento de la factura original
+            shipping_cost: this.selectedInvoice.shipping_cost || 0,
+            discount_amount: this.selectedInvoice.discount_amount || 0
           };
 
           // Cerrar modal de devolución y abrir modal de documentos
@@ -1263,7 +1249,10 @@ export default {
             },
             resolution_data: returnData.resolution_data || null,
             // Guardar customer_rtn directamente en processedReturn
-            customer_rtn: invoiceData ? invoiceData.customer_rtn : '00000000000000'
+            customer_rtn: invoiceData ? invoiceData.customer_rtn : '00000000000000',
+            // Recargo y descuento de la factura original
+            shipping_cost: invoiceData ? parseFloat(invoiceData.shipping_cost || 0) : 0,
+            discount_amount: invoiceData ? parseFloat(invoiceData.discount_amount || 0) : 0
           };
 
           // Abrir modal de documentos
@@ -1346,6 +1335,12 @@ export default {
     formatDate(dateStr) {
       if (!dateStr) return '';
       const date = new Date(dateStr);
+      return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+    },
+    formatDatePlusOne(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      date.setDate(date.getDate() + 1); // Sumar un día
       return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
     },
     async exportToExcel() {
@@ -1497,31 +1492,30 @@ export default {
 
       // Construir filas de la tabla
       let tableRows = '';
-      let subtotal = 0;
-      let totalDiscount = 0;
-      let totalTax = 0;
+      let grossAmount = 0; // Monto bruto (sin impuesto)
+      let taxRate = 15;
 
       this.processedReturn.items.forEach((item, index) => {
         const qty = parseFloat(item.return_quantity) || 0;
         const price = parseFloat(item.unit_price) || 0;
-        const discountValue = parseFloat(item.discount_value) || 0;
-        const taxRate = parseFloat(item.tax_rate) || 0;
 
-        const itemSubtotal = qty * price;
-        const itemDiscount = itemSubtotal * (discountValue / 100);
-        const itemAfterDiscount = itemSubtotal - itemDiscount;
-        const itemTax = itemAfterDiscount * (taxRate / 100);
-        const itemTotal = itemAfterDiscount + itemTax;
+        // Total del item SIN impuesto
+        const itemTotal = qty * price;
+        grossAmount += itemTotal;
 
-        subtotal += itemSubtotal;
-        totalDiscount += itemDiscount;
-        totalTax += itemTax;
+        // Obtener tasa de impuesto
+        if (item.tax_rate) {
+          taxRate = parseFloat(item.tax_rate) || 15;
+        }
+
+        // Obtener unidad del producto - buscar en múltiples campos posibles
+        const productUnit = item.product_unit || item.unit || item.unit_name || item.unidad || '';
 
         tableRows += `
           <tr>
             <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${String(index + 1).padStart(2, '0')}</td>
             <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_code || item.codigo || 'N/A'}</td>
-            <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_name}</td>
+            <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.product_name}${productUnit ? ' <strong>' + productUnit + '</strong>' : ''}</td>
             <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${this.formatCurrency(qty)}</td>
             <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-size: 10px;">L ${this.formatCurrency(price)}</td>
             <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 10px;">L ${this.formatCurrency(itemTotal)}</td>
@@ -1529,7 +1523,18 @@ export default {
         `;
       });
 
-      const grandTotal = this.processedReturn.totals.total || (subtotal - totalDiscount + totalTax);
+      // Obtener recargo y descuento de la factura
+      const invoiceSurcharge = parseFloat(this.processedReturn.shipping_cost || this.processedReturn.surcharge || 0);
+      const invoiceDiscount = parseFloat(this.processedReturn.discount_amount || 0);
+
+      // Subtotal = monto bruto - descuento
+      const subtotalAfterDiscount = grossAmount - invoiceDiscount;
+
+      // ISV se calcula sobre el subtotal (después del descuento)
+      const totalTax = subtotalAfterDiscount * (taxRate / 100);
+
+      // Total = subtotal + ISV + recargo
+      const grandTotal = subtotalAfterDiscount + totalTax + invoiceSurcharge;
 
       const html = `
         <!DOCTYPE html>
@@ -1716,9 +1721,9 @@ export default {
                   })()}<br>
                   <strong>Doc/Devuelto:</strong> ${this.processedReturn.invoice_number || 'N/A'}<br>
                   <strong>Sucursal:</strong> Agencia Principal<br>
-                  <strong>Emisión:</strong> ${this.formatDate(this.processedReturn.emission_date)}<br>
+                  <strong>Emisión:</strong> ${this.formatDatePlusOne(this.processedReturn.emission_date)}<br>
                   <strong>Condiciones de la Transacción:</strong> Contado<br>
-                  <strong>Entrega:</strong> ${this.formatDate(this.processedReturn.emission_date)}<br>
+                  <strong>Entrega:</strong> ${this.formatDatePlusOne(this.processedReturn.emission_date)}<br>
                   <strong>No. Correlativo de la Orden de Compra Exenta:</strong><br>
                   <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong><br>
                   <strong>No. Identificativo del Registro SAG:</strong>
@@ -1743,7 +1748,7 @@ export default {
             <div class="totals-section">
               <div class="totals-left">
                 <div style="margin-bottom: 15px;">
-                  <strong>TOTAL:</strong> ${this.numberToWords(grandTotal).toUpperCase()} LEMPIRAS ${String(Math.floor((grandTotal % 1) * 100)).padStart(2, '0')}/100
+                  <strong>TOTAL:</strong> ${this.numberToWords(Math.floor(grandTotal)).toUpperCase()} LEMPIRAS ${Math.round((grandTotal % 1) * 100).toString().padStart(2, '0')}/100
                 </div>
                 <div style="margin-top: auto; padding-top: 40px; text-align: center;">
                   <div style="border-top: 2px solid #000; width: 250px; margin: 0 auto 10px;"></div>
@@ -1767,7 +1772,7 @@ export default {
                 </div>
                 <div class="total-row">
                   <span class="label">Gravado 15%</span>
-                  <span class="value">L ${this.formatCurrency(subtotal - totalDiscount)}</span>
+                  <span class="value">L ${this.formatCurrency(subtotalAfterDiscount)}</span>
                 </div>
                 <div class="total-row">
                   <span class="label">Gravado 18%</span>
@@ -1783,11 +1788,11 @@ export default {
                 </div>
                 <div class="total-row">
                   <span class="label">RECARGOS:</span>
-                  <span class="value">L 0.00</span>
+                  <span class="value">L ${this.formatCurrency(invoiceSurcharge)}</span>
                 </div>
                 <div class="total-row">
                   <span class="label">DESCUENTOS Y REBAJAS OTORGADOS:</span>
-                  <span class="value">L ${this.formatCurrency(totalDiscount)}</span>
+                  <span class="value">L ${this.formatCurrency(invoiceDiscount)}</span>
                 </div>
                 <div class="total-row grand-total">
                   <span class="label"><strong>TOTAL:</strong></span>

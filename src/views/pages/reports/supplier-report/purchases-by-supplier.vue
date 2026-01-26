@@ -73,10 +73,10 @@
               <thead class="table-light">
                 <tr>
                   <th>Proveedor</th>
-                  <th class="text-end">Neto</th>
+                  <th class="text-end">Total Bruto</th>
+                  <th class="text-end">Impuesto</th>
                   <th class="text-end">Total+ISV</th>
                   <th class="text-end">Devuelto</th>
-                  <th class="text-end">Descuentos</th>
                   <th class="text-end">Cant.Compras</th>
                 </tr>
               </thead>
@@ -84,9 +84,9 @@
                 <tr v-for="supplier in reportData.suppliers" :key="supplier.supplier_name">
                   <td class="text-primary fw-bold">{{ supplier.supplier_name }}</td>
                   <td class="text-end">{{ formatCurrency(supplier.total_neto) }}</td>
+                  <td class="text-end">{{ formatCurrency(supplier.total_isv) }}</td>
                   <td class="text-end">{{ formatCurrency(supplier.total_con_isv) }}</td>
                   <td class="text-end">{{ formatCurrency(supplier.devuelto) }}</td>
-                  <td class="text-end">{{ formatCurrency(supplier.total_descuento) }}</td>
                   <td class="text-end">{{ supplier.total_purchases }}</td>
                 </tr>
               </tbody>
@@ -94,9 +94,9 @@
                 <tr>
                   <td class="text-end">TOTALES</td>
                   <td class="text-end">{{ formatCurrency(reportData.totals.total_neto) }}</td>
+                  <td class="text-end">{{ formatCurrency(reportData.totals.total_isv) }}</td>
                   <td class="text-end">{{ formatCurrency(reportData.totals.total_con_isv) }}</td>
                   <td class="text-end">{{ formatCurrency(reportData.totals.devuelto) }}</td>
-                  <td class="text-end">{{ formatCurrency(reportData.totals.total_descuento) }}</td>
                   <td class="text-end">{{ reportData.totals.total_purchases }}</td>
                 </tr>
               </tfoot>
@@ -169,10 +169,10 @@
               <thead style="background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);">
                 <tr class="text-white">
                   <th style="padding: 8px;">PROVEEDOR</th>
-                  <th class="text-end" style="padding: 8px;">NETO</th>
+                  <th class="text-end" style="padding: 8px;">TOTAL BRUTO</th>
+                  <th class="text-end" style="padding: 8px;">IMPUESTO</th>
                   <th class="text-end" style="padding: 8px;">TOTAL+ISV</th>
                   <th class="text-end" style="padding: 8px;">DEVUELTO</th>
-                  <th class="text-end" style="padding: 8px;">DESCUENTOS</th>
                   <th class="text-end" style="padding: 8px;">CANT.</th>
                 </tr>
               </thead>
@@ -180,9 +180,9 @@
                 <tr v-for="supplier in reportData.suppliers" :key="supplier.supplier_name">
                   <td style="padding: 6px;">{{ supplier.supplier_name }}</td>
                   <td class="text-end" style="padding: 6px;">L {{ formatCurrency(supplier.total_neto) }}</td>
+                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(supplier.total_isv) }}</td>
                   <td class="text-end" style="padding: 6px;">L {{ formatCurrency(supplier.total_con_isv) }}</td>
                   <td class="text-end" style="padding: 6px;">L {{ formatCurrency(supplier.devuelto) }}</td>
-                  <td class="text-end" style="padding: 6px;">L {{ formatCurrency(supplier.total_descuento) }}</td>
                   <td class="text-end" style="padding: 6px;">{{ supplier.total_purchases }}</td>
                 </tr>
               </tbody>
@@ -190,9 +190,9 @@
                 <tr>
                   <td style="padding: 8px; text-align: right;">TOTALES:</td>
                   <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.total_neto) }}</td>
+                  <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.total_isv) }}</td>
                   <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.total_con_isv) }}</td>
                   <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.devuelto) }}</td>
-                  <td class="text-end" style="padding: 8px;">L {{ formatCurrency(reportData.totals.total_descuento) }}</td>
                   <td class="text-end" style="padding: 8px;">{{ reportData.totals.total_purchases }}</td>
                 </tr>
               </tfoot>
@@ -387,22 +387,22 @@ export default {
         ['Hasta:', this.formatDate(this.filters.date_to)],
         ['Proveedor:', supplierFilterText],
         [''],
-        ['Proveedor', 'Neto', 'Total+ISV', 'Devuelto', 'Descuentos', 'Cant.Compras']
+        ['Proveedor', 'Total Bruto', 'Impuesto', 'Total+ISV', 'Devuelto', 'Cant.Compras']
       ];
 
       this.reportData.suppliers.forEach(supplier => {
         data.push([
           supplier.supplier_name,
           supplier.total_neto,
+          supplier.total_isv,
           supplier.total_con_isv,
           supplier.devuelto,
-          supplier.total_descuento,
           supplier.total_purchases
         ]);
       });
 
       data.push(['']);
-      data.push(['TOTALES', this.reportData.totals.total_neto, this.reportData.totals.total_con_isv, this.reportData.totals.devuelto, this.reportData.totals.total_descuento, this.reportData.totals.total_purchases]);
+      data.push(['TOTALES', this.reportData.totals.total_neto, this.reportData.totals.total_isv, this.reportData.totals.total_con_isv, this.reportData.totals.devuelto, this.reportData.totals.total_purchases]);
 
       const ws = XLSX.utils.aoa_to_sheet(data);
       const wb = XLSX.utils.book_new();
@@ -503,9 +503,9 @@ export default {
           <tr>
             <td style="padding: 6px;">${supplier.supplier_name}</td>
             <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(supplier.total_neto)}</td>
+            <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(supplier.total_isv)}</td>
             <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(supplier.total_con_isv)}</td>
             <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(supplier.devuelto)}</td>
-            <td style="padding: 6px; text-align: right;">L ${this.formatCurrency(supplier.total_descuento)}</td>
             <td style="padding: 6px; text-align: right;">${supplier.total_purchases}</td>
           </tr>
         `;
@@ -645,10 +645,10 @@ export default {
             <thead>
               <tr>
                 <th>PROVEEDOR</th>
-                <th class="text-right">NETO</th>
+                <th class="text-right">TOTAL BRUTO</th>
+                <th class="text-right">IMPUESTO</th>
                 <th class="text-right">TOTAL+ISV</th>
                 <th class="text-right">DEVUELTO</th>
-                <th class="text-right">DESCUENTOS</th>
                 <th class="text-right">CANT.</th>
               </tr>
             </thead>
@@ -659,9 +659,9 @@ export default {
               <tr>
                 <td style="text-align: right;">TOTALES:</td>
                 <td class="text-right">L ${this.formatCurrency(this.reportData.totals.total_neto)}</td>
+                <td class="text-right">L ${this.formatCurrency(this.reportData.totals.total_isv)}</td>
                 <td class="text-right">L ${this.formatCurrency(this.reportData.totals.total_con_isv)}</td>
                 <td class="text-right">L ${this.formatCurrency(this.reportData.totals.devuelto)}</td>
-                <td class="text-right">L ${this.formatCurrency(this.reportData.totals.total_descuento)}</td>
                 <td class="text-right">${this.reportData.totals.total_purchases}</td>
               </tr>
             </tfoot>

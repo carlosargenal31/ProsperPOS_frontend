@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Roles de Usuario</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #FF9F43;
+            border-bottom: 3px solid #FF9F43;
+            padding-bottom: 10px;
+        }
+        .result {
+            background: #f9f9f9;
+            padding: 20px;
+            border-left: 4px solid #FF9F43;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+        .success {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+        button {
+            background: #FF9F43;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #ff8c1a;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Verificar Roles de Usuario - Diagnóstico</h1>
+
+        <div class="warning">
+            <strong>⚠️ Instrucciones:</strong>
+            <ol>
+                <li>Inicia sesión en el sistema (en otra pestaña)</li>
+                <li>Regresa a esta página</li>
+                <li>Haz clic en el botón "Verificar Usuario"</li>
+            </ol>
+        </div>
+
+        <button onclick="checkUser()">🔍 Verificar Usuario</button>
+        <button onclick="clearStorage()">🗑️ Limpiar Storage</button>
+        <button onclick="location.reload()">🔄 Recargar Página</button>
+
+        <h2>📊 Resultado del Diagnóstico</h2>
+        <div id="result" class="result">
+Esperando análisis...
+        </div>
+    </div>
+
+    <script>
+        function checkUser() {
+            const resultDiv = document.getElementById('result');
+            let output = '=== DIAGNÓSTICO DE USUARIO ===\n\n';
+
+            try {
+                // 1. Verificar localStorage
+                output += '1️⃣ VERIFICANDO LOCALSTORAGE\n';
+                output += '─'.repeat(50) + '\n';
+
+                const userStr = localStorage.getItem('user');
+                const token = localStorage.getItem('accessToken');
+
+                output += `✓ Token presente: ${token ? 'SÍ' : 'NO'}\n`;
+                output += `✓ Usuario presente: ${userStr ? 'SÍ' : 'NO'}\n\n`;
+
+                if (!userStr) {
+                    output += '❌ ERROR: No hay usuario en localStorage\n';
+                    output += '   Solución: Inicia sesión en el sistema\n';
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = output;
+                    return;
+                }
+
+                // 2. Parsear usuario
+                output += '2️⃣ PARSEANDO DATOS DEL USUARIO\n';
+                output += '─'.repeat(50) + '\n';
+
+                let user;
+                try {
+                    user = JSON.parse(userStr);
+                    output += '✓ Usuario parseado correctamente\n\n';
+                } catch (e) {
+                    output += '❌ ERROR al parsear usuario: ' + e.message + '\n';
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = output;
+                    return;
+                }
+
+                // 3. Mostrar estructura completa
+                output += '3️⃣ ESTRUCTURA COMPLETA DEL USUARIO\n';
+                output += '─'.repeat(50) + '\n';
+                output += JSON.stringify(user, null, 2) + '\n\n';
+
+                // 4. Verificar campo roles
+                output += '4️⃣ VERIFICANDO CAMPO ROLES\n';
+                output += '─'.repeat(50) + '\n';
+
+                if (!user.roles) {
+                    output += '❌ Campo "roles" NO EXISTE\n';
+                    output += '   Posibles campos alternativos:\n';
+                    output += `   - role: ${user.role || 'NO EXISTE'}\n`;
+                    output += `   - role_id: ${user.role_id || 'NO EXISTE'}\n`;
+                    output += `   - user_role: ${user.user_role || 'NO EXISTE'}\n\n`;
+                } else {
+                    output += `✓ Campo "roles" EXISTE\n`;
+                    output += `  Tipo: ${Array.isArray(user.roles) ? 'Array' : typeof user.roles}\n`;
+                    output += `  Valor: ${JSON.stringify(user.roles)}\n`;
+
+                    if (Array.isArray(user.roles)) {
+                        output += `  ✓ Es un array (CORRECTO)\n`;
+                        output += `  Elementos: ${user.roles.length}\n`;
+                        user.roles.forEach((role, i) => {
+                            output += `    [${i}] ${role}\n`;
+                        });
+                    } else {
+                        output += `  ⚠️ NO es un array\n`;
+                        output += `  Necesitas convertirlo a array\n`;
+                    }
+                    output += '\n';
+                }
+
+                // 5. Probar función hasAnyRole simulada
+                output += '5️⃣ PROBANDO LÓGICA DE ROLES\n';
+                output += '─'.repeat(50) + '\n';
+
+                const requiredRoles = ["super_admin", "admin"];
+                output += `Roles requeridos para manual de admin: ${JSON.stringify(requiredRoles)}\n`;
+
+                let hasAccess = false;
+                if (user.roles && Array.isArray(user.roles)) {
+                    hasAccess = requiredRoles.some(role => user.roles.includes(role));
+                    output += `Resultado: ${hasAccess ? '✅ TIENE ACCESO' : '❌ NO TIENE ACCESO'}\n`;
+                } else {
+                    output += `❌ No se puede verificar (roles no es array)\n`;
+                }
+                output += '\n';
+
+                // 6. Verificar otros roles
+                output += '6️⃣ VERIFICANDO ACCESO A TODOS LOS MANUALES\n';
+                output += '─'.repeat(50) + '\n';
+
+                const manuals = [
+                    { name: 'Administrador', roles: ['super_admin', 'admin'] },
+                    { name: 'Vendedor', roles: ['cashier'] },
+                    { name: 'Bodega', roles: ['warehouse'] }
+                ];
+
+                manuals.forEach(manual => {
+                    if (user.roles && Array.isArray(user.roles)) {
+                        const access = manual.roles.some(role => user.roles.includes(role));
+                        output += `${manual.name}: ${access ? '✅ VISIBLE' : '⚠️ OCULTO'}\n`;
+                    } else {
+                        output += `${manual.name}: ❌ No se puede verificar\n`;
+                    }
+                });
+
+                // 7. Recomendaciones
+                output += '\n7️⃣ RECOMENDACIONES\n';
+                output += '─'.repeat(50) + '\n';
+
+                if (!user.roles) {
+                    output += '⚠️ El usuario no tiene el campo "roles"\n';
+                    output += '  Posible solución:\n';
+                    output += '  - Verificar la respuesta del backend en login\n';
+                    output += '  - Asegurarse que el backend envíe user.roles como array\n';
+                } else if (!Array.isArray(user.roles)) {
+                    output += '⚠️ El campo "roles" no es un array\n';
+                    output += '  Necesitas modificar el backend para enviar:\n';
+                    output += '  user.roles = ["admin"] (array)\n';
+                    output += '  NO: user.roles = "admin" (string)\n';
+                } else if (user.roles.length === 0) {
+                    output += '⚠️ El array de roles está vacío\n';
+                    output += '  Verifica que el usuario tenga roles asignados\n';
+                } else {
+                    output += '✅ Todo parece correcto\n';
+                    if (!hasAccess) {
+                        output += '  Pero el usuario no tiene los roles necesarios\n';
+                        output += `  Roles actuales: ${user.roles.join(', ')}\n`;
+                    }
+                }
+
+                resultDiv.className = hasAccess ? 'result success' : 'result warning';
+                resultDiv.textContent = output;
+
+            } catch (error) {
+                output += '\n❌ ERROR GENERAL: ' + error.message + '\n';
+                output += error.stack;
+                resultDiv.className = 'result error';
+                resultDiv.textContent = output;
+            }
+        }
+
+        function clearStorage() {
+            if (confirm('¿Estás seguro de limpiar el localStorage? Tendrás que iniciar sesión de nuevo.')) {
+                localStorage.clear();
+                alert('localStorage limpiado. Inicia sesión nuevamente.');
+                document.getElementById('result').textContent = 'Storage limpiado. Inicia sesión y vuelve a verificar.';
+            }
+        }
+
+        // Auto-ejecutar al cargar
+        window.onload = function() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                checkUser();
+            }
+        };
+    </script>
+</body>
+</html>

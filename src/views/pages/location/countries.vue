@@ -12,33 +12,29 @@
         </div>
         <ul class="table-top-head">
           <li>
-            <a @click="exportToPDF" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF">
-              <img src="@/assets/img/icons/pdf.svg" alt="img" />
+            <a @click="loadCountries" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar">
+              <i class="ti ti-refresh"></i>
             </a>
           </li>
           <li>
-            <a @click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Excel">
-              <img src="@/assets/img/icons/excel.svg" alt="img" />
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Colapsar" id="collapse-header" @click="toggleHeader">
+              <i class="ti ti-chevron-up"></i>
             </a>
-          </li>
-          <li>
-            <a @click="loadCountries" data-bs-toggle="tooltip" data-bs-placement="top" title="Refrescar"
-              ><i class="ti ti-refresh"></i
-            ></a>
-          </li>
-          <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Colapsar" id="collapse-header" @click="toggleHeader"><i class="ti ti-chevron-up"></i></a>
           </li>
         </ul>
-        <div class="page-btn">
+        <div class="page-btn d-flex gap-2">
           <a
             href="#"
             class="btn btn-primary"
             data-bs-toggle="modal"
             data-bs-target="#add-country"
             @click="openAddModal"
-            ><i class="ti ti-circle-plus me-1"></i>Agregar Nuevo País</a
           >
+            <i class="ti ti-circle-plus me-1"></i>Agregar Nuevo País
+          </a>
+          <button class="btn btn-success" @click="showSaveReportModal = true">
+            <i class="ti ti-download me-1"></i>Guardar Reporte
+          </button>
         </div>
       </div>
 
@@ -67,11 +63,8 @@
                   <th @click="sortBy('nombre')" style="cursor: pointer;">
                     Nombre <i :class="getSortIcon('nombre')"></i>
                   </th>
-                  <th @click="sortBy('codigo_iso')" style="cursor: pointer;">
-                    Código ISO <i :class="getSortIcon('codigo_iso')"></i>
-                  </th>
-                  <th @click="sortBy('states_count')" style="cursor: pointer;">
-                    Departamentos <i :class="getSortIcon('states_count')"></i>
+                  <th @click="sortBy('codigo')" style="cursor: pointer;">
+                    Código <i :class="getSortIcon('codigo')"></i>
                   </th>
                   <th @click="sortBy('is_active')" style="cursor: pointer;">
                     Estado <i :class="getSortIcon('is_active')"></i>
@@ -81,13 +74,12 @@
               </thead>
               <tbody>
                 <tr v-if="sortedCountries.length === 0">
-                  <td colspan="6" class="text-center">No hay países registrados</td>
+                  <td colspan="5" class="text-center">No hay países registrados</td>
                 </tr>
                 <tr v-for="country in sortedCountries" :key="country.id">
                   <td>{{ country.id }}</td>
                   <td>{{ country.nombre }}</td>
-                  <td>{{ country.codigo_iso || '-' }}</td>
-                  <td>{{ country.states_count || 0 }}</td>
+                  <td>{{ country.codigo || '-' }}</td>
                   <td>
                     <span :class="country.is_active ? 'badge bg-success' : 'badge bg-danger'">
                       {{ country.is_active ? 'Activo' : 'Inactivo' }}
@@ -139,12 +131,49 @@
     @country-saved="onCountrySaved"
     @country-deleted="onCountryDeleted"
   ></country-modal>
+
+  <!-- Modal Guardar Reporte -->
+  <div v-if="showSaveReportModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Guardar Reporte - Países</h5>
+          <button type="button" class="btn-close" @click="showSaveReportModal = false"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">Selecciona el formato en el que deseas guardar el reporte:</p>
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-success" @click="saveAsExcel">
+              <i class="ti ti-file-spreadsheet me-2"></i> Guardar como Excel
+            </button>
+            <button class="btn btn-outline-danger" @click="saveAsPDF">
+              <i class="ti ti-file-type-pdf me-2"></i> Guardar como PDF
+            </button>
+            <button class="btn btn-outline-primary" @click="saveAsImage">
+              <i class="ti ti-photo me-2"></i> Guardar como Imagen
+            </button>
+            <button class="btn btn-outline-secondary" @click="printReport">
+              <i class="ti ti-printer me-2"></i> Imprimir
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="showSaveReportModal = false">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { exportToPDF as exportPDF, exportToExcel as exportExcel } from '@/utils/exportUtils';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import * as XLSX from 'xlsx';
+import api from '@/utils/axios';
 
 export default {
   data() {
@@ -155,22 +184,22 @@ export default {
       loading: false,
       error: null,
       sortColumn: 'id',
-      sortDirection: 'asc'
+      sortDirection: 'asc',
+      showSaveReportModal: false,
+      companyInfo: {}
     };
   },
   computed: {
     sortedCountries() {
-      if (!this.countries || this.countries.length === 0) return [];
+      if (!this.countries || !Array.isArray(this.countries) || this.countries.length === 0) return [];
 
       const sorted = [...this.countries].sort((a, b) => {
         let aVal = a[this.sortColumn];
         let bVal = b[this.sortColumn];
 
-        // Handle null values
         if (aVal === null || aVal === undefined) aVal = '';
         if (bVal === null || bVal === undefined) bVal = '';
 
-        // Convert to string for comparison if needed
         if (typeof aVal === 'string') aVal = aVal.toLowerCase();
         if (typeof bVal === 'string') bVal = bVal.toLowerCase();
 
@@ -184,6 +213,7 @@ export default {
   },
   mounted() {
     this.loadCountries();
+    this.loadCompanyInfo();
   },
   methods: {
     sortBy(column) {
@@ -248,71 +278,274 @@ export default {
       document.body.classList.toggle("header-collapse");
     },
 
-    exportToPDF() {
+    async loadCompanyInfo() {
       try {
-        const columns = [
-          { header: 'ID', dataKey: 'id' },
-          { header: 'Nombre', dataKey: 'nombre' },
-          { header: 'Código ISO', dataKey: 'codigo_iso' },
-          { header: 'Estado', dataKey: 'is_active' }
-        ];
-
-        const data = this.sortedCountries.map(country => ({
-          ...country,
-          is_active: country.is_active ? 'Activo' : 'Inactivo'
-        }));
-
-        exportPDF(data, columns, 'paises', 'Lista de Países');
-
-        Swal.fire({
-          icon: 'success',
-          title: 'PDF Generado',
-          text: 'El archivo PDF se ha descargado correctamente',
-          timer: 2000,
-          showConfirmButton: false
-        });
+        const response = await api.get('/companies/default');
+        if (response.data && response.data.success) {
+          this.companyInfo = response.data.data;
+        }
       } catch (error) {
-        console.error('Error al exportar PDF:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo generar el archivo PDF'
-        });
+        console.error('Error al cargar información de empresa:', error);
+        try {
+          const publicResponse = await api.get('/companies/public/default');
+          if (publicResponse.data && publicResponse.data.success) {
+            this.companyInfo = publicResponse.data.data;
+          }
+        } catch (publicError) {
+          this.companyInfo = {
+            company_name: 'ProsperPOS',
+            commercial_name: 'ProsperPOS',
+            rtn: 'N/A',
+            address: 'Sin dirección',
+            phone: 'N/A',
+            whatsapp: 'N/A',
+            email: 'N/A'
+          };
+        }
       }
     },
 
-    exportToExcel() {
+    async getCompanyLogo() {
+      if (!this.companyInfo?.logo_url) return '';
+      const dbLogoUrl = this.companyInfo.logo_url;
+      if (!dbLogoUrl.startsWith('http')) return '';
+
       try {
-        const columns = [
-          { header: 'ID', dataKey: 'id' },
-          { header: 'Nombre', dataKey: 'nombre' },
-          { header: 'Código ISO', dataKey: 'codigo_iso' },
-          { header: 'Estado', dataKey: 'is_active' }
+        const response = await api.get('/image-proxy', { params: { url: dbLogoUrl } });
+        if (response.data.success && response.data.data.base64) {
+          return response.data.data.base64;
+        }
+      } catch (error) {
+        console.error('Error al cargar logo:', error);
+      }
+      return '';
+    },
+
+    saveAsExcel() {
+      this.showSaveReportModal = false;
+      try {
+        const wb = XLSX.utils.book_new();
+        const headerData = [
+          [this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'],
+          [this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'],
+          [`Tel: ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'}`],
+          [''],
+          ['REPORTE DE PAÍSES'],
+          [''],
+          ['']
         ];
 
+        const ws = XLSX.utils.aoa_to_sheet(headerData);
         const data = this.sortedCountries.map(country => ({
-          ...country,
-          is_active: country.is_active ? 'Activo' : 'Inactivo'
+          'ID': country.id,
+          'Nombre': country.nombre,
+          'Código': country.codigo || '-',
+          'Estado': country.is_active ? 'Activo' : 'Inactivo'
         }));
 
-        exportExcel(data, columns, 'paises', 'Países');
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Excel Generado',
-          text: 'El archivo Excel se ha descargado correctamente',
-          timer: 2000,
-          showConfirmButton: false
-        });
+        XLSX.utils.sheet_add_json(ws, data, { origin: 'A8', skipHeader: false });
+        XLSX.utils.book_append_sheet(wb, ws, 'Países');
+        XLSX.writeFile(wb, `paises_${new Date().toISOString().split('T')[0]}.xlsx`);
       } catch (error) {
-        console.error('Error al exportar Excel:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo generar el archivo Excel'
-        });
+        console.error('Error al guardar Excel:', error);
+        alert('Error al generar el archivo Excel');
       }
     },
+
+    async saveAsPDF() {
+      this.showSaveReportModal = false;
+      try {
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
+
+        const htmlContent = await this.buildReportHTML();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 800,
+          windowWidth: 800
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'letter');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pdfWidth - 20;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 10;
+
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= (pdfHeight - 20);
+
+        while (heightLeft > 0) {
+          position = -(imgHeight - heightLeft) + 10;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+          heightLeft -= (pdfHeight - 20);
+        }
+
+        pdf.save(`paises_${new Date().toISOString().split('T')[0]}.pdf`);
+        document.body.removeChild(iframe);
+      } catch (error) {
+        console.error('Error al guardar PDF:', error);
+        alert('Error al generar el archivo PDF');
+      }
+    },
+
+    async saveAsImage() {
+      this.showSaveReportModal = false;
+      try {
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
+
+        const htmlContent = await this.buildReportHTML();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const element = iframe.contentDocument.body;
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 800,
+          windowWidth: 800
+        });
+
+        const link = document.createElement('a');
+        link.download = `paises_${new Date().toISOString().split('T')[0]}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        document.body.removeChild(iframe);
+      } catch (error) {
+        console.error('Error al guardar imagen:', error);
+        alert('Error al generar la imagen');
+      }
+    },
+
+    async printReport() {
+      this.showSaveReportModal = false;
+      try {
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '600px';
+        document.body.appendChild(iframe);
+
+        const htmlContent = await this.buildReportHTML();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      } catch (error) {
+        console.error('Error al imprimir:', error);
+        alert('Error al imprimir el reporte');
+      }
+    },
+
+    async buildReportHTML() {
+      const logoUrl = await this.getCompanyLogo();
+      const hasLogo = logoUrl !== '';
+
+      const tableRows = this.sortedCountries.map(country => `
+        <tr>
+          <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${country.id}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${country.nombre}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${country.codigo || '-'}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; text-align: center;">
+            ${country.is_active ? 'Activo' : 'Inactivo'}
+          </td>
+        </tr>
+      `).join('');
+
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; padding: 15px; background: white; margin: 0; width: 800px; }
+            .header-section { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
+            .company-info { width: 60%; flex-shrink: 0; }
+            .company-info img { max-width: 180px; height: auto; margin-bottom: 8px; }
+            .company-details { font-size: 11px; line-height: 1.5; }
+            .report-box { width: 38%; flex-shrink: 0; background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+                          -webkit-print-color-adjust: exact; print-color-adjust: exact;
+                          color: white; padding: 10px; border-radius: 8px; }
+            .report-title { font-size: 13px; font-weight: bold; margin-bottom: 8px; }
+            .report-details { font-size: 10px; line-height: 1.6; }
+            .separator { border: none; border-top: 3px solid #f97316; margin: 15px 0; }
+            table { width: 100%; border-collapse: collapse; font-size: 9px; }
+            thead { background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+                    -webkit-print-color-adjust: exact; print-color-adjust: exact; color: white; }
+            th { padding: 8px 4px; text-align: left; border: 1px solid #ddd; font-size: 9px; }
+            td { padding: 6px; border: 1px solid #ddd; }
+          </style>
+        </head>
+        <body>
+          <div class="header-section">
+            <div class="company-info">
+              ${hasLogo ? `<img src="${logoUrl}" alt="Logo">` : ''}
+              <div class="company-details">
+                <strong>${this.companyInfo.commercial_name || this.companyInfo.company_name || 'PROSPERPOS'}</strong><br>
+                <strong>RTN:</strong> ${this.companyInfo.rtn || 'N/A'}<br>
+                <strong>Dirección:</strong> ${this.companyInfo.address || this.companyInfo.direccion || 'Sin dirección'}<br>
+                <strong>Tel:</strong> ${this.companyInfo.phone || this.companyInfo.telefono || 'N/A'} | <strong>Móvil:</strong> ${this.companyInfo.whatsapp || 'N/A'}<br>
+                <strong>Email:</strong> ${this.companyInfo.email || 'N/A'}
+              </div>
+            </div>
+            <div class="report-box">
+              <div class="report-title">REPORTE DE PAÍSES</div>
+              <div class="report-details">
+                <strong>Generado:</strong> ${new Date().toLocaleDateString('es-HN', { year: 'numeric', month: 'long', day: 'numeric' })} - ${new Date().toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            </div>
+          </div>
+          <hr class="separator">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Código</th>
+                <th style="text-align: center;">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+    }
   },
 };
 </script>

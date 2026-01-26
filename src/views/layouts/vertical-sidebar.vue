@@ -4,27 +4,31 @@
 
   <!-- Usar sidebar normal del POS -->
   <ul v-else>
-    <li class="submenu-open" v-for="item in side_bar_data" :key="item.tittle">
+    <li class="submenu-open" v-for="item in filtered_sidebar_data" :key="item.tittle">
         <h6 class="submenu-hdr">{{ item.tittle }}</h6> <!-- Correct typo if needed -->
         <ul>
             <template v-for="menu in item.menu" :key="menu.menuValue">
-                <li v-if="!menu.hasSubRoute" :class="{ 'active': isMenuActive(menu) }">
-                    <router-link v-if="menu.route" :to="menu.route">
+                <li v-if="!menu.hasSubRoute && shouldShowMenu(menu)" :class="{ 'active': isMenuActive(menu) }">
+                    <a v-if="menu.isManual" href="javascript:void(0);" @click="handleManualDownload(menu.manualFile)">
+                        <i :class="menu.icon" class="fs-16 me-2"></i>
+                        <span>{{ menu.menuValue }}</span>
+                    </a>
+                    <router-link v-else-if="menu.route" :to="menu.route">
                         <i :class="menu.icon" class="fs-16 me-2"></i>
                         <span>{{ menu.menuValue }}</span>
                     </router-link>
                 </li>
-                <li v-else class="submenu">
-                    <a href="javascript:void(0);" @click="expandSubMenus(menu)" 
+                <li v-else-if="menu.hasSubRoute && shouldShowMenu(menu)" class="submenu">
+                    <a href="javascript:void(0);" @click="expandSubMenus(menu)"
                     :class="{ subdrop: menu.showSubRoute && !openMenuItem, 'active': isActive(menu) }">
                         <i :class="menu.icon" class="fs-16 me-2"></i>
                         <span>{{ menu.menuValue }}</span>
                         <span class="menu-arrow"></span>
                     </a>
                     <ul :class="menu.showSubRoute ? 'd-block' : 'd-none'">
-                        <li v-for="(subMenu, index) in menu.subMenus" :key="index">
-                            <!-- Add v-if to check subMenu.route -->
-                            <router-link v-if="subMenu.route" :to="subMenu.route">{{ subMenu.menuValue }}</router-link>
+                        <li v-for="(subMenu, index) in menu.subMenus" :key="index" v-show="isSubmenuAllowed(item.tittle, menu.menuValue, subMenu.menuValue)">
+                            <a v-if="subMenu.isManual" href="javascript:void(0);" @click="handleManualDownload(subMenu.manualFile)">{{ subMenu.menuValue }}</a>
+                            <router-link v-else-if="subMenu.route" :to="subMenu.route">{{ subMenu.menuValue }}</router-link>
                         </li>
                     </ul>
                 </li>
@@ -65,7 +69,9 @@
 
 <script>
 import side_bar_data from "@/assets/json/sidebar.json";
-import { canAccessModule } from '@/utils/permissions';
+import { canAccessModule, getCurrentUser, hasAnyRole } from '@/utils/permissions';
+import { downloadManual } from '@/utils/manual-download';
+import { canViewSection, canViewSubmenu, canViewSubmenuItem } from '@/utils/sidebar-permissions';
 import EcommerceSidebar from './ecommerce-sidebar.vue';
 
 export default {
@@ -82,6 +88,78 @@ export default {
   computed: {
       isEcommercePage() {
           return this.$route.path.startsWith('/ecommerce');
+      },
+      filtered_sidebar_data() {
+          const user = getCurrentUser();
+
+          // Si no hay usuario, no mostrar nada
+          if (!user || !user.roles) {
+              console.warn('No user or roles found in sidebar');
+              return [];
+          }
+
+          // Admins y super admins ven todo
+          if (user.roles.includes('admin') || user.roles.includes('super_admin') || user.roles.includes('administrador')) {
+              return this.side_bar_data;
+          }
+
+          console.log('========================================');
+          console.log('FILTERING SIDEBAR FOR ROLES:', user.roles);
+          console.log('========================================');
+
+          // Filtrar secciones y submenús según el rol (manteniendo referencias)
+          const filtered = this.side_bar_data
+              .filter(section => {
+                  const canView = canViewSection(user, section.tittle);
+                  console.log(`Section "${section.tittle}": ${canView}`);
+                  return canView;
+              })
+              .map(section => {
+                  // Mantener referencia al objeto original pero con menú filtrado
+                  const filteredMenus = section.menu.filter(menu => {
+                      // Si es un manual, verificar roles
+                      if (menu.isManual) {
+                          return this.shouldShowMenu(menu);
+                      }
+
+                      // Si es un item simple sin submenús, mostrarlo
+                      if (!menu.hasSubRoute && !menu.hasSubRouteTwo) {
+                          return true;
+                      }
+
+                      // Si tiene submenús, verificar si tiene al menos uno permitido
+                      if (menu.subMenus && menu.subMenus.length > 0) {
+                          const hasAllowedSubmenu = menu.subMenus.some(subMenu => {
+                              return canViewSubmenuItem(user, section.tittle, menu.menuValue, subMenu.menuValue);
+                          });
+                          return hasAllowedSubmenu;
+                      }
+
+                      return true;
+                  });
+
+                  // Retornar el mismo objeto sección pero con menús filtrados
+                  return {
+                      tittle: section.tittle,
+                      showAsTab: section.showAsTab,
+                      separateRoute: section.separateRoute,
+                      menu: filteredMenus
+                  };
+              })
+              .filter(section => section.menu.length > 0);
+
+          console.log('========================================');
+          console.log('FILTERED SIDEBAR RESULT:');
+          console.log('  Total sections:', filtered.length);
+          filtered.forEach(section => {
+              console.log(`  - ${section.tittle} (${section.menu.length} menus)`);
+              section.menu.forEach(menu => {
+                  const submenuCount = menu.subMenus ? menu.subMenus.length : 0;
+                  console.log(`    - ${menu.menuValue} ${submenuCount > 0 ? `(${submenuCount} items)` : ''}`);
+              });
+          });
+          console.log('========================================');
+          return filtered;
       },
       isMenuActive() {
           return (menu) => {
@@ -113,25 +191,60 @@ export default {
   },
   methods: {
       expandSubMenus(menu) {
-          this.side_bar_data.forEach((item) => {
-              item.menu.forEach((subMenu) => {
-                  if (subMenu !== menu) {
-                      subMenu.showSubRoute = false;
-                  }
-              });
-          });
+          // Simplemente toggle el estado del menú clickeado
           menu.showSubRoute = !menu.showSubRoute;
       },
       OpenMenu(menu) {
-          this.side_bar_data.forEach((item) => {
-              item.menu.forEach((subMenu) => {
-                  subMenu.showSubRoute = false;
-              });
-          });
           this.openMenuItem = this.openMenuItem === menu ? null : menu;
       },
       openSubmenuOne(subMenus) {
           this.openSubmenuOneItem = this.openSubmenuOneItem === subMenus ? null : subMenus;
+      },
+
+      /**
+       * Manejar descarga de manuales
+       */
+      handleManualDownload(manualFile) {
+          if (!manualFile) {
+              console.error('No se especificó un archivo de manual');
+              return;
+          }
+          downloadManual(manualFile);
+      },
+
+      /**
+       * Determinar si se debe mostrar un item del menú según su rol
+       */
+      shouldShowMenu(menu) {
+          // Si es un manual, verificar roles requeridos
+          if (menu.isManual && menu.requiredRoles) {
+              const user = getCurrentUser();
+              if (!user || !user.roles) {
+                  return false;
+              }
+
+              // Verificar si el usuario tiene alguno de los roles requeridos
+              return hasAnyRole(menu.requiredRoles);
+          }
+
+          // Para items normales, mostrar siempre (la lógica de permisos se maneja en otro lado)
+          return true;
+      },
+
+      /**
+       * Verificar si un submenú debe mostrarse según permisos
+       */
+      isSubmenuAllowed(sectionTitle, menuTitle, submenuTitle) {
+          const user = getCurrentUser();
+          if (!user || !user.roles) return true; // Si no hay usuario, mostrar (para evitar romper el admin)
+
+          // Admins ven todo
+          if (user.roles.includes('admin') || user.roles.includes('super_admin') || user.roles.includes('administrador')) {
+              return true;
+          }
+
+          // Usar la función de permisos
+          return canViewSubmenuItem(user, sectionTitle, menuTitle, submenuTitle);
       },
 
       /**

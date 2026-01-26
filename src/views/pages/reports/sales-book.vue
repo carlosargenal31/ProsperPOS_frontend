@@ -283,14 +283,17 @@
                   <th v-if="isColumnVisible('descuento')" @click="sortByColumn('descuento')" class="text-end cursor-pointer">
                     Descuento <i :class="getSortIcon('descuento')"></i>
                   </th>
-                  <th v-if="isColumnVisible('recargos')" @click="sortByColumn('recargos')" class="text-end cursor-pointer">
-                    Recargos <i :class="getSortIcon('recargos')"></i>
-                  </th>
                   <th v-if="isColumnVisible('impuesto')" @click="sortByColumn('impuesto')" class="text-end cursor-pointer">
                     Impuesto <i :class="getSortIcon('impuesto')"></i>
                   </th>
+                  <th v-if="isColumnVisible('recargos')" @click="sortByColumn('recargos')" class="text-end cursor-pointer">
+                    Recargos <i :class="getSortIcon('recargos')"></i>
+                  </th>
                   <th v-if="isColumnVisible('total')" @click="sortByColumn('total')" class="text-end cursor-pointer">
                     Total <i :class="getSortIcon('total')"></i>
+                  </th>
+                  <th v-if="isColumnVisible('devuelto')" @click="sortByColumn('devuelto')" class="text-end cursor-pointer">
+                    Devuelto <i :class="getSortIcon('devuelto')"></i>
                   </th>
                   <th v-if="isColumnVisible('vendedor')" @click="sortByColumn('vendedor')" class="cursor-pointer">
                     Vendedor <i :class="getSortIcon('vendedor')"></i>
@@ -320,10 +323,13 @@
                   </td>
                   <td v-if="isColumnVisible('subtotal')" class="text-end">{{ formatCurrency(invoice.subtotal) }}</td>
                   <td v-if="isColumnVisible('descuento')" class="text-end">{{ formatCurrency(invoice.descuento) }}</td>
-                  <td v-if="isColumnVisible('recargos')" class="text-end">{{ formatCurrency(invoice.recargos) }}</td>
                   <td v-if="isColumnVisible('impuesto')" class="text-end">{{ formatCurrency(invoice.impuesto) }}</td>
+                  <td v-if="isColumnVisible('recargos')" class="text-end">{{ formatCurrency(invoice.recargos) }}</td>
                   <td v-if="isColumnVisible('total')" class="text-end fw-bold">
                     {{ formatCurrency(invoice.total) }}
+                  </td>
+                  <td v-if="isColumnVisible('devuelto')" class="text-end" :class="{ 'text-danger fw-bold': invoice.devuelto > 0 }">
+                    {{ formatCurrency(invoice.devuelto || 0) }}
                   </td>
                   <td v-if="isColumnVisible('vendedor')">{{ invoice.vendedor }}</td>
                 </tr>
@@ -346,9 +352,10 @@
                   <td v-if="isColumnVisible('estatus')">SUBTOTALES:</td>
                   <td v-if="isColumnVisible('subtotal')" class="text-end">{{ formatCurrency(totals.subtotal_total) }}</td>
                   <td v-if="isColumnVisible('descuento')" class="text-end">{{ formatCurrency(totals.descuento_total) }}</td>
-                  <td v-if="isColumnVisible('recargos')" class="text-end">{{ formatCurrency(totals.recargos_total) }}</td>
                   <td v-if="isColumnVisible('impuesto')" class="text-end">{{ formatCurrency(totals.impuesto_total) }}</td>
+                  <td v-if="isColumnVisible('recargos')" class="text-end">{{ formatCurrency(totals.recargos_total) }}</td>
                   <td v-if="isColumnVisible('total')" class="text-end">{{ formatCurrency(totals.total_total) }}</td>
+                  <td v-if="isColumnVisible('devuelto')" class="text-end text-danger">{{ formatCurrency(totals.total_devuelto || 0) }}</td>
                   <td v-if="isColumnVisible('vendedor')"></td>
                 </tr>
               </tfoot>
@@ -448,6 +455,7 @@ export default {
         { key: 'recargos', label: 'Recargos', visible: true },
         { key: 'impuesto', label: 'Impuesto', visible: true },
         { key: 'total', label: 'Total', visible: true },
+        { key: 'devuelto', label: 'Devuelto', visible: true },
         { key: 'vendedor', label: 'Vendedor', visible: true },
       ],
     };
@@ -489,7 +497,7 @@ export default {
           if (valueB == null) valueB = '';
 
           // Ordenamiento numérico para columnas de montos
-          if (['subtotal', 'descuento', 'recargos', 'impuesto', 'total'].includes(this.sortColumn)) {
+          if (['subtotal', 'descuento', 'recargos', 'impuesto', 'total', 'devuelto'].includes(this.sortColumn)) {
             valueA = parseFloat(valueA) || 0;
             valueB = parseFloat(valueB) || 0;
           }
@@ -634,7 +642,9 @@ export default {
           <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(inv.subtotal)}</td>
           <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(inv.descuento)}</td>
           <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(inv.impuesto)}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(inv.recargos)}</td>
           <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(inv.total)}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px; ${(inv.devuelto || 0) > 0 ? 'color: #dc3545; font-weight: bold;' : ''}">${this.formatCurrency(inv.devuelto || 0)}</td>
         </tr>
       `).join('');
 
@@ -773,7 +783,9 @@ export default {
                 <th class="text-right">Subtotal</th>
                 <th class="text-right">Desc</th>
                 <th class="text-right">Impuesto</th>
+                <th class="text-right">Recargos</th>
                 <th class="text-right">Total</th>
+                <th class="text-right">Devuelto</th>
               </tr>
             </thead>
             <tbody>
@@ -785,12 +797,9 @@ export default {
                 <td class="text-right">L ${this.formatCurrency(this.totals.subtotal_total)}</td>
                 <td class="text-right">L ${this.formatCurrency(this.totals.descuento_total)}</td>
                 <td class="text-right">L ${this.formatCurrency(this.totals.impuesto_total)}</td>
+                <td class="text-right">L ${this.formatCurrency(this.totals.recargos_total)}</td>
                 <td class="text-right">L ${this.formatCurrency(this.totals.total_total)}</td>
-              </tr>
-              <tr style="background: #e8e8e8;">
-                <td colspan="11" style="padding: 8px 4px; font-size: 9px;">
-                  <strong>Total Devuelto:</strong> L ${this.formatCurrency(this.totals.total_devuelto || 0)}
-                </td>
+                <td class="text-right" style="color: #dc3545; font-weight: bold;">L ${this.formatCurrency(this.totals.total_devuelto || 0)}</td>
               </tr>
             </tfoot>
           </table>
@@ -832,9 +841,10 @@ export default {
           'Estatus': inv.estatus,
           'Subtotal': parseFloat(inv.subtotal || 0),
           'Descuento': parseFloat(inv.descuento || 0),
-          'Recargos': parseFloat(inv.recargos || 0),
           'Impuesto': parseFloat(inv.impuesto || 0),
+          'Recargos': parseFloat(inv.recargos || 0),
           'Total': parseFloat(inv.total || 0),
+          'Devuelto': parseFloat(inv.devuelto || 0),
           'Vendedor': inv.vendedor
         }));
 
@@ -850,9 +860,10 @@ export default {
           'Estatus': 'TOTALES',
           'Subtotal': this.totals.subtotal_total,
           'Descuento': this.totals.descuento_total,
-          'Recargos': this.totals.recargos_total || 0,
           'Impuesto': this.totals.impuesto_total,
+          'Recargos': this.totals.recargos_total || 0,
           'Total': this.totals.total_total,
+          'Devuelto': this.totals.total_devuelto || 0,
           'Vendedor': ''
         });
 
@@ -870,7 +881,8 @@ export default {
           'Descuento': '',
           'Recargos': '',
           'Impuesto': '',
-          'Total': `Total Devuelto: L ${this.formatCurrency(this.totals.total_devuelto || 0)}`,
+          'Total': '',
+          'Devuelto': '',
           'Vendedor': ''
         });
 

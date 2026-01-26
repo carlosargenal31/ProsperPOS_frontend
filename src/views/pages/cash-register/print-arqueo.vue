@@ -479,6 +479,16 @@ export default {
       this.showExportModal = false;
       setTimeout(() => {
         window.print();
+        // Detectar cuando se cierra el diálogo de impresión
+        const mediaQueryList = window.matchMedia('print');
+        mediaQueryList.addListener((mql) => {
+          if (!mql.matches) {
+            // El diálogo de impresión se cerró
+            setTimeout(() => {
+              window.close();
+            }, 500);
+          }
+        });
       }, 100);
     },
 
@@ -545,6 +555,11 @@ export default {
 
         // Descargar archivo
         XLSX.writeFile(wb, `arqueo_caja_${this.session.consecutive}.xlsx`);
+
+        // Cerrar ventana después de la descarga
+        setTimeout(() => {
+          window.close();
+        }, 1000);
       } catch (error) {
         console.error('Error exporting Excel:', error);
         alert('Error al generar el archivo Excel');
@@ -590,6 +605,11 @@ export default {
         }
 
         pdf.save(`arqueo_caja_${this.session.consecutive}.pdf`);
+
+        // Cerrar ventana después de la descarga
+        setTimeout(() => {
+          window.close();
+        }, 1000);
       } catch (error) {
         console.error('Error exporting PDF:', error);
         alert('Error al generar el PDF');
@@ -616,6 +636,11 @@ export default {
           a.download = `arqueo_caja_${this.session.consecutive}.png`;
           a.click();
           URL.revokeObjectURL(url);
+
+          // Cerrar ventana después de la descarga
+          setTimeout(() => {
+            window.close();
+          }, 1000);
         });
       } catch (error) {
         console.error('Error exporting image:', error);
@@ -624,7 +649,13 @@ export default {
     },
 
     goBack() {
-      this.$router.push('/cash-register');
+      // Si está en iframe o ventana emergente, cerrar
+      if (window.opener || window.parent !== window) {
+        window.close();
+      } else {
+        // Si está en navegación normal, regresar a la lista
+        this.$router.push('/cash-register');
+      }
     },
 
     formatCurrency(value) {
@@ -797,7 +828,7 @@ export default {
   width: 17cm;
   min-height: 27.94cm;
   margin: 0 auto;
-  padding: 2cm;
+  padding: 3cm 2.5cm;
   background: white;
   font-family: Arial, sans-serif;
   font-size: 9pt;
@@ -1104,7 +1135,7 @@ export default {
   }
 
   .print-container {
-    padding: 0;
+    padding: 1.5cm 2cm;
     margin: 0;
     width: 100%;
   }
@@ -1116,6 +1147,10 @@ export default {
 
   .section {
     page-break-inside: avoid;
+  }
+
+  @page {
+    margin: 1.5cm 2cm;
   }
 }
 </style>

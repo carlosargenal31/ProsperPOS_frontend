@@ -851,9 +851,9 @@ export default {
                   ${this.selectedDocumentType === 'COMPRA' && this.selectedDocument.invoice_number ? `<strong>Factura Proveedor:</strong> ${this.selectedDocument.invoice_number}<br>` : ''}
                   ${this.selectedDocumentType === 'DEVOLUCION COMPRA' ? `<strong>Doc/Devuelto:</strong> ${this.selectedDocument.purchase_number || 'N/A'}<br>` : ''}
                   ${this.selectedDocumentType === 'NOTA CREDITO COMPRA' ? `<strong>Nota de Crédito:</strong> ${this.selectedDocument.credit_note_number || 'N/A'}<br><strong>Compra Original:</strong> ${this.selectedDocument.purchase_number || 'N/A'}<br>` : ''}
-                  <strong>Emisión:</strong> ${this.formatDate(this.selectedDocument.emission_date || this.selectedDocument.purchase_date || this.selectedDocument.credit_note_date)}<br>
+                  <strong>Emisión:</strong> ${this.formatPurchaseDate(this.selectedDocument.emission_date || this.selectedDocument.purchase_date || this.selectedDocument.credit_note_date)}<br>
                   <strong>Condiciones de la Transacción:</strong> Contado<br>
-                  <strong>Entrega:</strong> ${this.formatDate(this.selectedDocument.emission_date || this.selectedDocument.purchase_date || this.selectedDocument.credit_note_date)}
+                  <strong>Entrega:</strong> ${this.formatPurchaseDate(this.selectedDocument.emission_date || this.selectedDocument.purchase_date || this.selectedDocument.credit_note_date)}
                 </div>
               </div>
             </div>
@@ -885,14 +885,14 @@ export default {
             <div class="totals-section">
               <div class="totals-left">
                 <div style="margin-bottom: 15px;">
-                  <strong>TOTAL:</strong> ${this.numberToWords(finalTotal).toUpperCase()} LEMPIRAS ${String(Math.floor((finalTotal % 1) * 100)).padStart(2, '0')}/100
+                  <strong>TOTAL:</strong> ${this.numberToWords(finalTotal).toUpperCase()} LEMPIRAS ${String(Math.round((finalTotal % 1) * 100)).padStart(2, '0')}/100
                 </div>
                 <div style="margin-top: auto; padding-top: 40px; text-align: center;">
                   <div style="border-top: 2px solid #000; width: 250px; margin: 0 auto 10px;"></div>
                   <div style="margin-bottom: 8px;"><strong>Original Proveedor</strong></div>
                   <div><strong>Copia Obligado Tributario Emisor</strong></div>
                 </div>
-                ${(this.selectedDocumentType === 'DEVOLUCION COMPRA' || this.selectedDocumentType === 'NOTA CREDITO COMPRA') && this.selectedDocument.notes ? `
+                ${this.selectedDocument.notes ? `
                 <div style="margin-top: 30px; text-align: left; font-size: 12px;">
                   <strong>Notas:</strong> ${this.selectedDocument.notes}
                 </div>
@@ -951,6 +951,15 @@ export default {
     formatDate(dateStr) {
       if (!dateStr) return '';
       const date = new Date(dateStr);
+      return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+    },
+    formatPurchaseDate(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      // Sumar 1 día para facturas de compra
+      if (this.selectedDocumentType === 'COMPRA') {
+        date.setDate(date.getDate() + 1);
+      }
       return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
     },
     formatDateTime(dateStr) {

@@ -1333,3 +1333,33 @@ hr{
 .logo-white {
     display: none !important;
 }
+
+// Asegurar que los botones de POS, pantalla completa y configuración estén a la derecha
+.user-menu.nav {
+    > li {
+        // El botón "Agregar Nuevo" se queda a la izquierda
+        &.link-nav {
+            margin-left: 24px !important;
+            margin-right: 0 !important;
+        }
+
+        // Si existe el botón POS, el POS empuja todo a la derecha
+        &.pos-nav {
+            margin-left: auto !important;
+        }
+
+        // Si no existe POS, el primer nav-item-box empuja todo a la derecha
+        // Pero si POS existe (usando ~), entonces usa margen normal
+        &.nav-item-box {
+            &:first-of-type {
+                margin-left: auto !important;
+            }
+        }
+
+        &.pos-nav ~ .nav-item-box {
+            &:first-of-type {
+                margin-left: 12px !important;
+            }
+        }
+    }
+}

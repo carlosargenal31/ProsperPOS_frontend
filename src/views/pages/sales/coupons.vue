@@ -24,6 +24,7 @@
         </ul>
         <div class="page-btn d-flex gap-2">
           <a
+            v-if="!isVendedor"
             href="#"
             class="btn btn-primary"
             data-bs-toggle="modal"
@@ -32,7 +33,7 @@
           >
             <i class="ti ti-circle-plus me-1"></i>Agregar Nuevo Cupón
           </a>
-          <button class="btn btn-success" @click="showSaveReportModal = true">
+          <button v-if="!isVendedor" class="btn btn-success" @click="showSaveReportModal = true">
             <i class="ti ti-download me-1"></i>Guardar Reporte
           </button>
         </div>
@@ -124,6 +125,7 @@
                         <i data-feather="eye" class="feather-eye"></i>
                       </a>
                       <a
+                        v-if="!isVendedor"
                         class="me-2 p-2"
                         href="#"
                         @click.prevent="openEditModal(coupon)"
@@ -133,6 +135,7 @@
                         <i data-feather="edit" class="feather-edit"></i>
                       </a>
                       <a
+                        v-if="!isVendedor"
                         class="confirm-text p-2"
                         href="#"
                         @click.prevent="openDeleteModal(coupon)"
@@ -200,6 +203,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import api from '@/utils/axios';
+import { getCurrentUser } from '@/utils/permissions';
 
 export default {
   components: {
@@ -219,6 +223,20 @@ export default {
     };
   },
   computed: {
+    currentUser() {
+      return getCurrentUser();
+    },
+    isVendedor() {
+      if (!this.currentUser || !this.currentUser.roles) return false;
+      return (
+        this.currentUser.roles.includes('cashier') ||
+        this.currentUser.roles.includes('vendedor') ||
+        this.currentUser.roles.includes('warehouse') ||
+        this.currentUser.roles.includes('almacenista') ||
+        this.currentUser.roles.includes('bodega') ||
+        this.currentUser.roles.includes('personal_de_bodega')
+      );
+    },
     sortedCoupons() {
       if (!this.coupons || !Array.isArray(this.coupons) || this.coupons.length === 0) return [];
 

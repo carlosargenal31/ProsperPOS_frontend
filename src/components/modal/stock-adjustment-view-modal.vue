@@ -602,7 +602,7 @@ export default {
                 <div class="invoice-title">${docTitle}: ${this.adjustment.consecutive}</div>
                 <div class="invoice-meta">
                   <strong>#Control Interno:</strong> ${this.adjustment.consecutive.padStart(10, '0')}<br>
-                  <strong>Sucursal:</strong> ${this.adjustment.warehouse_name || 'Principal'}<br>
+                  <strong>Bodega:</strong> ${this.adjustment.warehouse_name || 'Principal'}<br>
                   <strong>Emisión:</strong> ${this.formatDate(this.adjustment.issue_date)}<br>
                   <strong>Estado:</strong> ${this.getStatusLabel(this.adjustment.status)}
                 </div>

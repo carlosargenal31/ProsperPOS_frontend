@@ -72,10 +72,14 @@
         <div class="point-box">
           <strong>Punto de partida:</strong>
           <p>{{ shipment.origin_address }}</p>
+          <p><strong>Ciudad:</strong> {{ shipment.origin_city || 'N/A' }}</p>
+          <p><strong>Departamento:</strong> {{ shipment.origin_state || 'N/A' }}</p>
         </div>
         <div class="point-box">
           <strong>Punto de llegada:</strong>
           <p>{{ shipment.destination_address }}</p>
+          <p><strong>Ciudad:</strong> {{ shipment.destination_city || 'N/A' }}</p>
+          <p><strong>Departamento:</strong> {{ shipment.destination_state || 'N/A' }}</p>
         </div>
       </div>
 

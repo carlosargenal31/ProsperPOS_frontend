@@ -5,13 +5,13 @@
 
             <!-- Logo -->
             <div class="header-left active">
-                <router-link to="/dashboard/" class="logo logo-normal">
+                <router-link :to="homeRoute" class="logo logo-normal">
                     <img src="@/assets/img/logo.png" alt="">
                 </router-link>
-                <router-link to="/dashboard/" class="logo logo-white">
+                <router-link :to="homeRoute" class="logo logo-white">
                     <img src="@/assets/img/logo-white.png" alt="">
                 </router-link>
-                <router-link to="/dashboard/" class="logo-small">
+                <router-link :to="homeRoute" class="logo-small">
                     <img src="@/assets/img/logo-small.png" alt="">
                 </router-link>
             </div>
@@ -28,52 +28,7 @@
             <!-- Header Menu -->
             <ul class="nav user-menu">
 
-                <!-- Search -->
-                <li class="nav-item nav-searchinputs">
-                    <div class="top-nav-search">
-                        <a href="javascript:void(0);" class="responsive-search">
-                            <i class="fa fa-search"></i>
-                        </a>
-                        <form action="#" class="dropdown">
-                            <div class="searchinputs input-group dropdown-toggle" id="dropdownMenuClickable" data-bs-toggle="dropdown" data-bs-auto-close="false">
-                                <input type="text" placeholder="Buscar">
-                                <div class="search-addon">
-                                    <span><i class="ti ti-search"></i></span>
-                                </div>
-                                <span class="input-group-text">
-                                    <kbd class="d-flex align-items-center"><img src="@/assets/img/icons/command.svg" alt="img" class="me-1">K</kbd>
-                                </span>
-                            </div>
-                            <div class="dropdown-menu search-dropdown" aria-labelledby="dropdownMenuClickable">
-                                <div class="search-info">
-                                    <h6><span><i data-feather="search" class="feather-16"></i></span>Recent Searches
-                                    </h6>
-                                    <ul class="search-tags">
-                                        <li><a href="javascript:void(0);">Products</a></li>
-                                        <li><a href="javascript:void(0);">Sales</a></li>
-                                        <li><a href="javascript:void(0);">Applications</a></li>
-                                    </ul>
-                                </div>
-                                <div class="search-info">
-                                    <h6><span><i data-feather="help-circle" class="feather-16"></i></span>Help</h6>
-                                    <p>How to Change Product Volume from 0 to 200 on Inventory management</p>
-                                    <p>Change Product Name</p>
-                                </div>
-                                <div class="search-info">
-                                    <h6><span><i data-feather="user" class="feather-16"></i></span>Customers</h6>
-                                    <ul class="customers">
-                                        <li><a href="javascript:void(0);">Aron Varu<img src="@/assets/img/profiles/avator1.jpg" alt="" class="img-fluid"></a></li>
-                                        <li><a href="javascript:void(0);">Jonita<img src="@/assets/img/profiles/avatar-01.jpg" alt="" class="img-fluid"></a></li>
-                                        <li><a href="javascript:void(0);">Aaron<img src="@/assets/img/profiles/avatar-10.jpg" alt="" class="img-fluid"></a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </li>
-                <!-- /Search -->
-
-                <li class="nav-item dropdown link-nav" ref="dropdownContainer">
+                <li v-if="showAddNewButton" class="nav-item dropdown link-nav" ref="dropdownContainer">
                     <a href="javascript:void(0);"
                        class="btn btn-primary btn-md d-inline-flex align-items-center"
                        @click.prevent="toggleDropdown"
@@ -115,7 +70,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/expenses/expenses-list" class="link-item" @click="closeDropdown">
+                                <router-link to="/shipments/create" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-truck"></i>
                                     </span>
@@ -123,7 +78,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/sales/quotation-list" class="link-item" @click="closeDropdown">
+                                <router-link to="/pos-invoice" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-device-floppy"></i>
                                     </span>
@@ -171,7 +126,7 @@
                                 </router-link>
                             </div>
                             <div class="col-md-2">
-                                <router-link to="/stock/manage-stocks" class="link-item" @click="closeDropdown">
+                                <router-link to="/inventory/inventory-management" class="link-item" @click="closeDropdown">
                                     <span class="link-icon">
                                         <i class="ti ti-stack-3"></i>
                                     </span>
@@ -182,7 +137,7 @@
                     </div>
                 </li>
                 
-                <li class="nav-item pos-nav">
+                <li v-if="showPOSButton" class="nav-item pos-nav">
                     <router-link to="/pos-invoice" class="btn btn-dark btn-md d-inline-flex align-items-center">
                         <i class="ti ti-device-laptop me-1"></i>POS
                     </router-link>
@@ -195,31 +150,9 @@
                 </li>
 
                 <li class="nav-item nav-item-box">
-                    <router-link to="/settings/general-settings"><i class="ti ti-settings"></i></router-link>
+                    <router-link to="/settings/security-settings"><i class="ti ti-settings"></i></router-link>
                 </li>
-                <li class="nav-item dropdown has-arrow main-drop profile-nav">
-                    <a href="javascript:void(0);" class="nav-link userset" data-bs-toggle="dropdown">
-                        <span class="user-info p-0">
-                            <span class="user-letter">
-                                <img src="@/assets/img/profiles/avator1.jpg" alt="" class="img-fluid">
-                            </span>
-                        </span>
-                    </a>
-                    <div class="dropdown-menu menu-drop-user">
-                        <div class="profileset d-flex align-items-center">
-                            <span class="user-img me-2">
-                                <img src="@/assets/img/profiles/avator1.jpg" alt="">
-                            </span>
-                            <div>
-                                <h6 class="fw-medium">Carlos Argeñal</h6>
-                                <p>Admin</p>
-                            </div>
-                        </div>
-                        <router-link class="dropdown-item" to="/settings/general-settings"><i class="ti ti-user-circle me-2"></i>Mi Perfil</router-link>
-                        <hr class="my-2">
-                        <router-link class="dropdown-item logout pb-0" to="/"><i class="ti ti-logout me-2"></i>Cerrar sesión</router-link>
-                    </div>
-                </li>
+                
             </ul>
             <!-- /Header Menu -->
 
@@ -244,6 +177,7 @@
 <script>
 import { onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { getCurrentUser } from '@/utils/permissions';
 
 export default {
     setup() {
@@ -270,15 +204,89 @@ export default {
     },
     data() {
         return {
-            showDropdown: false
+            showDropdown: false,
+            currentUser: null
         };
     },
+    computed: {
+        homeRoute() {
+            const user = this.currentUser || getCurrentUser();
+
+            // DEBUG: Log para verificar el usuario actual
+            console.log('🔍 [LOGO DEBUG] Usuario actual:', user);
+            console.log('🔍 [LOGO DEBUG] Roles:', user?.roles);
+
+            if (!user || !user.roles) {
+                console.log('❌ [LOGO DEBUG] No hay usuario o roles, redirigiendo a admin dashboard');
+                return '/dashboard/admin-dashboard';
+            }
+
+            // Vendedor → Ventas por Vendedor
+            if (user.roles.includes('cashier') || user.roles.includes('vendedor')) {
+                console.log('✅ [LOGO DEBUG] Usuario es VENDEDOR, redirigiendo a /sales-report/sales-by-seller');
+                return '/sales-report/sales-by-seller';
+            }
+
+            // Bodega → Inventario
+            if (user.roles.includes('warehouse') || user.roles.includes('almacenista') || user.roles.includes('bodega') || user.roles.includes('personal_de_bodega')) {
+                console.log('✅ [LOGO DEBUG] Usuario es BODEGA, redirigiendo a /inventory/product-list');
+                return '/inventory/product-list';
+            }
+
+            // Admin → Dashboard
+            console.log('✅ [LOGO DEBUG] Usuario es ADMIN, redirigiendo a /dashboard/admin-dashboard');
+            return '/dashboard/admin-dashboard';
+        },
+        showAddNewButton() {
+            const user = getCurrentUser();
+            if (!user || !user.roles) {
+                return true; // Mostrar por defecto
+            }
+
+            // Ocultar para vendedor y bodega
+            if (user.roles.includes('cashier') || user.roles.includes('vendedor') ||
+                user.roles.includes('warehouse') || user.roles.includes('almacenista') || user.roles.includes('bodega') || user.roles.includes('personal_de_bodega')) {
+                return false;
+            }
+
+            // Mostrar para admin
+            return true;
+        },
+        showPOSButton() {
+            const user = getCurrentUser();
+            if (!user || !user.roles) {
+                return true; // Mostrar por defecto
+            }
+
+            // Ocultar para bodega
+            if (user.roles.includes('warehouse') || user.roles.includes('almacenista') || user.roles.includes('bodega') || user.roles.includes('personal_de_bodega')) {
+                return false;
+            }
+
+            // Mostrar para admin, vendedor y otros
+            return true;
+        }
+    },
     mounted() {
+        // Inicializar el usuario actual de forma reactiva
+        this.currentUser = getCurrentUser();
+        console.log('🔄 [MOUNTED] Usuario cargado:', this.currentUser);
+
         this.initMouseoverListener();
         // Cerrar dropdown al hacer clic fuera
         document.addEventListener('click', this.handleClickOutside);
+
+        // Escuchar cambios en el storage (por si se actualiza en otra pestaña)
+        window.addEventListener('storage', this.handleStorageChange);
     },
     methods: {
+        handleStorageChange(event) {
+            // Actualizar usuario cuando cambie en localStorage
+            if (event.key === 'user') {
+                console.log('🔄 [STORAGE] Usuario actualizado en localStorage');
+                this.currentUser = getCurrentUser();
+            }
+        },
         toggleDropdown() {
             this.showDropdown = !this.showDropdown;
         },
@@ -370,6 +378,7 @@ export default {
     beforeUnmount() {
         document.removeEventListener('mouseover', this.handleMouseover);
         document.removeEventListener('click', this.handleClickOutside);
+        window.removeEventListener('storage', this.handleStorageChange);
     },
 };
 </script>

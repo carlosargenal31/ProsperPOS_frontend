@@ -4,7 +4,7 @@
     <div class="mini-header-bar bg-light border-bottom py-1">
       <div class="container-fluid">
         <div class="d-flex align-items-center justify-content-between">
-          <router-link to="/dashboard/admin-dashboard" class="btn btn-link text-dark p-0">
+          <router-link :to="backRoute" class="btn btn-link text-dark p-0">
             <i class="ti ti-arrow-left fs-3"></i>
           </router-link>
           <span class="text-muted small">{{ currentDate }}</span>
@@ -296,14 +296,6 @@
                   <span>MONTO BRUTO:</span>
                   <strong>L {{ formatCurrency(totals.gross) }}</strong>
                 </div>
-                <div class="total-row">
-                  <span>SUBTOTAL:</span>
-                  <strong>L {{ formatCurrency(totals.subtotal) }}</strong>
-                </div>
-                <div class="total-row">
-                  <span>ISV:</span>
-                  <strong>L {{ formatCurrency(totals.tax) }}</strong>
-                </div>
                 <!-- Cupones Aplicados -->
                 <div v-for="coupon in appliedCoupons" :key="coupon.code" class="total-row text-success">
                   <span>
@@ -319,6 +311,30 @@
                     Descuento Ofertas
                   </span>
                   <strong>- L {{ formatCurrency(totalOffersDiscount) }}</strong>
+                </div>
+                <!-- Descuento Global -->
+                <div v-if="invoice.discount > 0" class="total-row text-danger">
+                  <span>
+                    <i class="ti ti-percentage me-1"></i>
+                    Descuento Global
+                    <button
+                      @click="removeGlobalDiscount"
+                      class="btn btn-sm btn-outline-danger ms-2 py-0 px-1"
+                      style="font-size: 0.7rem; line-height: 1;"
+                      title="Eliminar descuento global"
+                    >
+                      <i class="ti ti-x"></i>
+                    </button>
+                  </span>
+                  <strong>- L {{ formatCurrency(invoice.discount) }}</strong>
+                </div>
+                <div class="total-row">
+                  <span>SUBTOTAL:</span>
+                  <strong>L {{ formatCurrency(totals.subtotalAfterDiscounts) }}</strong>
+                </div>
+                <div class="total-row">
+                  <span>ISV:</span>
+                  <strong>L {{ formatCurrency(totals.tax) }}</strong>
                 </div>
                 <div class="total-row align-items-center">
                   <span>RECARGOS: <small class="text-muted">(Alt+R)</small></span>
@@ -867,13 +883,38 @@
           </div>
           <div class="modal-body">
             <div class="d-grid gap-2">
-              <button class="btn btn-success btn-lg" @click="showAperturaCajaModal = true; showAdditionalOptions = false"><i class="ti ti-cash-register me-2"></i>APERTURA DE CAJA</button>
-              <button class="btn btn-warning btn-lg" @click="showEgresoCajaModal = true; showAdditionalOptions = false"><i class="ti ti-cash me-2"></i>EGRESO DE CAJA</button>
-              <button class="btn btn-info btn-lg" @click="showRetiroEfectivoModal = true; showAdditionalOptions = false"><i class="ti ti-coins me-2"></i>RETIRAR EFECTIVO</button>
-              <button class="btn btn-info btn-lg" @click="openTaxExemptionModal" :title="'Exoneración ISV (' + (keyboardShortcuts.taxExemption?.keys || 'Alt+F11') + ')'"><i class="ti ti-file-certificate me-2"></i>EXONERACIÓN ISV <small>({{ keyboardShortcuts.taxExemption?.keys || 'Alt+F11' }})</small></button>
-              <button class="btn btn-info btn-lg" @click="showCouponModal = true; showAdditionalOptions = false" :title="'Aplicar cupón (' + (keyboardShortcuts.applyCoupon?.keys || 'Alt+C') + ')'"><i class="ti ti-ticket me-2"></i>APLICAR CUPÓN <small>({{ keyboardShortcuts.applyCoupon?.keys || 'Alt+C' }})</small></button>
-              <button class="btn btn-info btn-lg" @click="showOffersModal = true; showAdditionalOptions = false" :title="'Ver ofertas (' + (keyboardShortcuts.viewOffers?.keys || 'Alt+O') + ')'"><i class="ti ti-tag me-2"></i>VER OFERTAS <small>({{ keyboardShortcuts.viewOffers?.keys || 'Alt+O' }})</small></button>
-              <button class="btn btn-outline-secondary btn-lg" @click="showKeyboardShortcutsModal = true; showAdditionalOptions = false"><i class="ti ti-keyboard me-2"></i>ATAJOS DE TECLADO</button>
+              <button class="btn btn-dark btn-lg" @click="showAperturaCajaModal = true; showAdditionalOptions = false">
+                <span class="badge bg-white text-dark me-2" style="font-size: 1.1rem; padding: 0.4rem 0.6rem;">1</span>
+                <i class="ti ti-cash-register me-2"></i>APERTURA DE CAJA
+              </button>
+              <button class="btn btn-dark btn-lg" @click="showEgresoCajaModal = true; showAdditionalOptions = false">
+                <span class="badge bg-white text-dark me-2" style="font-size: 1.1rem; padding: 0.4rem 0.6rem;">2</span>
+                <i class="ti ti-cash me-2"></i>EGRESO DE CAJA
+              </button>
+              <button class="btn btn-dark btn-lg" @click="showRetiroEfectivoModal = true; showAdditionalOptions = false">
+                <span class="badge bg-white text-dark me-2" style="font-size: 1.1rem; padding: 0.4rem 0.6rem;">3</span>
+                <i class="ti ti-coins me-2"></i>RETIRAR EFECTIVO
+              </button>
+              <button class="btn btn-dark btn-lg" @click="openTaxExemptionModal">
+                <span class="badge bg-white text-dark me-2" style="font-size: 1.1rem; padding: 0.4rem 0.6rem;">4</span>
+                <i class="ti ti-file-certificate me-2"></i>EXONERACIÓN ISV
+              </button>
+              <button class="btn btn-dark btn-lg" @click="showGlobalDiscountModal = true; showAdditionalOptions = false">
+                <span class="badge bg-white text-dark me-2" style="font-size: 1.1rem; padding: 0.4rem 0.6rem;">5</span>
+                <i class="ti ti-percentage me-2"></i>DESCUENTO GLOBAL
+              </button>
+              <button class="btn btn-dark btn-lg" @click="showCouponModal = true; showAdditionalOptions = false">
+                <span class="badge bg-white text-dark me-2" style="font-size: 1.1rem; padding: 0.4rem 0.6rem;">6</span>
+                <i class="ti ti-ticket me-2"></i>APLICAR CUPÓN
+              </button>
+              <button class="btn btn-dark btn-lg" @click="showOffersModal = true; showAdditionalOptions = false">
+                <span class="badge bg-white text-dark me-2" style="font-size: 1.1rem; padding: 0.4rem 0.6rem;">7</span>
+                <i class="ti ti-tag me-2"></i>VER OFERTAS
+              </button>
+              <button class="btn btn-dark btn-lg" @click="showKeyboardShortcutsModal = true; showAdditionalOptions = false">
+                <span class="badge bg-white text-dark me-2" style="font-size: 1.1rem; padding: 0.4rem 0.6rem;">8</span>
+                <i class="ti ti-keyboard me-2"></i>ATAJOS DE TECLADO
+              </button>
             </div>
           </div>
           <div class="modal-footer">
@@ -931,8 +972,94 @@
       </div>
     </div>
 
+    <!-- Modal: Descuento Global -->
+    <div v-if="showGlobalDiscountModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title text-white"><i class="ti ti-percentage me-2"></i>Descuento Global</h5>
+            <button type="button" class="btn btn-danger btn-sm rounded-circle" @click="showGlobalDiscountModal = false" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
+              <i class="ti ti-x" style="font-size: 1.2rem; color: white;"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <!-- Tipo de Descuento -->
+              <div class="col-12">
+                <label class="form-label fw-bold">Tipo de Descuento</label>
+                <div class="btn-group w-100" role="group">
+                  <input type="radio" class="btn-check" id="discount-percentage" value="percentage" v-model="globalDiscount.type">
+                  <label class="btn btn-outline-primary btn-lg" for="discount-percentage">
+                    <span class="badge bg-primary me-2" style="font-size: 1rem;">1</span>
+                    <i class="ti ti-percentage me-1"></i>Porcentaje
+                  </label>
+                  <input type="radio" class="btn-check" id="discount-amount" value="amount" v-model="globalDiscount.type">
+                  <label class="btn btn-outline-primary btn-lg" for="discount-amount">
+                    <span class="badge bg-primary me-2" style="font-size: 1rem;">2</span>
+                    <i class="ti ti-currency-dollar me-1"></i>Monto Total
+                  </label>
+                </div>
+              </div>
+
+              <!-- Valor del Descuento -->
+              <div class="col-12">
+                <label class="form-label fw-bold">
+                  {{ globalDiscount.type === 'percentage' ? 'Porcentaje de Descuento (%)' : 'Monto de Descuento (L)' }}
+                </label>
+                <input
+                  type="number"
+                  class="form-control form-control-lg text-center"
+                  v-model.number="globalDiscount.value"
+                  :placeholder="globalDiscount.type === 'percentage' ? 'Ej: 10' : 'Ej: 500.00'"
+                  step="0.01"
+                  min="0"
+                  :max="globalDiscount.type === 'percentage' ? 100 : subtotal"
+                  ref="discountValueInput"
+                  @keydown.enter="applyGlobalDiscount">
+              </div>
+
+              <!-- Motivo -->
+              <div class="col-12">
+                <label class="form-label fw-bold">Motivo del Descuento</label>
+                <textarea
+                  class="form-control"
+                  v-model="globalDiscount.reason"
+                  placeholder="Opcional: Descripción del motivo del descuento"
+                  rows="2"></textarea>
+              </div>
+
+              <!-- Vista Previa -->
+              <div class="col-12" v-if="globalDiscount.value > 0">
+                <div class="alert alert-info mb-0">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold" style="font-size: 1rem;">Subtotal:</span>
+                    <span style="font-size: 1rem;">{{ formatCurrency(subtotal) }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center text-danger mb-2">
+                    <span class="fw-bold" style="font-size: 1rem;">Descuento:</span>
+                    <span style="font-size: 1rem;">- {{ formatCurrency(calculateGlobalDiscountAmount()) }}</span>
+                  </div>
+                  <hr class="my-2">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold" style="font-size: 1rem;">Nuevo Subtotal:</span>
+                    <span class="fs-3 fw-bold text-success">{{ formatCurrency(subtotal - calculateGlobalDiscountAmount()) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="showGlobalDiscountModal = false">CANCELAR</button>
+            <button type="button" class="btn btn-success" @click="applyGlobalDiscount" :disabled="globalDiscount.value <= 0">
+              <i class="ti ti-check me-1"></i>APLICAR DESCUENTO
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal Backdrop -->
-    <div v-if="showCustomerModal || showAddCustomerModal || showCustomerInfoModal || showProductModal || showVendorModal || showAdditionalFields || showAdditionalOptions || showTaxExemptionModal || showAperturaCajaModal || showEgresoCajaModal || showRetiroEfectivoModal"
+    <div v-if="showCustomerModal || showAddCustomerModal || showCustomerInfoModal || showProductModal || showVendorModal || showAdditionalFields || showAdditionalOptions || showTaxExemptionModal || showGlobalDiscountModal || showAperturaCajaModal || showEgresoCajaModal || showRetiroEfectivoModal"
          class="modal-backdrop fade show"
          @click="closeAllModals">
     </div>
@@ -1060,18 +1187,6 @@
                   </div>
                 </div>
 
-                <!-- Adicionar Producto -->
-                <div class="shortcut-item mb-2">
-                  <div class="d-flex align-items-center justify-content-between">
-                    <label class="form-label mb-0 small">
-                      <i class="ti ti-plus me-1 text-success"></i>Adicionar Producto
-                    </label>
-                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.addProduct.keys">
-                      <option value="">Sin asignar</option>
-                      <option v-for="opt in availableShortcutOptions" :key="'add-'+opt" :value="opt">{{ opt }}</option>
-                    </select>
-                  </div>
-                </div>
               </div>
 
               <!-- Columna Derecha -->
@@ -1103,15 +1218,15 @@
                   </div>
                 </div>
 
-                <!-- Exoneración ISV -->
+                <!-- Descuento Global -->
                 <div class="shortcut-item mb-2">
                   <div class="d-flex align-items-center justify-content-between">
                     <label class="form-label mb-0 small">
-                      <i class="ti ti-discount-check me-1 text-purple"></i>Exoneración ISV
+                      <i class="ti ti-percentage me-1 text-primary"></i>Descuento Global
                     </label>
-                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.taxExemption.keys">
+                    <select class="form-select form-select-sm" style="width: 150px;" v-model="keyboardShortcuts.globalDiscount.keys">
                       <option value="">Sin asignar</option>
-                      <option v-for="opt in availableShortcutOptions" :key="'tax-'+opt" :value="opt">{{ opt }}</option>
+                      <option v-for="opt in availableShortcutOptions" :key="'global-'+opt" :value="opt">{{ opt }}</option>
                     </select>
                   </div>
                 </div>
@@ -1234,61 +1349,47 @@
                     class="btn"
                     :class="quickPayment.method === 'TRANSFERENCIA' ? 'btn-primary' : 'btn-outline-primary'"
                     @click="quickPayment.method = 'TRANSFERENCIA'">
-                    TRANSFERENCIA<br><small>(1)</small>
+                    Transferencia<br><small>(1)</small>
                   </button>
                   <button
                     type="button"
                     class="btn"
                     :class="quickPayment.method === 'CHEQUE' ? 'btn-primary' : 'btn-outline-primary'"
                     @click="quickPayment.method = 'CHEQUE'">
-                    CHEQUE<br><small>(2)</small>
+                    Cheque<br><small>(2)</small>
                   </button>
                   <button
                     type="button"
                     class="btn"
                     :class="quickPayment.method === 'TARJ_DEBITO' ? 'btn-primary' : 'btn-outline-primary'"
                     @click="quickPayment.method = 'TARJ_DEBITO'">
-                    TARJ. DÉBITO<br><small>(3)</small>
+                    Tarjeta de Débito<br><small>(3)</small>
                   </button>
                   <button
                     type="button"
                     class="btn"
                     :class="quickPayment.method === 'TARJ_CREDITO' ? 'btn-primary' : 'btn-outline-primary'"
                     @click="quickPayment.method = 'TARJ_CREDITO'">
-                    TARJ. CRÉDITO<br><small>(4)</small>
+                    Tarjeta de Crédito<br><small>(4)</small>
                   </button>
                   <button
                     type="button"
                     class="btn"
                     :class="quickPayment.method === 'EFECTIVO' ? 'btn-primary' : 'btn-outline-primary'"
                     @click="quickPayment.method = 'EFECTIVO'">
-                    EFECTIVO<br><small>(5)</small>
+                    Efectivo<br><small>(5)</small>
                   </button>
                   <button
                     type="button"
                     class="btn"
                     :class="quickPayment.method === 'LINK_PAGO' ? 'btn-primary' : 'btn-outline-primary'"
                     @click="quickPayment.method = 'LINK_PAGO'">
-                    LINK DE PAGO<br><small>(6)</small>
+                    Link de Pago<br><small>(6)</small>
                   </button>
                 </div>
               </div>
             </div>
 
-            <div class="row mb-3">
-              <div class="col-md-12">
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="sendToDispatch"
-                    v-model="quickPayment.sendToDispatch">
-                  <label class="form-check-label fw-bold" for="sendToDispatch">
-                    Enviar a despacho
-                  </label>
-                </div>
-              </div>
-            </div>
 
             <div class="row">
               <div class="col-md-6">
@@ -1303,7 +1404,7 @@
                 <div class="card bg-light">
                   <div class="card-body">
                     <p class="mb-1"><strong>Método:</strong></p>
-                    <h5 class="text-success mb-0">{{ quickPayment.method }}</h5>
+                    <h5 class="text-success mb-0">{{ formatPaymentMethod(quickPayment.method) }}</h5>
                   </div>
                 </div>
               </div>
@@ -1389,11 +1490,12 @@
                       <div class="col-md-3">
                         <label class="form-label fw-bold">Método</label>
                         <select class="form-select form-select-sm" v-model="detailedPayment.currentMethod">
-                          <option value="EFECTIVO">Efectivo</option>
                           <option value="TRANSFERENCIA">Transferencia</option>
                           <option value="CHEQUE">Cheque</option>
-                          <option value="TARJ_DEBITO">Tarjeta Débito</option>
-                          <option value="TARJ_CREDITO">Tarjeta Crédito</option>
+                          <option value="TARJ_DEBITO">Tarjeta de Débito</option>
+                          <option value="TARJ_CREDITO">Tarjeta de Crédito</option>
+                          <option value="EFECTIVO">Efectivo</option>
+                          <option value="LINK_PAGO">Link de Pago</option>
                         </select>
                       </div>
                       <div class="col-md-3">
@@ -2391,6 +2493,7 @@ import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { NotFoundException } from '@zxing/library';
+import { getCurrentUser } from '@/utils/permissions';
 import AperturaCajaModal from './components/AperturaCajaModal.vue';
 import EgresoCajaModal from './components/EgresoCajaModal.vue';
 import RetiroEfectivoModal from './components/RetiroEfectivoModal.vue';
@@ -2415,8 +2518,8 @@ export default {
       }),
       currentVendor: {
         id: null,
-        code: '1',
-        name: 'CARLOS ARGEÑAL'
+        code: '',
+        name: ''
       },
       invoice: {
         consecutive: '0000031837',
@@ -2425,6 +2528,8 @@ export default {
         items: [],
         tax_rate: 15,
         discount: 0,
+        discount_type: null, // 'percentage' o 'amount'
+        discount_value: 0, // El valor original del descuento
         shipping_cost: 0
       },
       resolution: {
@@ -2466,6 +2571,12 @@ export default {
       showAperturaCajaModal: false,
       showEgresoCajaModal: false,
       showRetiroEfectivoModal: false,
+      showGlobalDiscountModal: false,
+      globalDiscount: {
+        type: 'percentage',
+        value: 0,
+        reason: ''
+      },
       productSortOrder: 'desc',
       newCustomer: {
         code: '',
@@ -2621,6 +2732,10 @@ export default {
         fastPayment: { name: 'Cobro Rápido', keys: 'Alt+F9', action: 'quickCheckout' },
         detailedPayment: { name: 'Cobro Detallado', keys: 'Alt+F10', action: 'openCheckout' },
         taxExemption: { name: 'Exoneración ISV', keys: 'Alt+F11', action: 'openTaxExemption' },
+        openCashRegister: { name: 'Apertura de Caja', keys: 'Alt+F12', action: 'openCashRegister' },
+        openExpense: { name: 'Egreso de Caja', keys: 'Alt+E', action: 'openExpense' },
+        openWithdrawal: { name: 'Retiro de Efectivo', keys: 'Alt+W', action: 'openWithdrawal' },
+        globalDiscount: { name: 'Descuento Global', keys: 'Alt+G', action: 'openGlobalDiscount' },
         applyCoupon: { name: 'Aplicar Cupón', keys: 'Alt+C', action: 'openCouponModal' },
         viewOffers: { name: 'Ver Ofertas', keys: 'Alt+O', action: 'openOffersModal' },
         changeDocument: { name: 'Cambiar Documento', keys: 'Alt+D', action: 'toggleDocumentType' },
@@ -2692,11 +2807,35 @@ export default {
       // Filtrar por estado
       if (this.offersStatusFilter === 'active') {
         const now = new Date();
+        const currentDate = now.toISOString().split('T')[0];
+        const currentTime = now.toTimeString().split(' ')[0];
+        const dayOfWeek = now.getDay();
+        const dayNames = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+        const dayField = `aplica_${dayNames[dayOfWeek]}`;
+
         filtered = filtered.filter(o => {
+          // Debe estar activa
           if (!o.is_active) return false;
-          if (!o.limitar_fecha || !o.fecha_hasta) return true; // Si no tiene límite de fecha, está activa
-          const validUntil = new Date(o.fecha_hasta);
-          return validUntil >= now;
+
+          // No debe estar suspendida
+          if (o.suspendida === 1 || o.suspendida === true) return false;
+
+          // Verificar día de la semana
+          if (!o[dayField] || o[dayField] === 0) return false;
+
+          // Verificar rango de fechas (solo si está limitada por fecha)
+          if (o.limitar_fecha === 1 || o.limitar_fecha === true) {
+            if (!o.fecha_desde || !o.fecha_hasta) return false;
+            if (currentDate < o.fecha_desde || currentDate > o.fecha_hasta) return false;
+          }
+
+          // Verificar rango de horas (solo si está limitada por hora)
+          if (o.limitar_hora === 1 || o.limitar_hora === true) {
+            if (!o.hora_desde || !o.hora_hasta) return false;
+            if (currentTime < o.hora_desde || currentTime > o.hora_hasta) return false;
+          }
+
+          return true;
         });
       }
 
@@ -2795,10 +2934,11 @@ export default {
       return this.subtotal * (taxRate / 100);
     },
     totalWithTax() {
-      // Calcular total con tax y descuentos de cupones y ofertas
+      // Calcular total con tax y descuentos de cupones, ofertas y descuento global
       const couponsDiscount = this.totalCouponsDiscount;
       const offersDiscount = this.totalOffersDiscount;
-      return this.subtotal + this.taxAmount - couponsDiscount - offersDiscount;
+      const globalDiscount = this.invoice.discount || 0;
+      return this.subtotal + this.taxAmount - couponsDiscount - offersDiscount - globalDiscount;
     },
     // Descuentos de cupones
     totalCouponsDiscount() {
@@ -2823,10 +2963,15 @@ export default {
         subtotal += itemSubtotal;
       });
 
-      // Aplicar descuentos de cupones y ofertas ANTES del impuesto
+      // Aplicar descuentos de cupones, ofertas y descuento global ANTES del impuesto
       const couponsDiscount = this.totalCouponsDiscount;
       const offersDiscount = this.totalOffersDiscount;
-      const subtotalAfterDiscounts = subtotal - couponsDiscount - offersDiscount;
+      const globalDiscount = this.invoice.discount || 0;
+
+      // Total de todos los descuentos (cupones + ofertas + descuento global)
+      const totalDiscount = couponsDiscount + offersDiscount + globalDiscount;
+
+      const subtotalAfterDiscounts = subtotal - totalDiscount;
 
       // Calcular impuesto sobre el subtotal después de descuentos
       // Si tax_rate es undefined o null, usar 15, pero si es 0 (exonerado), respetar el 0
@@ -2836,7 +2981,18 @@ export default {
       const shipping = parseFloat(this.invoice.shipping_cost) || 0;
       const total = subtotalAfterDiscounts + tax + shipping;
 
-      return { itemCount, gross, subtotal, tax, total };
+      return {
+        itemCount,
+        gross,
+        subtotal,
+        subtotalAfterDiscounts,
+        tax,
+        total,
+        discount: totalDiscount,  // Total de todos los descuentos
+        couponsDiscount,
+        offersDiscount,
+        globalDiscount
+      };
     },
     // Opciones disponibles para atajos de teclado
     availableShortcutOptions() {
@@ -2950,6 +3106,26 @@ export default {
       });
 
       return taxes;
+    },
+    // Ruta para el botón de "atrás" según el rol del usuario
+    backRoute() {
+      const user = getCurrentUser();
+      if (!user || !user.roles) {
+        return '/dashboard/admin-dashboard';
+      }
+
+      // Vendedor → Ventas por Vendedor
+      if (user.roles.includes('cashier') || user.roles.includes('vendedor')) {
+        return '/sales-report/sales-by-seller';
+      }
+
+      // Bodega → Inventario
+      if (user.roles.includes('warehouse') || user.roles.includes('almacenista') || user.roles.includes('bodega')) {
+        return '/inventory/product-list';
+      }
+
+      // Admin → Dashboard
+      return '/dashboard/admin-dashboard';
     }
   },
   watch: {
@@ -2969,6 +3145,17 @@ export default {
         }
       },
       deep: true
+    },
+    // Recalcular descuento global porcentual cuando cambia el subtotal
+    subtotal(newSubtotal) {
+      // Solo recalcular si hay un descuento global de tipo porcentaje aplicado
+      if (this.invoice.discount_type === 'percentage' && this.invoice.discount_value > 0) {
+        const percentage = Math.min(this.invoice.discount_value, 100);
+        this.invoice.discount = (newSubtotal * percentage) / 100;
+      } else if (this.invoice.discount_type === 'amount' && this.invoice.discount_value > 0) {
+        // Para descuento fijo, asegurar que no exceda el subtotal
+        this.invoice.discount = Math.min(this.invoice.discount_value, newSubtotal);
+      }
     }
   },
   mounted() {
@@ -3013,6 +3200,9 @@ export default {
         this.loadUnits(),
         this.loadTaxRates()
       ]);
+
+      // Asignar vendedor automáticamente según el usuario logueado
+      this.setCurrentVendorFromUser();
     },
 
     async loadConsecutives() {
@@ -3192,7 +3382,7 @@ export default {
             brand_id: p.brand_id,
             brand_name: p.brand_name || '',
             tax_rate: p.tax_rate || 0,
-            unit: p.unit || 'Unidad',
+            unit_name: p.unit_name || p.unit || 'UNIDAD',
             image: p.image
           }));
           console.log('Products loaded successfully:', this.products.length);
@@ -3363,8 +3553,9 @@ export default {
           product_name: item.name,
           quantity: item.quantity,
           unit_price: item.price,
-          discount_percent: item.discount_percent || 0,
-          tax_percent: item.tax_percent || 15,
+          discount_type: item.discount_percent > 0 ? 'percentage' : null,
+          discount_value: item.discount_percent || 0,
+          tax_rate: item.tax_percent || 15,
           warehouse_id: item.warehouse_id,
           total: item.total
         }));
@@ -3381,6 +3572,8 @@ export default {
           subtotal: this.totals.subtotal,
           tax: this.totals.tax,
           discount: this.totals.discount || 0,
+          discount_type: this.invoice.discount_type || null,
+          discount_value: this.invoice.discount_value || 0,
           coupons_discount: this.totalCouponsDiscount,
           offers_discount: this.totalOffersDiscount,
           applied_coupons: this.appliedCoupons.map(c => ({ code: c.code, name: c.name, amount: c.discount_amount })),
@@ -3414,19 +3607,20 @@ export default {
           subtotal: this.totals.subtotal,
           tax: this.totals.tax,
           tax_amount: this.totals.tax,
-          discount: this.totals.discount || 0,
-          discount_amount: this.totals.discount || 0,
+          discount: this.invoice.discount || 0,  // SOLO descuento global, no el total
+          discount_amount: this.totals.discount || 0,  // Total de todos los descuentos
           coupons_discount: this.totalCouponsDiscount,
           offers_discount: this.totalOffersDiscount,
           applied_coupons: this.appliedCoupons,
           applied_offers: this.activeOffers,
-          surcharge: this.invoice.shipping_cost || 0,
+          shipping_cost: this.invoice.shipping_cost || 0,  // Usar shipping_cost, no surcharge
           total: this.totals.total,
           items: items.map(item => {
             const originalItem = this.invoice.items.find(i => i.product_id === item.product_id);
             return {
               ...item,
               product_name: originalItem?.name || item.product_name,
+              product_unit: originalItem?.unit || 'UNIDAD',
               price: item.unit_price,
               quantity: item.quantity,
               total: item.total,
@@ -3490,9 +3684,11 @@ export default {
         // Limpiar la factura
         this.clearInvoice();
 
-        // Incrementar el número de factura y el consecutivo
-        this.resolution.current++;
-        this.incrementConsecutive();
+        // Incrementar el consecutivo en el backend
+        await this.incrementConsecutive();
+
+        // Recargar la resolución activa desde el backend para obtener el nuevo consecutivo
+        await this.loadResolutionCurrent();
 
         // Resetear método de pago
         this.quickPayment.method = 'TRANSFERENCIA';
@@ -3582,19 +3778,20 @@ export default {
           subtotal: this.totals.subtotal,
           tax: this.totals.tax,
           tax_amount: this.totals.tax,
-          discount: this.invoice.discount || 0,
-          discount_amount: this.invoice.discount || 0,
+          discount: this.invoice.discount || 0,  // SOLO descuento global, no el total
+          discount_amount: this.totals.discount || 0,  // Total de todos los descuentos
           coupons_discount: this.totalCouponsDiscount,
           offers_discount: this.totalOffersDiscount,
           applied_coupons: this.appliedCoupons,
           applied_offers: this.activeOffers,
-          surcharge: 0,
+          shipping_cost: this.invoice.shipping_cost || 0,  // Usar shipping_cost, no surcharge
           total: this.totals.total,
           items: items.map(item => {
             const originalItem = this.invoice.items.find(i => i.product_id === item.product_id);
             return {
               ...item,
               product_name: originalItem?.name || item.product_name,
+              product_unit: originalItem?.unit || 'UNIDAD',
               price: item.unit_price,
               quantity: item.quantity,
               total: item.total,
@@ -3658,9 +3855,11 @@ export default {
         // Limpiar la factura
         this.clearInvoice();
 
-        // Incrementar el número de factura y el consecutivo
-        this.resolution.current++;
-        this.incrementConsecutive();
+        // Incrementar el consecutivo en el backend
+        await this.incrementConsecutive();
+
+        // Recargar la resolución activa desde el backend para obtener el nuevo consecutivo
+        await this.loadResolutionCurrent();
 
         // Resetear métodos de pago detallados
         this.detailedPayment.methods = [
@@ -3747,7 +3946,8 @@ export default {
         const itemDiscount = itemSubtotal * (discountPercent / 100);
         const itemAfterDiscount = itemSubtotal - itemDiscount;
         const itemTax = itemAfterDiscount * (taxRate / 100);
-        const itemTotal = itemAfterDiscount + itemTax;
+        // El total en la tabla SIEMPRE es sin ISV (solo precio * cantidad - descuento)
+        const itemTotalWithoutTax = itemAfterDiscount;
 
         subtotal += itemSubtotal;
         totalDiscount += itemDiscount;
@@ -3760,7 +3960,7 @@ export default {
             <td style="padding: 6px; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${item.name}</td>
             <td style="padding: 6px; text-align: center; border-bottom: 1px solid #e0e0e0; font-size: 10px;">${this.formatCurrency(qty)}</td>
             <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-size: 10px;">L ${this.formatCurrency(price)}</td>
-            <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 10px;">L ${this.formatCurrency(itemTotal)}</td>
+            <td style="padding: 6px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 10px;">L ${this.formatCurrency(itemTotalWithoutTax)}</td>
           </tr>
         `;
       });
@@ -3768,10 +3968,15 @@ export default {
       // Agregar descuentos de cupones y ofertas
       const couponsDiscount = this.totalCouponsDiscount;
       const offersDiscount = this.totalOffersDiscount;
-      totalDiscount += couponsDiscount + offersDiscount;
+      const globalDiscount = this.invoice.discount || 0;
+      totalDiscount += couponsDiscount + offersDiscount + globalDiscount;
+
+      // Usar los valores ya calculados por el computed totals()
+      const subtotalAfterAllDiscounts = this.totals.subtotalAfterDiscounts;
+      const recalculatedTax = this.totals.tax;
 
       const surcharge = parseFloat(this.invoice.shipping_cost) || 0;
-      const grandTotal = subtotal - totalDiscount + totalTax + surcharge;
+      const grandTotal = this.totals.total;
 
       const html = `
         <!DOCTYPE html>
@@ -4002,9 +4207,9 @@ export default {
                   <strong>Emisión:</strong> ${formatDate(today)}<br>
                   <strong>Condiciones de la Transacción:</strong> Contado<br>
                   <strong>Entrega:</strong> ${formatDate(today)}<br>
-                  ${this.additionalFields.orden_compra ? `<strong>No. Correlativo de la Orden de Compra Exenta:</strong> ${this.additionalFields.orden_compra}<br>` : ''}
-                  ${this.additionalFields.constancia_exonerado ? `<strong>No. Correlativo de la Constancia del Reg Exonerado:</strong> ${this.additionalFields.constancia_exonerado}<br>` : ''}
-                  ${this.additionalFields.registro_sag ? `<strong>No. Identificativo del Registro SAG:</strong> ${this.additionalFields.registro_sag}` : ''}
+                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong> ${this.additionalFields.orden_compra || ''}<br>
+                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong> ${this.additionalFields.constancia_exonerado || ''}<br>
+                  <strong>No. Identificativo del Registro SAG:</strong> ${this.additionalFields.registro_sag || ''}
                 </div>
               </div>
             </div>
@@ -4036,39 +4241,35 @@ export default {
               </div>
               <div class="totals-box">
                 <div class="total-row">
-                  <span class="label">Importe Exonerado:</span>
-                  <span class="value">L 0.00</span>
+                  <span class="label">Subtotal Bruto:</span>
+                  <span class="value">L ${this.formatCurrency(subtotal)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="label">Descuentos y Rebajas Otorgados:</span>
+                  <span class="value">L ${this.formatCurrency(totalDiscount)}</span>
                 </div>
                 <div class="total-row">
                   <span class="label">Importe Exento:</span>
                   <span class="value">L 0.00</span>
                 </div>
                 <div class="total-row">
-                  <span class="label">Gravado 15%</span>
-                  <span class="value">L ${this.formatCurrency(subtotal - totalDiscount)}</span>
-                </div>
-                <div class="total-row">
-                  <span class="label">Gravado 18%</span>
+                  <span class="label">Importe Exonerado:</span>
                   <span class="value">L 0.00</span>
                 </div>
                 <div class="total-row">
-                  <span class="label">I.S.V 15 15%:</span>
-                  <span class="value">L ${this.formatCurrency(totalTax)}</span>
+                  <span class="label">Importe Gravado 15%:</span>
+                  <span class="value">L ${this.formatCurrency(subtotalAfterAllDiscounts)}</span>
                 </div>
                 <div class="total-row">
-                  <span class="label">I.S.V 18 18%:</span>
-                  <span class="value">L 0.00</span>
+                  <span class="label">ISV 15%:</span>
+                  <span class="value">L ${this.formatCurrency(recalculatedTax)}</span>
                 </div>
-                <div class="total-row">
+                ${surcharge > 0 ? `<div class="total-row">
                   <span class="label">RECARGOS:</span>
                   <span class="value">L ${this.formatCurrency(surcharge)}</span>
-                </div>
-                <div class="total-row">
-                  <span class="label">DESCUENTOS Y REBAJAS OTORGADOS:</span>
-                  <span class="value">L ${this.formatCurrency(totalDiscount)}</span>
-                </div>
+                </div>` : ''}
                 <div class="total-row grand-total">
-                  <span class="label"><strong>TOTAL:</strong></span>
+                  <span class="label"><strong>TOTAL A PAGAR:</strong></span>
                   <span class="value"><strong>L ${this.formatCurrency(grandTotal)}</strong></span>
                 </div>
               </div>
@@ -4129,10 +4330,22 @@ export default {
             warehouse_id: item.warehouse_id || this.invoice.warehouse_id
           })),
           subtotal: this.totals.subtotal,
-          discount: 0,
+          discount: this.totals.discount || 0,
+          discount_type: this.invoice.discount_type || null,
+          discount_value: this.invoice.discount_value || 0,
           tax: this.totals.tax,
           total: this.totals.total,
           surcharge: this.invoice.shipping_cost || 0,
+          applied_coupons: this.appliedCoupons.map(c => ({
+            code: c.code,
+            name: c.name,
+            amount: c.discount_amount
+          })),
+          applied_offers: this.activeOffers.map(o => ({
+            id: o.id,
+            name: o.name,
+            amount: o.discount_amount
+          })),
           quote_date: new Date().toISOString().split('T')[0],
           valid_until: null,
           notes: '',
@@ -4427,10 +4640,22 @@ export default {
             warehouse_id: item.warehouse_id || this.invoice.warehouse_id
           })),
           subtotal: this.totals.subtotal,
-          discount: 0,
+          discount: this.totals.discount || 0,
+          discount_type: this.invoice.discount_type || null,
+          discount_value: this.invoice.discount_value || 0,
           tax: this.totals.tax,
           total: this.totals.total,
           surcharge: this.invoice.shipping_cost || 0,
+          applied_coupons: this.appliedCoupons.map(c => ({
+            code: c.code,
+            name: c.name,
+            amount: c.discount_amount
+          })),
+          applied_offers: this.activeOffers.map(o => ({
+            id: o.id,
+            name: o.name,
+            amount: o.discount_amount
+          })),
           notes: '',
           internal_notes: '',
           expires_at: null,
@@ -4555,6 +4780,9 @@ export default {
 
       this.invoice.items = [];
       this.invoice.shipping_cost = 0; // Resetear recargo
+      this.invoice.discount = 0; // Resetear descuento global
+      this.invoice.discount_type = null; // Resetear tipo de descuento
+      this.invoice.discount_value = 0; // Resetear valor de descuento
 
       // Limpiar cupones y ofertas aplicados
       this.appliedCoupons = [];
@@ -5149,6 +5377,7 @@ export default {
       // Solo llenar el formulario, NO agregar automáticamente
       this.currentProduct.code = product.sku;
       this.currentProduct.name = product.name;
+      this.currentProduct.unit = product.unit_name || 'UNIDAD';
       this.currentProduct.price = product.sale_price || 0;
       this.currentProduct.product_id = product.id;
       this.currentProduct.category_id = product.category_id;
@@ -5203,6 +5432,54 @@ export default {
       this.currentVendor = vendor;
       this.showVendorModal = false;
     },
+
+    // Asignar vendedor automáticamente según el usuario logueado
+    setCurrentVendorFromUser() {
+      try {
+        const user = getCurrentUser();
+
+        if (!user) {
+          console.log('⚠️ No hay usuario logueado');
+          return;
+        }
+
+        console.log('👤 Usuario actual:', user);
+
+        // Verificar si el usuario es vendedor o cajero
+        const isVendedor = user.roles && (
+          user.roles.includes('vendedor') ||
+          user.roles.includes('cashier') ||
+          user.roles.includes('cajero')
+        );
+
+        if (isVendedor) {
+          // Buscar el vendedor en la lista de vendors por el ID del usuario
+          const vendorFromList = this.vendors.find(v => v.id === user.id);
+
+          if (vendorFromList) {
+            // Si se encuentra en la lista de vendedores, usar esos datos
+            this.currentVendor = {
+              id: vendorFromList.id,
+              code: vendorFromList.code || user.id.toString(),
+              name: vendorFromList.name || `${user.first_name} ${user.last_name}`.trim()
+            };
+            console.log('✅ Vendedor asignado desde lista:', this.currentVendor);
+          } else {
+            // Si no está en la lista, usar los datos del usuario directamente
+            this.currentVendor = {
+              id: user.id,
+              code: user.id.toString(),
+              name: `${user.first_name} ${user.last_name}`.trim() || user.username || 'VENDEDOR'
+            };
+            console.log('✅ Vendedor asignado desde usuario:', this.currentVendor);
+          }
+        } else {
+          console.log('ℹ️ El usuario no tiene rol de vendedor');
+        }
+      } catch (error) {
+        console.error('❌ Error al asignar vendedor automático:', error);
+      }
+    },
     // ==================== MÉTODOS DE PRODUCTOS ====================
     addProduct() {
       console.log('🛒 addProduct called');
@@ -5224,27 +5501,36 @@ export default {
         return;
       }
 
-      // Calcular el total del item
+      // Si hay exoneración activa, usar tax_percent = 0
+      const taxPercent = this.invoice.is_tax_exempt ? 0 : (this.currentProduct.tax_percent || 15);
+
+      // Calcular el total del item con el tax correcto
       const itemGross = this.currentProduct.price * this.currentProduct.quantity;
       const itemDiscount = itemGross * ((this.currentProduct.discount_percent || 0) / 100);
       const itemSubtotal = itemGross - itemDiscount;
-      const itemTax = itemSubtotal * ((this.currentProduct.tax_percent || 0) / 100);
+      const itemTax = itemSubtotal * (taxPercent / 100);
       const itemTotal = itemSubtotal + itemTax;
 
       const newItem = {
         product_id: this.currentProduct.product_id,
         code: this.currentProduct.code,
         name: this.currentProduct.name,
+        unit: this.currentProduct.unit || 'UNIDAD',
         price: this.currentProduct.price,
         quantity: this.currentProduct.quantity,
         warehouse_id: this.invoice.warehouse_id,
         discount_percent: this.currentProduct.discount_percent || 0,
-        tax_percent: this.currentProduct.tax_percent || 15,
+        tax_percent: taxPercent,
         total: itemTotal,
         category_id: this.currentProduct.category_id,
         subcategory_id: this.currentProduct.subcategory_id,
         image: this.currentProduct.image
       };
+
+      // Guardar el tax original si hay exoneración
+      if (this.invoice.is_tax_exempt) {
+        newItem.original_tax_percent = this.currentProduct.tax_percent || 15;
+      }
 
       console.log('➕ Adding item to invoice:', newItem);
       this.invoice.items.push(newItem);
@@ -5336,6 +5622,7 @@ export default {
       this.showAdditionalFields = false;
       this.showAdditionalOptions = false;
       this.showTaxExemptionModal = false;
+      this.showGlobalDiscountModal = false;
       this.showAperturaCajaModal = false;
       this.showEgresoCajaModal = false;
       this.showRetiroEfectivoModal = false;
@@ -5346,6 +5633,102 @@ export default {
       // Aquí puedes agregar lógica adicional si es necesaria
       // Por ejemplo, actualizar algún contador o notificación
     },
+
+    calculateGlobalDiscountAmount() {
+      if (!this.globalDiscount.value || this.globalDiscount.value <= 0) {
+        return 0;
+      }
+
+      if (this.globalDiscount.type === 'percentage') {
+        // Calcular descuento porcentual
+        const percentage = Math.min(this.globalDiscount.value, 100);
+        return (this.subtotal * percentage) / 100;
+      } else {
+        // Descuento por monto fijo
+        return Math.min(this.globalDiscount.value, this.subtotal);
+      }
+    },
+
+    applyGlobalDiscount() {
+      if (!this.globalDiscount.value || this.globalDiscount.value <= 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Valor Inválido',
+          text: 'Debe ingresar un valor de descuento mayor a 0',
+          confirmButtonText: 'Entendido'
+        });
+        return;
+      }
+
+      const discountAmount = this.calculateGlobalDiscountAmount();
+
+      if (discountAmount <= 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Descuento Inválido',
+          text: 'El descuento calculado debe ser mayor a 0',
+          confirmButtonText: 'Entendido'
+        });
+        return;
+      }
+
+      // Guardar tipo, valor y monto calculado en la factura
+      this.invoice.discount = discountAmount;
+      this.invoice.discount_type = this.globalDiscount.type;
+      this.invoice.discount_value = this.globalDiscount.value;
+
+      // Mostrar confirmación
+      Swal.fire({
+        icon: 'success',
+        title: 'Descuento Aplicado',
+        html: `
+          <div class="text-start">
+            <p><strong>Tipo:</strong> ${this.globalDiscount.type === 'percentage' ? 'Porcentaje' : 'Monto Fijo'}</p>
+            <p><strong>Valor:</strong> ${this.globalDiscount.type === 'percentage' ? this.globalDiscount.value + '%' : this.formatCurrency(this.globalDiscount.value)}</p>
+            <p><strong>Descuento Total:</strong> <span class="text-danger">${this.formatCurrency(discountAmount)}</span></p>
+            ${this.globalDiscount.reason ? `<p><strong>Motivo:</strong> ${this.globalDiscount.reason}</p>` : ''}
+          </div>
+        `,
+        confirmButtonText: 'Aceptar'
+      });
+
+      // Cerrar modal y resetear valores temporales
+      this.showGlobalDiscountModal = false;
+      this.globalDiscount = {
+        type: 'percentage',
+        value: 0,
+        reason: ''
+      };
+    },
+
+    removeGlobalDiscount() {
+      Swal.fire({
+        title: '¿Eliminar Descuento Global?',
+        text: 'Se eliminará el descuento aplicado a esta factura',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Limpiar el descuento global
+          this.invoice.discount = 0;
+          this.invoice.discount_type = null;
+          this.invoice.discount_value = 0;
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Descuento Eliminado',
+            text: 'El descuento global ha sido eliminado',
+            timer: 1500,
+            showConfirmButton: false
+          });
+        }
+      });
+    },
+
     formatNumber(value) {
       return new Intl.NumberFormat('es-HN', {
         minimumFractionDigits: 2,
@@ -5385,40 +5768,34 @@ export default {
 
       let tableRows = '';
       let subtotal = 0;
-      let totalTax = 0;
-      let taxableAmount = 0;
 
       this.createdInvoiceData.items.forEach((item) => {
         const qty = parseFloat(item.quantity) || 0;
         const price = parseFloat(item.unit_price || item.price) || 0;
-        const taxRate = parseFloat(item.tax_rate) || 0;
         const itemSubtotal = qty * price;
-        const itemTax = itemSubtotal * (taxRate / 100);
-        const itemTotal = itemSubtotal + itemTax;
-        if (taxRate > 0) {
-          taxableAmount += itemSubtotal;
-          totalTax += itemTax;
-        }
         subtotal += itemSubtotal;
+
+        // Para el display en la tabla, mostrar solo precio y cantidad
         const unitText = item.product_unit || item.unit || 'UNIDAD';
         tableRows += `
           <tr>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(qty)}</td>
             <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name || item.name} <span style="font-weight: 600;">${unitText}</span></td>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(price)}</td>
-            <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemTotal)}</td>
+            <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemSubtotal)}</td>
           </tr>
         `;
       });
 
-      let discount = parseFloat(this.createdInvoiceData.discount || 0);
-      // Agregar descuentos de cupones y ofertas
-      const couponsDiscount = this.createdInvoiceData.coupons_discount || 0;
-      const offersDiscount = this.createdInvoiceData.offers_discount || 0;
-      discount += couponsDiscount + offersDiscount;
-
-      const surcharge = parseFloat(this.createdInvoiceData.surcharge || 0);
-      const grandTotal = this.createdInvoiceData.total || (subtotal + totalTax + surcharge - discount);
+      // USAR LOS VALORES QUE YA VIENEN CALCULADOS DESDE EL BACKEND
+      // No recalcular, usar lo que está en la base de datos
+      const discount = parseFloat(this.createdInvoiceData.discount || 0) +
+                       parseFloat(this.createdInvoiceData.coupons_discount || 0) +
+                       parseFloat(this.createdInvoiceData.offers_discount || 0);
+      const taxableAmount = parseFloat(this.createdInvoiceData.subtotal || 0) - discount;
+      const totalTax = parseFloat(this.createdInvoiceData.tax_amount || 0);
+      const surcharge = parseFloat(this.createdInvoiceData.shipping_cost || 0);
+      const grandTotal = parseFloat(this.createdInvoiceData.total || 0);
 
       const html = `
         <!DOCTYPE html>
@@ -5494,21 +5871,20 @@ export default {
             </table>
             <div class="totals-section">
               <table class="totals-table">
-                <tr><td class="total-label">Importe Exonerado:</td><td class="total-value">L 0.00</td></tr>
+                <tr><td class="total-label">Subtotal Bruto:</td><td class="total-value">L ${this.formatCurrency(subtotal)}</td></tr>
+                <tr><td class="total-label">Descuentos y Rebajas Otorgados:</td><td class="total-value">L ${this.formatCurrency(discount)}</td></tr>
                 <tr><td class="total-label">Importe Exento:</td><td class="total-value">L 0.00</td></tr>
-                <tr><td class="total-label">Gravado 15%</td><td class="total-value">L ${this.formatCurrency(taxableAmount)}</td></tr>
-                <tr><td class="total-label">Gravado 18%</td><td class="total-value">L 0.00</td></tr>
-                <tr><td class="total-label">I.S.V 15 15%:</td><td class="total-value">L ${this.formatCurrency(totalTax)}</td></tr>
-                <tr><td class="total-label">I.S.V 18 18%:</td><td class="total-value">L 0.00</td></tr>
-                <tr><td class="total-label">RECARGOS:</td><td class="total-value">L ${this.formatCurrency(surcharge)}</td></tr>
-                <tr><td class="total-label">DESCUENTOS Y REBAJAS OTORGADOS:</td><td class="total-value">L ${this.formatCurrency(discount)}</td></tr>
-                <tr class="grand-total"><td class="total-label"><strong>TOTAL A PAGAR:</strong></td><td class="total-value"><strong>L<br>${this.formatCurrency(grandTotal)}</strong></td></tr>
+                <tr><td class="total-label">Importe Exonerado:</td><td class="total-value">L 0.00</td></tr>
+                <tr><td class="total-label">Importe Gravado 15%:</td><td class="total-value">L ${this.formatCurrency(taxableAmount)}</td></tr>
+                <tr><td class="total-label">ISV 15%:</td><td class="total-value">L ${this.formatCurrency(totalTax)}</td></tr>
+                ${surcharge > 0 ? `<tr><td class="total-label">RECARGOS:</td><td class="total-value">L ${this.formatCurrency(surcharge)}</td></tr>` : ''}
+                <tr class="grand-total"><td class="total-label"><strong>TOTAL A PAGAR:</strong></td><td class="total-value"><strong>L ${this.formatCurrency(grandTotal)}</strong></td></tr>
                 <tr><td colspan="2" style="text-align: center; padding: 0; font-size: 12px;">.......................................................................................</td></tr>
               </table>
             </div>
             <div class="payment-section">
               <strong>Pagos Recibidos</strong><br>
-              <strong>Transferencia:</strong> ${this.formatCurrency(grandTotal)}<br>
+              <strong>${this.formatPaymentMethod(this.createdInvoiceData.payment_method)}:</strong> ${this.formatCurrency(grandTotal)}<br>
               <strong>Valor en letras:</strong> ${(() => {
                 const integerPart = Math.floor(grandTotal);
                 const cents = String(Math.floor((grandTotal % 1) * 100)).padStart(2, '0');
@@ -5553,10 +5929,42 @@ export default {
         maximumFractionDigits: 2
       }).format(value || 0);
     },
+    formatPaymentMethod(method) {
+      const paymentMethods = {
+        'EFECTIVO': 'Efectivo',
+        'TRANSFERENCIA': 'Transferencia',
+        'CHEQUE': 'Cheque',
+        'TARJ_DEBITO': 'Tarjeta de Débito',
+        'TARJ_CREDITO': 'Tarjeta de Crédito',
+        'LINK_PAGO': 'Link de Pago'
+      };
+      return paymentMethods[method] || method || 'Efectivo';
+    },
     // Calcular el monto de impuesto para una tasa específica
     calculateTaxAmount(rate) {
       const subtotal = this.totals.subtotal || 0;
       return (subtotal * rate) / 100;
+    },
+    addPaymentMethod() {
+      // Validar que se haya ingresado un monto
+      if (!this.detailedPayment.currentAmount || this.detailedPayment.currentAmount <= 0) {
+        Swal.fire('Error', 'Debe ingresar un monto válido', 'error');
+        return;
+      }
+
+      // Agregar el método de pago a la lista
+      this.detailedPayment.methods.push({
+        method: this.detailedPayment.currentMethod,
+        amount: this.detailedPayment.currentAmount,
+        reference: this.detailedPayment.currentReference || '',
+        date: this.detailedPayment.currentDate || new Date().toISOString().split('T')[0]
+      });
+
+      // Limpiar los campos
+      this.detailedPayment.currentMethod = 'TRANSFERENCIA';
+      this.detailedPayment.currentAmount = 0;
+      this.detailedPayment.currentReference = '';
+      this.detailedPayment.currentDate = new Date().toISOString().split('T')[0];
     },
     // Aplicar exoneración de impuestos seleccionados
     openTaxExemptionModal() {
@@ -5586,6 +5994,14 @@ export default {
           this.invoice.tax_rate = this.invoice.original_tax_rate;
           this.invoice.is_tax_exempt = false;
           delete this.invoice.original_tax_rate;
+
+          // Restaurar tax_percent de todos los items
+          this.invoice.items.forEach(item => {
+            if (item.original_tax_percent !== undefined) {
+              item.tax_percent = item.original_tax_percent;
+              delete item.original_tax_percent;
+            }
+          });
 
           Swal.fire({
             icon: 'success',
@@ -5625,6 +6041,14 @@ export default {
         // Aplicar exoneración (tasa 0%) - En Vue 3 la reactividad es automática
         this.invoice.tax_rate = 0;
         this.invoice.is_tax_exempt = true;
+
+        // Actualizar tax_percent de todos los items a 0
+        this.invoice.items.forEach(item => {
+          if (item.original_tax_percent === undefined) {
+            item.original_tax_percent = item.tax_percent;
+          }
+          item.tax_percent = 0;
+        });
 
         console.log('Exoneración aplicada - tax_rate:', this.invoice.tax_rate);
         console.log('Totales después de exoneración:', this.totals);
@@ -5872,7 +6296,10 @@ export default {
             addProduct: { name: 'Adicionar Producto', keys: 'Alt+A', action: 'addProduct' },
             fastPayment: { name: 'Cobro Rápido', keys: 'Alt+F9', action: 'quickCheckout' },
             detailedPayment: { name: 'Cobro Detallado', keys: 'Alt+F10', action: 'openCheckout' },
-            taxExemption: { name: 'Exoneración ISV', keys: 'Alt+F11', action: 'openTaxExemption' },
+            openCashRegister: { name: 'Apertura de Caja', keys: 'Alt+F12', action: 'openCashRegister' },
+            openExpense: { name: 'Egreso de Caja', keys: 'Alt+E', action: 'openExpense' },
+            openWithdrawal: { name: 'Retiro de Efectivo', keys: 'Alt+W', action: 'openWithdrawal' },
+            globalDiscount: { name: 'Descuento Global', keys: 'Alt+5', action: 'openGlobalDiscount' },
             applyCoupon: { name: 'Aplicar Cupón', keys: 'Alt+C', action: 'openCouponModal' },
             viewOffers: { name: 'Ver Ofertas', keys: 'Alt+O', action: 'openOffersModal' },
             changeDocument: { name: 'Cambiar Documento', keys: 'Alt+D', action: 'toggleDocumentType' },
@@ -5920,7 +6347,10 @@ export default {
         addProduct: { name: 'Adicionar Producto', keys: 'Alt+A', action: 'addProduct' },
         fastPayment: { name: 'Cobro Rápido', keys: 'Alt+F9', action: 'quickCheckout' },
         detailedPayment: { name: 'Cobro Detallado', keys: 'Alt+F10', action: 'openCheckout' },
-        taxExemption: { name: 'Exoneración ISV', keys: 'Alt+F11', action: 'openTaxExemption' },
+        openCashRegister: { name: 'Apertura de Caja', keys: 'Alt+F12', action: 'openCashRegister' },
+        openExpense: { name: 'Egreso de Caja', keys: 'Alt+E', action: 'openExpense' },
+        openWithdrawal: { name: 'Retiro de Efectivo', keys: 'Alt+W', action: 'openWithdrawal' },
+        globalDiscount: { name: 'Descuento Global', keys: 'Alt+5', action: 'openGlobalDiscount' },
         applyCoupon: { name: 'Aplicar Cupón', keys: 'Alt+C', action: 'openCouponModal' },
         viewOffers: { name: 'Ver Ofertas', keys: 'Alt+O', action: 'openOffersModal' },
         changeDocument: { name: 'Cambiar Documento', keys: 'Alt+D', action: 'toggleDocumentType' },
@@ -5985,8 +6415,30 @@ export default {
         if (this.showCouponModal) { this.showCouponModal = false; return; }
         if (this.showOffersModal) { this.showOffersModal = false; return; }
         if (this.showTaxExemptionModal) { this.showTaxExemptionModal = false; return; }
+        if (this.showGlobalDiscountModal) { this.showGlobalDiscountModal = false; return; }
+        if (this.showAperturaCajaModal) { this.showAperturaCajaModal = false; return; }
+        if (this.showEgresoCajaModal) { this.showEgresoCajaModal = false; return; }
+        if (this.showRetiroEfectivoModal) { this.showRetiroEfectivoModal = false; return; }
         if (this.showAdditionalOptions) { this.showAdditionalOptions = false; return; }
         if (this.showImportDropdown) { this.showImportDropdown = false; return; }
+      }
+
+      // Atajos para modal de Opciones Adicionales (solo números sin modificadores)
+      if (this.showAdditionalOptions && !isInInput && !event.altKey && !event.ctrlKey && !event.shiftKey) {
+        if (key === '1') { this.showAperturaCajaModal = true; this.showAdditionalOptions = false; event.preventDefault(); return; }
+        if (key === '2') { this.showEgresoCajaModal = true; this.showAdditionalOptions = false; event.preventDefault(); return; }
+        if (key === '3') { this.showRetiroEfectivoModal = true; this.showAdditionalOptions = false; event.preventDefault(); return; }
+        if (key === '4') { this.openTaxExemptionModal(); event.preventDefault(); return; }
+        if (key === '5') { this.showGlobalDiscountModal = true; this.showAdditionalOptions = false; event.preventDefault(); return; }
+        if (key === '6') { this.showCouponModal = true; this.showAdditionalOptions = false; event.preventDefault(); return; }
+        if (key === '7') { this.showOffersModal = true; this.showAdditionalOptions = false; event.preventDefault(); return; }
+        if (key === '8') { this.showKeyboardShortcutsModal = true; this.showAdditionalOptions = false; event.preventDefault(); return; }
+      }
+
+      // Atajos para modal de Descuento Global
+      if (this.showGlobalDiscountModal && !isInInput) {
+        if (key === '1') { this.globalDiscount.type = 'percentage'; event.preventDefault(); return; }
+        if (key === '2') { this.globalDiscount.type = 'amount'; event.preventDefault(); return; }
       }
 
       // Atajos para modal de Cobro Rápido
@@ -6171,6 +6623,28 @@ export default {
         case 'toggleAdditionalFields':
           this.showAdditionalFields = !this.showAdditionalFields;
           break;
+        case 'openCashRegister':
+          this.showAperturaCajaModal = true;
+          this.showAdditionalOptions = false;
+          break;
+        case 'openExpense':
+          this.showEgresoCajaModal = true;
+          this.showAdditionalOptions = false;
+          break;
+        case 'openWithdrawal':
+          this.showRetiroEfectivoModal = true;
+          this.showAdditionalOptions = false;
+          break;
+        case 'openGlobalDiscount':
+          this.showGlobalDiscountModal = true;
+          this.showAdditionalOptions = false;
+          this.$nextTick(() => {
+            if (this.$refs.discountValueInput) {
+              this.$refs.discountValueInput.focus();
+              this.$refs.discountValueInput.select();
+            }
+          });
+          break;
       }
     },
 
@@ -6184,42 +6658,49 @@ export default {
     buildInvoicePreview() {
       if (!this.createdInvoiceData) return '';
 
+      console.log('🖨️ buildInvoicePreview - createdInvoiceData:', this.createdInvoiceData);
+
       let tableRows = '';
       let subtotal = 0;
-      let totalTax = 0;
-      let taxableAmount = 0;
 
       this.createdInvoiceData.items.forEach((item) => {
         const qty = parseFloat(item.quantity) || 0;
         const price = parseFloat(item.unit_price || item.price) || 0;
-        const taxRate = parseFloat(item.tax_rate) || 0;
         const itemSubtotal = qty * price;
-        const itemTax = itemSubtotal * (taxRate / 100);
-        const itemTotal = itemSubtotal + itemTax;
-        if (taxRate > 0) {
-          taxableAmount += itemSubtotal;
-          totalTax += itemTax;
-        }
         subtotal += itemSubtotal;
+
+        // Para el display en la tabla, mostrar solo precio y cantidad
         const unitText = item.product_unit || item.unit || 'UNIDAD';
         tableRows += `
           <tr>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(qty)}</td>
             <td style="padding: 3px; font-size: 13px; line-height: 1.3;">${item.product_name || item.name} <span style="font-weight: 600;">${unitText}</span></td>
             <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(price)}</td>
-            <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemTotal)}</td>
+            <td style="padding: 3px; text-align: right; font-size: 13px;">${this.formatCurrency(itemSubtotal)}</td>
           </tr>
         `;
       });
 
-      let discount = parseFloat(this.createdInvoiceData.discount || 0);
-      // Agregar descuentos de cupones y ofertas
-      const couponsDiscount = this.createdInvoiceData.coupons_discount || 0;
-      const offersDiscount = this.createdInvoiceData.offers_discount || 0;
-      discount += couponsDiscount + offersDiscount;
+      // USAR LOS VALORES QUE YA VIENEN CALCULADOS DESDE EL BACKEND
+      // No recalcular, usar lo que está en la base de datos
+      const discount = parseFloat(this.createdInvoiceData.discount || 0) +
+                       parseFloat(this.createdInvoiceData.coupons_discount || 0) +
+                       parseFloat(this.createdInvoiceData.offers_discount || 0);
+      const taxableAmount = parseFloat(this.createdInvoiceData.subtotal || 0) - discount;
+      const totalTax = parseFloat(this.createdInvoiceData.tax_amount || 0);
+      const surcharge = parseFloat(this.createdInvoiceData.shipping_cost || 0);
+      const grandTotal = parseFloat(this.createdInvoiceData.total || 0);
 
-      const surcharge = parseFloat(this.createdInvoiceData.surcharge || 0);
-      const grandTotal = this.createdInvoiceData.total || (subtotal + totalTax + surcharge - discount);
+      console.log('📊 buildInvoicePreview - Valores calculados:');
+      console.log('  Subtotal:', this.createdInvoiceData.subtotal);
+      console.log('  Descuento global:', this.createdInvoiceData.discount);
+      console.log('  Cupones:', this.createdInvoiceData.coupons_discount);
+      console.log('  Ofertas:', this.createdInvoiceData.offers_discount);
+      console.log('  Total descuentos:', discount);
+      console.log('  Gravado 15% (subtotal - descuentos):', taxableAmount);
+      console.log('  ISV:', totalTax);
+      console.log('  Recargos:', surcharge);
+      console.log('  TOTAL:', grandTotal);
 
       return `
         <!DOCTYPE html>
@@ -6420,21 +6901,20 @@ export default {
           </table>
           <div class="totals-section">
             <table class="totals-table">
-              <tr><td class="total-label">Importe Exonerado:</td><td class="total-value">L 0.00</td></tr>
+              <tr><td class="total-label">Subtotal Bruto:</td><td class="total-value">L ${this.formatCurrency(parseFloat(this.createdInvoiceData.subtotal || 0) + discount)}</td></tr>
+              <tr><td class="total-label">Descuentos y Rebajas Otorgados:</td><td class="total-value">L ${this.formatCurrency(discount)}</td></tr>
               <tr><td class="total-label">Importe Exento:</td><td class="total-value">L 0.00</td></tr>
-              <tr><td class="total-label">Gravado 15%</td><td class="total-value">L ${this.formatCurrency(taxableAmount)}</td></tr>
-              <tr><td class="total-label">Gravado 18%</td><td class="total-value">L 0.00</td></tr>
-              <tr><td class="total-label">I.S.V 15 15%:</td><td class="total-value">L ${this.formatCurrency(totalTax)}</td></tr>
-              <tr><td class="total-label">I.S.V 18 18%:</td><td class="total-value">L 0.00</td></tr>
-              <tr><td class="total-label">RECARGOS:</td><td class="total-value">L ${this.formatCurrency(surcharge)}</td></tr>
-              <tr><td class="total-label">DESCUENTOS Y REBAJAS OTORGADOS:</td><td class="total-value">L ${this.formatCurrency(discount)}</td></tr>
-              <tr class="grand-total"><td class="total-label"><strong>TOTAL A PAGAR:</strong></td><td class="total-value"><strong>L<br>${this.formatCurrency(grandTotal)}</strong></td></tr>
+              <tr><td class="total-label">Importe Exonerado:</td><td class="total-value">L 0.00</td></tr>
+              <tr><td class="total-label">Importe Gravado 15%:</td><td class="total-value">L ${this.formatCurrency(taxableAmount)}</td></tr>
+              <tr><td class="total-label">ISV 15%:</td><td class="total-value">L ${this.formatCurrency(totalTax)}</td></tr>
+              ${surcharge > 0 ? `<tr><td class="total-label">RECARGOS:</td><td class="total-value">L ${this.formatCurrency(surcharge)}</td></tr>` : ''}
+              <tr class="grand-total"><td class="total-label"><strong>TOTAL A PAGAR:</strong></td><td class="total-value"><strong>L ${this.formatCurrency(grandTotal)}</strong></td></tr>
               <tr><td colspan="2" style="text-align: center; padding: 0; font-size: 12px;">.......................................................................................</td></tr>
             </table>
           </div>
           <div class="payment-section">
             <strong>Pagos Recibidos</strong><br>
-            <strong>Transferencia:</strong> ${this.formatCurrency(grandTotal)}<br>
+            <strong>${this.formatPaymentMethod(this.createdInvoiceData.payment_method)}:</strong> ${this.formatCurrency(grandTotal)}<br>
             <strong>Valor en letras:</strong> ${(() => {
               const integerPart = Math.floor(grandTotal);
               const cents = String(Math.floor((grandTotal % 1) * 100)).padStart(2, '0');
@@ -6629,17 +7109,46 @@ export default {
 
         // Import items
         if (docData.items && Array.isArray(docData.items)) {
-          this.invoice.items = docData.items.map(item => ({
-            product_id: item.product_id,
-            code: item.product_code,
-            name: item.product_name,
-            quantity: parseFloat(item.quantity) || 1,
-            price: parseFloat(item.unit_price) || 0,
-            discount_percent: item.discount_value ? (item.discount_value / item.unit_price * 100) : 0,
-            tax_percent: parseFloat(item.tax_rate) || 15,
-            warehouse_id: item.warehouse_id || this.invoice.warehouse_id,
-            total: 0
-          }));
+          // Cargar información completa de cada producto para obtener category_id, subcategory_id e image
+          const itemsPromises = docData.items.map(async (item) => {
+            try {
+              // Buscar el producto en la lista de productos disponibles
+              const product = this.filteredProducts.find(p => p.id === item.product_id);
+
+              return {
+                product_id: item.product_id,
+                code: item.product_code,
+                name: item.product_name,
+                quantity: parseFloat(item.quantity) || 1,
+                price: parseFloat(item.unit_price) || 0,
+                discount_percent: item.discount_value ? (item.discount_value / (item.unit_price * item.quantity) * 100) : 0,
+                tax_percent: parseFloat(item.tax_rate) || 15,
+                warehouse_id: item.warehouse_id || this.invoice.warehouse_id,
+                category_id: product?.category_id || item.category_id || null,
+                subcategory_id: product?.subcategory_id || item.subcategory_id || null,
+                image: product?.image || item.image || null,
+                total: 0
+              };
+            } catch (error) {
+              console.error('Error loading product details:', error);
+              return {
+                product_id: item.product_id,
+                code: item.product_code,
+                name: item.product_name,
+                quantity: parseFloat(item.quantity) || 1,
+                price: parseFloat(item.unit_price) || 0,
+                discount_percent: item.discount_value ? (item.discount_value / (item.unit_price * item.quantity) * 100) : 0,
+                tax_percent: parseFloat(item.tax_rate) || 15,
+                warehouse_id: item.warehouse_id || this.invoice.warehouse_id,
+                category_id: null,
+                subcategory_id: null,
+                image: null,
+                total: 0
+              };
+            }
+          });
+
+          this.invoice.items = await Promise.all(itemsPromises);
 
           // Recalculate totals for each item
           this.invoice.items.forEach((item, index) => {
@@ -6650,6 +7159,42 @@ export default {
         // Cargar el recargo (surcharge) si existe
         if (docData.surcharge !== undefined && docData.surcharge !== null) {
           this.invoice.shipping_cost = parseFloat(docData.surcharge) || 0;
+        }
+
+        // Cargar cupones aplicados
+        if (docData.applied_coupons && Array.isArray(docData.applied_coupons)) {
+          console.log('📋 Cargando cupones desde docData:', docData.applied_coupons);
+          this.appliedCoupons = docData.applied_coupons.map(coupon => ({
+            code: coupon.code,
+            name: coupon.name || coupon.code,
+            discount_amount: parseFloat(coupon.amount || coupon.discount_amount || 0)
+          }));
+          console.log('✅ Cupones cargados en appliedCoupons:', this.appliedCoupons);
+        } else {
+          console.log('❌ No se encontraron cupones en docData.applied_coupons');
+        }
+
+        // Cargar ofertas aplicadas
+        const hasOffers = docData.applied_offers && Array.isArray(docData.applied_offers) && docData.applied_offers.length > 0;
+        if (hasOffers) {
+          this.activeOffers = docData.applied_offers.map(offer => ({
+            id: offer.id,
+            name: offer.name,
+            discount_amount: parseFloat(offer.amount || offer.discount_amount || 0)
+          }));
+        }
+
+        // Cargar descuento global SOLO si NO hay ofertas aplicadas
+        // (para evitar duplicación de descuentos)
+        if (!hasOffers && docData.discount !== undefined && docData.discount !== null) {
+          this.invoice.discount = parseFloat(docData.discount) || 0;
+          // Si hay información del tipo y valor del descuento, también cargarlos
+          if (docData.discount_type) {
+            this.invoice.discount_type = docData.discount_type;
+          }
+          if (docData.discount_value !== undefined && docData.discount_value !== null) {
+            this.invoice.discount_value = parseFloat(docData.discount_value) || 0;
+          }
         }
 
         // Guardar información del documento importado para tracking
@@ -6842,7 +7387,9 @@ export default {
     // ===================================================================
     async loadAvailableOffers() {
       try {
-        const response = await api.get('/offers?is_active=1');
+        // Cargar todas las ofertas sin filtro de is_active
+        // El filtrado se hará en el frontend según offersStatusFilter
+        const response = await api.get('/offers');
         if (response.data && response.data.data) {
           this.availableOffers = response.data.data.offers || response.data.data || [];
         }

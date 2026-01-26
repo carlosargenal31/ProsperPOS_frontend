@@ -228,7 +228,6 @@
 <script>
 import { ref, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
-import { useRouter } from 'vue-router';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import EditArqueoModal from './components/EditArqueoModal.vue';
@@ -242,7 +241,6 @@ export default {
   },
   setup() {
     const toast = useToast();
-    const router = useRouter();
     const loading = ref(false);
     const sessions = ref([]);
     const stats = ref(null);
@@ -358,13 +356,13 @@ export default {
     };
 
     // Manejar exportación
-    const handleExport = (format) => {
+    const handleExport = async (format) => {
+      const sessionId = selectedSession.value.id;
       showExportModal.value = false;
-      // Navegar a la página de impresión con el formato seleccionado
-      router.push({
-        path: `/cash-register/print/${selectedSession.value.id}`,
-        query: { format }
-      });
+
+      // Abrir la página de impresión en una nueva pestaña
+      const printUrl = `/vue/template/cash-register/print/${sessionId}?format=${format}`;
+      window.open(printUrl, '_blank');
     };
 
     // Cerrar sesión - Cambiar estado a CERRADA

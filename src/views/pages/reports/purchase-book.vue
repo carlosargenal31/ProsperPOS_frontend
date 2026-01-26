@@ -244,14 +244,17 @@
                   <th v-if="isColumnVisible('descuento')" @click="sortByColumn('descuento')" class="text-end cursor-pointer">
                     Descuento <i :class="getSortIcon('descuento')"></i>
                   </th>
-                  <th v-if="isColumnVisible('recargo')" @click="sortByColumn('recargo')" class="text-end cursor-pointer">
-                    Recargo <i :class="getSortIcon('recargo')"></i>
-                  </th>
                   <th v-if="isColumnVisible('isv')" @click="sortByColumn('isv')" class="text-end cursor-pointer">
                     ISV <i :class="getSortIcon('isv')"></i>
                   </th>
+                  <th v-if="isColumnVisible('recargo')" @click="sortByColumn('recargo')" class="text-end cursor-pointer">
+                    Recargo <i :class="getSortIcon('recargo')"></i>
+                  </th>
                   <th v-if="isColumnVisible('total')" @click="sortByColumn('total')" class="text-end cursor-pointer">
                     Total <i :class="getSortIcon('total')"></i>
+                  </th>
+                  <th v-if="isColumnVisible('devuelto')" @click="sortByColumn('devuelto')" class="text-end cursor-pointer">
+                    Devuelto <i :class="getSortIcon('devuelto')"></i>
                   </th>
                   <th v-if="isColumnVisible('estatus')" @click="sortByColumn('estatus_raw')" class="cursor-pointer">
                     Estatus <i :class="getSortIcon('estatus_raw')"></i>
@@ -269,10 +272,13 @@
                   <td v-if="isColumnVisible('rtn')">{{ purchase.rtn_proveedor || 'N/A' }}</td>
                   <td v-if="isColumnVisible('subtotal')" class="text-end">{{ formatCurrency(purchase.subtotal) }}</td>
                   <td v-if="isColumnVisible('descuento')" class="text-end">{{ formatCurrency(purchase.descuento) }}</td>
-                  <td v-if="isColumnVisible('recargo')" class="text-end">{{ formatCurrency(purchase.recargo) }}</td>
                   <td v-if="isColumnVisible('isv')" class="text-end">{{ formatCurrency(purchase.isv) }}</td>
+                  <td v-if="isColumnVisible('recargo')" class="text-end">{{ formatCurrency(purchase.recargo) }}</td>
                   <td v-if="isColumnVisible('total')" class="text-end fw-bold">
                     {{ formatCurrency(purchase.total) }}
+                  </td>
+                  <td v-if="isColumnVisible('devuelto')" class="text-end">
+                    {{ formatCurrency(purchase.devuelto || 0) }}
                   </td>
                   <td v-if="isColumnVisible('estatus')">
                     <span
@@ -299,9 +305,10 @@
                   <td v-if="isColumnVisible('rtn')">SUBTOTALES:</td>
                   <td v-if="isColumnVisible('subtotal')" class="text-end">{{ formatCurrency(totals.subtotal_total) }}</td>
                   <td v-if="isColumnVisible('descuento')" class="text-end">{{ formatCurrency(totals.descuento_total) }}</td>
-                  <td v-if="isColumnVisible('recargo')" class="text-end">{{ formatCurrency(totals.recargo_total) }}</td>
                   <td v-if="isColumnVisible('isv')" class="text-end">{{ formatCurrency(totals.isv_total) }}</td>
+                  <td v-if="isColumnVisible('recargo')" class="text-end">{{ formatCurrency(totals.recargo_total) }}</td>
                   <td v-if="isColumnVisible('total')" class="text-end">{{ formatCurrency(totals.total_total) }}</td>
+                  <td v-if="isColumnVisible('devuelto')" class="text-end">{{ formatCurrency(totals.total_devuelto) }}</td>
                   <td v-if="isColumnVisible('estatus')"></td>
                   <td v-if="isColumnVisible('usuario')"></td>
                 </tr>
@@ -402,9 +409,10 @@ export default {
         { key: 'rtn', label: 'RTN', visible: true },
         { key: 'subtotal', label: 'Subtotal', visible: true },
         { key: 'descuento', label: 'Descuento', visible: true },
-        { key: 'recargo', label: 'Recargo', visible: true },
         { key: 'isv', label: 'ISV', visible: true },
+        { key: 'recargo', label: 'Recargo', visible: true },
         { key: 'total', label: 'Total', visible: true },
+        { key: 'devuelto', label: 'Devuelto', visible: true },
         { key: 'estatus', label: 'Estatus', visible: true },
         { key: 'usuario', label: 'Usuario', visible: true },
       ],
@@ -447,7 +455,7 @@ export default {
           if (valueB == null) valueB = '';
 
           // Ordenamiento numérico para columnas de montos
-          if (['subtotal', 'isv', 'total'].includes(this.sortColumn)) {
+          if (['subtotal', 'descuento', 'recargo', 'isv', 'total', 'devuelto'].includes(this.sortColumn)) {
             valueA = parseFloat(valueA) || 0;
             valueB = parseFloat(valueB) || 0;
           }
@@ -585,9 +593,10 @@ export default {
           'Estatus': pur.estatus,
           'Subtotal': parseFloat(pur.subtotal || 0),
           'Descuento': parseFloat(pur.descuento || 0),
-          'Recargo': parseFloat(pur.recargo || 0),
           'ISV': parseFloat(pur.isv || 0),
+          'Recargo': parseFloat(pur.recargo || 0),
           'Total': parseFloat(pur.total || 0),
+          'Devuelto': parseFloat(pur.devuelto || 0),
           'Usuario': pur.usuario
         }));
 
@@ -599,9 +608,10 @@ export default {
           'Estatus': 'TOTALES',
           'Subtotal': this.totals.subtotal_total,
           'Descuento': this.totals.descuento_total,
-          'Recargo': this.totals.recargo_total,
           'ISV': this.totals.isv_total,
+          'Recargo': this.totals.recargo_total,
           'Total': this.totals.total_total,
+          'Devuelto': this.totals.total_devuelto,
           'Usuario': ''
         });
 
@@ -652,9 +662,10 @@ export default {
           <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px; color: #000; font-weight: bold;">${pur.estatus}</td>
           <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(pur.subtotal)}</td>
           <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(pur.descuento)}</td>
-          <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(pur.recargo)}</td>
           <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(pur.isv)}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(pur.recargo)}</td>
           <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(pur.total)}</td>
+          <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-size: 9px;">${this.formatCurrency(pur.devuelto || 0)}</td>
         </tr>
       `}).join('');
 
@@ -789,9 +800,10 @@ export default {
                 <th>Estatus</th>
                 <th class="text-right">Subtotal</th>
                 <th class="text-right">Descuento</th>
-                <th class="text-right">Recargo</th>
                 <th class="text-right">ISV</th>
+                <th class="text-right">Recargo</th>
                 <th class="text-right">Total</th>
+                <th class="text-right">Devuelto</th>
               </tr>
             </thead>
             <tbody>
@@ -802,14 +814,10 @@ export default {
                 <td colspan="4" style="text-align: right; font-weight: bold;">TOTALES:</td>
                 <td class="text-right">L ${this.formatCurrency(this.totals.subtotal_total)}</td>
                 <td class="text-right">L ${this.formatCurrency(this.totals.descuento_total)}</td>
-                <td class="text-right">L ${this.formatCurrency(this.totals.recargo_total)}</td>
                 <td class="text-right">L ${this.formatCurrency(this.totals.isv_total)}</td>
+                <td class="text-right">L ${this.formatCurrency(this.totals.recargo_total)}</td>
                 <td class="text-right">L ${this.formatCurrency(this.totals.total_total)}</td>
-              </tr>
-              <tr style="background: #e8e8e8;">
-                <td colspan="9" style="padding: 8px 4px; font-size: 9px;">
-                  <strong>Total Devuelto:</strong> L ${this.formatCurrency(this.totals.total_devuelto || 0)}
-                </td>
+                <td class="text-right">L ${this.formatCurrency(this.totals.total_devuelto || 0)}</td>
               </tr>
             </tfoot>
           </table>
