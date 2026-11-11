@@ -1109,7 +1109,7 @@ export default {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        const response = await axios.get(`http://localhost:3000/api/v1/products/${this.productId}`, { headers });
+        const response = await axios.get(`/api/v1/products/${this.productId}`, { headers });
         const product = response.data.data;
 
         // Cargar datos del producto
@@ -1153,11 +1153,11 @@ export default {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
         // Cargar categorías
-        const categoriesRes = await axios.get('http://localhost:3000/api/v1/categories', { headers });
+        const categoriesRes = await axios.get('/api/v1/categories', { headers });
         this.categories = categoriesRes.data.data || [];
 
         // Cargar marcas
-        const brandsRes = await axios.get('http://localhost:3000/api/v1/brands', { headers });
+        const brandsRes = await axios.get('/api/v1/brands', { headers });
         this.brands = brandsRes.data.data || [];
 
         // Cargar bodegas (warehouses)
@@ -1185,7 +1185,7 @@ export default {
       try {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await axios.get(`http://localhost:3000/api/v1/subcategories?category_id=${this.formData.category_id}`, { headers });
+        const res = await axios.get(`/api/v1/subcategories?category_id=${this.formData.category_id}`, { headers });
         this.subcategories = res.data.data || [];
       } catch (error) {
         console.error('Error loading subcategories:', error);
@@ -1433,7 +1433,7 @@ export default {
           headers.Authorization = `Bearer ${token}`;
         }
 
-        await axios.put(`http://localhost:3000/api/v1/products/${this.productId}`, formDataToSend, { headers });
+        await axios.put(`/api/v1/products/${this.productId}`, formDataToSend, { headers });
 
         Swal.fire({
           icon: 'success',

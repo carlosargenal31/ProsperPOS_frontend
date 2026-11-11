@@ -108,18 +108,22 @@
             </div>
           </div>
           <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
-            <div class="dropdown me-2">
-              <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                {{ getSelectedStatusText() }}
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end p-3">
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus('')">Todos</a></li>
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus('pendiente')">Pendientes</a></li>
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus('en_camino')">En Camino</a></li>
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus('entregado')">Entregados</a></li>
-                <li><a href="javascript:void(0);" class="dropdown-item rounded-1" @click="filterByStatus('cancelado')">Cancelados</a></li>
-              </ul>
+            <div class="d-flex align-items-center gap-2 me-2">
+              <label class="small text-muted mb-0">Desde</label>
+              <input type="date" class="form-control form-control-sm" v-model="startDate" :max="endDate || undefined" @change="loadShipments" />
+              <label class="small text-muted mb-0">Hasta</label>
+              <input type="date" class="form-control form-control-sm" v-model="endDate" :min="startDate || undefined" @change="loadShipments" />
+              <button v-if="startDate || endDate" type="button" class="btn btn-sm btn-outline-secondary" title="Limpiar fechas" @click="clearDates">
+                <i class="ti ti-x"></i>
+              </button>
             </div>
+            <select class="form-select form-select-sm me-2" style="min-width: 170px" v-model="selectedStatus" @change="loadShipments">
+              <option value="">Todos los estados</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="en_camino">En Camino</option>
+              <option value="entregado">Entregados</option>
+              <option value="cancelado">Cancelados</option>
+            </select>
           </div>
         </div>
         <div class="card-body">
@@ -185,6 +189,9 @@
                         </a>
                         <a class="me-2 p-2" href="javascript:void(0);" @click="editShipment(ship)" title="Editar">
                           <i class="ti ti-edit text-primary"></i>
+                        </a>
+                        <a class="me-2 p-2" href="javascript:void(0);" @click="openPrint(ship)" title="Imprimir">
+                          <i class="ti ti-printer text-success"></i>
                         </a>
                         <a class="p-2" href="javascript:void(0);" @click="openExportModal(ship)" title="Exportar">
                           <i class="ti ti-file-export text-success"></i>
@@ -470,6 +477,7 @@ import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import apiAxios from '@/utils/axios';
+import { formatDateOnly } from '@/utils/date';
 
 export default {
   data() {
@@ -479,6 +487,8 @@ export default {
       loading: false,
       searchQuery: '',
       selectedStatus: '',
+      startDate: '',
+      endDate: '',
       selectedShipment: null,
       shipmentToChangeStatus: null,
       newStatus: '',
@@ -500,16 +510,14 @@ export default {
 
         if (this.searchQuery) params.search = this.searchQuery;
         if (this.selectedStatus) params.status = this.selectedStatus;
+        if (this.startDate) params.start_date = this.startDate;
+        if (this.endDate) params.end_date = this.endDate;
 
         const response = await api.get('/shipments', { params });
 
-        console.log('Response:', response.data);
-
         if (response.data && response.data.success) {
           const data = response.data.data;
-          console.log('Shipments data:', data);
           this.shipments = Array.isArray(data) ? data.filter(s => s && s.id) : [];
-          console.log('Filtered shipments:', this.shipments);
         } else {
           this.shipments = [];
         }
@@ -617,7 +625,7 @@ export default {
           await this.exportToExcel();
         } else if (format === 'print') {
           // Abrir en nueva ventana para imprimir o capturar
-          window.open(`/shipments/print/${this.shipmentToExport.id}`, '_blank');
+          window.open(this.$router.resolve({ path: `/shipments/print/${this.shipmentToExport.id}` }).href, '_blank');
         }
       } catch (error) {
         console.error('Error exporting:', error);
@@ -672,6 +680,10 @@ export default {
       }
     },
 
+    openPrint(shipment) {
+      window.open(this.$router.resolve({ path: `/shipments/print/${shipment.id}` }).href, '_blank');
+    },
+
     printShipment(shipment) {
       this.$router.push(`/shipments/print/${shipment.id}`);
     },
@@ -681,6 +693,12 @@ export default {
       this.searchTimeout = setTimeout(() => {
         this.loadShipments();
       }, 500);
+    },
+
+    clearDates() {
+      this.startDate = '';
+      this.endDate = '';
+      this.loadShipments();
     },
 
     filterByStatus(status) {
@@ -694,12 +712,7 @@ export default {
     },
 
     formatDate(date) {
-      if (!date) return '-';
-      return new Date(date).toLocaleDateString('es-HN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      });
+      return formatDateOnly(date);
     },
 
     truncate(text, length) {

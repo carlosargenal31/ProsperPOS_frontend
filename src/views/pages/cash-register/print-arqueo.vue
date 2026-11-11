@@ -698,7 +698,7 @@ export default {
         return this.billingSettings.company_logo;
       }
       // Si es una ruta relativa, construir la URL
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+      const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
       const baseUrl = API_URL.replace('/api/v1', '');
       return `${baseUrl}${this.billingSettings.company_logo}`;
     },

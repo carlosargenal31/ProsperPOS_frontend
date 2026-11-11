@@ -357,7 +357,7 @@ export default {
 
     const loadFeaturedCategories = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/v1/ecommerce/categories')
+        const response = await fetch('/api/v1/ecommerce/categories')
         const data = await response.json()
         if (data.success) {
           // Tomar solo las primeras 4 categorías
@@ -374,7 +374,7 @@ export default {
 
     const loadFeaturedProducts = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/v1/ecommerce/products?limit=8&featured=true')
+        const response = await fetch('/api/v1/ecommerce/products?limit=8&featured=true')
         const data = await response.json()
         if (data.success) {
           featuredProducts.value = data.data.products || []
@@ -386,7 +386,7 @@ export default {
 
     const getProductImage = (product) => {
       if (product.image) {
-        return `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${product.image}`
+        return `${import.meta.env.VITE_API_URL || ''}${product.image}`
       }
       return '/placeholder-product.svg'
     }

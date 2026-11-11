@@ -516,7 +516,7 @@ export default {
   emits: ['close', 'success', 'delete'],
   setup(props, { emit }) {
     const toast = useToast();
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+    const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
     const saving = ref(false);
     const showDenominations = ref(false);

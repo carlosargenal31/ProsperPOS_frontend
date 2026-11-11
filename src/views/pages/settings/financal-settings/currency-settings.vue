@@ -192,7 +192,7 @@ export default {
       this.error = null;
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/v1/currencies', {
+        const response = await axios.get('/api/v1/currencies', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

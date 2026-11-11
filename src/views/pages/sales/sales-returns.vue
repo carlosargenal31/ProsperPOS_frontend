@@ -51,11 +51,20 @@
 
       <!-- Returns History Table -->
       <div class="card table-list-card" v-if="!selectedInvoice">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <h4>Historial de Devoluciones</h4>
-          <button class="btn btn-sm btn-primary" @click="loadReturns">
-            <i class="ti ti-refresh me-1"></i> Actualizar
-          </button>
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <h4 class="mb-0">Historial de Devoluciones</h4>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <label class="small text-muted mb-0">Desde</label>
+            <input type="date" class="form-control form-control-sm" style="width: 150px" v-model="returnFilters.date_from" :max="returnFilters.date_to || undefined" />
+            <label class="small text-muted mb-0">Hasta</label>
+            <input type="date" class="form-control form-control-sm" style="width: 150px" v-model="returnFilters.date_to" :min="returnFilters.date_from || undefined" />
+            <button v-if="returnFilters.date_from || returnFilters.date_to" class="btn btn-sm btn-outline-secondary" title="Ver todas" @click="returnFilters.date_from = ''; returnFilters.date_to = ''">
+              <i class="ti ti-x"></i>
+            </button>
+            <button class="btn btn-sm btn-primary" @click="loadReturns">
+              <i class="ti ti-refresh me-1"></i> Actualizar
+            </button>
+          </div>
         </div>
         <div class="card-body">
           <div class="table-responsive">
@@ -72,7 +81,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="ret in returns" :key="ret.id">
+                <tr v-for="ret in filteredReturns" :key="ret.id">
                   <td><span class="badge bg-info">{{ ret.correlative }}</span></td>
                   <td>{{ ret.invoice_number }}</td>
                   <td>{{ ret.customer_name }}</td>
@@ -88,8 +97,8 @@
                     </button>
                   </td>
                 </tr>
-                <tr v-if="returns.length === 0">
-                  <td colspan="7" class="text-center text-muted">No hay devoluciones registradas</td>
+                <tr v-if="filteredReturns.length === 0">
+                  <td colspan="7" class="text-center text-muted">No hay devoluciones en el rango seleccionado</td>
                 </tr>
               </tbody>
             </table>
@@ -426,6 +435,14 @@
             </div>
           </div>
 
+          <!-- Datos de exoneración de la factura original -->
+          <div v-if="isExonerated || selectedInvoice?.orden_compra || selectedInvoice?.constancia_exonerado || selectedInvoice?.registro_sag" class="alert alert-warning py-2 small">
+            <div class="fw-bold mb-1" v-if="isExonerated"><i class="ti ti-file-certificate me-1"></i>Factura EXONERADA de ISV (la devolución no lleva impuesto)</div>
+            <div><strong>No. Correlativo de la Orden de Compra Exenta:</strong> {{ selectedInvoice?.orden_compra || '-' }}</div>
+            <div><strong>No. Correlativo de la Constancia del Reg Exonerado:</strong> {{ selectedInvoice?.constancia_exonerado || '-' }}</div>
+            <div><strong>No. Identificativo del Registro SAG:</strong> {{ selectedInvoice?.registro_sag || '-' }}</div>
+          </div>
+
           <!-- Return Details Form -->
           <div class="mb-3">
             <label class="form-label">Nro./Correlativo</label>
@@ -512,7 +529,7 @@
             <div class="d-flex justify-content-around border p-1 mb-2" style="font-size: 10px;">
               <span><strong>Nro. Nota Crédito:</strong> {{ processedReturn.credit_note_number || processedReturn.credit_note_correlative || 'N/A' }}</span>
               <span><strong>Factura Original:</strong> {{ processedReturn.invoice_number }}</span>
-              <span><strong>Fecha:</strong> {{ formatDatePlusOne(processedReturn.emission_date) }}</span>
+              <span><strong>Fecha:</strong> {{ formatDate(processedReturn.emission_date) }}</span>
             </div>
 
             <div class="mb-2" style="font-size: 10px;">
@@ -587,13 +604,13 @@
             <div class="d-flex justify-content-around border p-1 mb-2" style="font-size: 10px;">
               <span><strong>DEVOLUCIÓN:</strong> {{ processedReturn.return_correlative }}</span>
               <span><strong>Doc/Devuelto:</strong> {{ processedReturn.invoice_number }}</span>
-              <span><strong>Fecha:</strong> {{ formatDatePlusOne(processedReturn.emission_date) }}</span>
+              <span><strong>Fecha:</strong> {{ formatDate(processedReturn.emission_date) }}</span>
             </div>
 
             <div class="mb-2" style="font-size: 10px;">
               <strong>Cliente:</strong> {{ processedReturn.customer_name }}<br>
               <strong>RTN:</strong> {{ processedReturn.customer_rtn || '00000000000000' }}<br>
-              <strong>Condiciones:</strong> Contado | <strong>Entrega:</strong> {{ formatDatePlusOne(processedReturn.emission_date) }}
+              <strong>Condiciones:</strong> Contado | <strong>Entrega:</strong> {{ formatDate(processedReturn.emission_date) }}
             </div>
 
             <!-- Tabla de Productos -->
@@ -632,9 +649,9 @@
             <table class="table table-sm table-bordered mb-1" style="font-size: 9px;">
               <tr>
                 <td style="padding: 3px;"><strong>Importe Exonerado:</strong></td>
-                <td class="text-end" style="padding: 3px;">L 0.00</td>
+                <td class="text-end" style="padding: 3px;">L {{ formatCurrency(processedReturn.is_exonerated ? processedReturn.totals.subtotal : 0) }}</td>
                 <td style="padding: 3px;"><strong>Gravado 15%:</strong></td>
-                <td class="text-end" style="padding: 3px;">L {{ formatCurrency(processedReturn.totals.subtotal) }}</td>
+                <td class="text-end" style="padding: 3px;">L {{ formatCurrency(processedReturn.is_exonerated ? 0 : processedReturn.totals.subtotal) }}</td>
               </tr>
               <tr>
                 <td style="padding: 3px;"><strong>Importe Exento:</strong></td>
@@ -725,6 +742,7 @@
 </template>
 
 <script>
+import { formatDateOnly, toDateOnly } from '@/utils/date';
 import axios from 'axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -770,6 +788,10 @@ export default {
         date_to: this.getTodayDate(),
         vendor: ''
       },
+      returnFilters: {
+        date_from: this.getFirstDayOfMonth(),
+        date_to: this.getTodayDate()
+      },
       invoices: [],
       returns: [],
       returnItems: [],
@@ -787,6 +809,22 @@ export default {
     };
   },
   computed: {
+    filteredReturns() {
+      const { date_from, date_to } = this.returnFilters;
+      return this.returns.filter(ret => {
+        const d = toDateOnly(ret.emission_date || ret.created_at);
+        if (date_from && d < date_from) return false;
+        if (date_to && d > date_to) return false;
+        return true;
+      });
+    },
+    // Factura exonerada: no cobró ISV y tiene datos de exoneración
+    isExonerated() {
+      const inv = this.selectedInvoice;
+      if (!inv) return false;
+      const hasData = Boolean(inv.orden_compra || inv.constancia_exonerado || inv.registro_sag);
+      return hasData && Math.abs(parseFloat(inv.tax_amount || 0)) < 0.005;
+    },
     invoiceNumber() {
       return this.selectedInvoice ? this.selectedInvoice.invoice_number : '';
     },
@@ -811,7 +849,7 @@ export default {
     },
     totals() {
       let grossAmount = 0; // Monto bruto (precio * cantidad)
-      let taxRate = 15; // Tasa de impuesto por defecto
+      let taxRate = this.isExonerated ? 0 : 15; // Exonerada => 0%
 
       this.returnItems.forEach(item => {
         const qty = parseFloat(item.return_quantity) || 0;
@@ -821,9 +859,10 @@ export default {
         const itemGross = qty * price;
         grossAmount += itemGross;
 
-        // Obtener tasa de impuesto del primer item
-        if (item.tax_rate) {
-          taxRate = parseFloat(item.tax_rate) || 15;
+        // Tasa del item: un 0 (exonerado/exento) es válido y NO debe volverse 15
+        if (!this.isExonerated && item.tax_rate !== undefined && item.tax_rate !== null && item.tax_rate !== '') {
+          const rate = parseFloat(item.tax_rate);
+          if (!isNaN(rate)) taxRate = rate;
         }
       });
 
@@ -847,6 +886,7 @@ export default {
         discount: invoiceDiscount,  // Descuento
         subtotal: subtotal,         // Subtotal (con descuento)
         tax: tax,                   // ISV (sobre subtotal)
+        exonerated: this.isExonerated,
         surcharge: invoiceSurcharge, // Recargo
         total: total
       };
@@ -1063,7 +1103,7 @@ export default {
             return_quantity: item.return_quantity,
             unit_price: item.unit_price,
             discount_value: item.discount_value || 0,
-            tax_rate: item.tax_rate || 0,
+            tax_rate: this.isExonerated ? 0 : (item.tax_rate || 0),
             warehouse_id: item.warehouse_id
           })),
           ...this.returnForm,
@@ -1094,7 +1134,12 @@ export default {
             resolution_data: returnData.resolution_data,
             // Recargo y descuento de la factura original
             shipping_cost: this.selectedInvoice.shipping_cost || 0,
-            discount_amount: this.selectedInvoice.discount_amount || 0
+            discount_amount: this.selectedInvoice.discount_amount || 0,
+            // Datos de exoneración de la factura original
+            is_exonerated: this.isExonerated,
+            orden_compra: this.selectedInvoice.orden_compra || '',
+            constancia_exonerado: this.selectedInvoice.constancia_exonerado || '',
+            registro_sag: this.selectedInvoice.registro_sag || ''
           };
 
           // Cerrar modal de devolución y abrir modal de documentos
@@ -1252,7 +1297,13 @@ export default {
             customer_rtn: invoiceData ? invoiceData.customer_rtn : '00000000000000',
             // Recargo y descuento de la factura original
             shipping_cost: invoiceData ? parseFloat(invoiceData.shipping_cost || 0) : 0,
-            discount_amount: invoiceData ? parseFloat(invoiceData.discount_amount || 0) : 0
+            discount_amount: invoiceData ? parseFloat(invoiceData.discount_amount || 0) : 0,
+            // Datos de exoneración de la factura original
+            orden_compra: invoiceData?.orden_compra || '',
+            constancia_exonerado: invoiceData?.constancia_exonerado || '',
+            registro_sag: invoiceData?.registro_sag || '',
+            is_exonerated: Boolean(invoiceData && (invoiceData.orden_compra || invoiceData.constancia_exonerado || invoiceData.registro_sag)
+              && Math.abs(parseFloat(invoiceData.tax_amount || 0)) < 0.005)
           };
 
           // Abrir modal de documentos
@@ -1334,14 +1385,7 @@ export default {
     },
     formatDate(dateStr) {
       if (!dateStr) return '';
-      const date = new Date(dateStr);
-      return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
-    },
-    formatDatePlusOne(dateStr) {
-      if (!dateStr) return '';
-      const date = new Date(dateStr);
-      date.setDate(date.getDate() + 1); // Sumar un día
-      return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+      return formatDateOnly(dateStr);
     },
     async exportToExcel() {
       this.showExportDropdown = false;
@@ -1493,7 +1537,8 @@ export default {
       // Construir filas de la tabla
       let tableRows = '';
       let grossAmount = 0; // Monto bruto (sin impuesto)
-      let taxRate = 15;
+      const exonerated = Boolean(this.processedReturn.is_exonerated);
+      let taxRate = exonerated ? 0 : 15;
 
       this.processedReturn.items.forEach((item, index) => {
         const qty = parseFloat(item.return_quantity) || 0;
@@ -1503,9 +1548,10 @@ export default {
         const itemTotal = qty * price;
         grossAmount += itemTotal;
 
-        // Obtener tasa de impuesto
-        if (item.tax_rate) {
-          taxRate = parseFloat(item.tax_rate) || 15;
+        // Tasa de impuesto (0 = exonerado/exento es válido)
+        if (!exonerated && item.tax_rate !== undefined && item.tax_rate !== null && item.tax_rate !== '') {
+          const rate = parseFloat(item.tax_rate);
+          if (!isNaN(rate)) taxRate = rate;
         }
 
         // Obtener unidad del producto - buscar en múltiples campos posibles
@@ -1721,12 +1767,12 @@ export default {
                   })()}<br>
                   <strong>Doc/Devuelto:</strong> ${this.processedReturn.invoice_number || 'N/A'}<br>
                   <strong>Sucursal:</strong> Agencia Principal<br>
-                  <strong>Emisión:</strong> ${this.formatDatePlusOne(this.processedReturn.emission_date)}<br>
+                  <strong>Emisión:</strong> ${this.formatDate(this.processedReturn.emission_date)}<br>
                   <strong>Condiciones de la Transacción:</strong> Contado<br>
-                  <strong>Entrega:</strong> ${this.formatDatePlusOne(this.processedReturn.emission_date)}<br>
-                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong><br>
-                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong><br>
-                  <strong>No. Identificativo del Registro SAG:</strong>
+                  <strong>Entrega:</strong> ${this.formatDate(this.processedReturn.emission_date)}<br>
+                  <strong>No. Correlativo de la Orden de Compra Exenta:</strong> ${this.processedReturn.orden_compra || ''}<br>
+                  <strong>No. Correlativo de la Constancia del Reg Exonerado:</strong> ${this.processedReturn.constancia_exonerado || ''}<br>
+                  <strong>No. Identificativo del Registro SAG:</strong> ${this.processedReturn.registro_sag || ''}
                 </div>
               </div>
             </div>
@@ -1764,7 +1810,7 @@ export default {
               <div class="totals-box">
                 <div class="total-row">
                   <span class="label">Importe Exonerado:</span>
-                  <span class="value">L 0.00</span>
+                  <span class="value">L ${this.formatCurrency(exonerated ? subtotalAfterDiscount : 0)}</span>
                 </div>
                 <div class="total-row">
                   <span class="label">Importe Exento:</span>
@@ -1772,7 +1818,7 @@ export default {
                 </div>
                 <div class="total-row">
                   <span class="label">Gravado 15%</span>
-                  <span class="value">L ${this.formatCurrency(subtotalAfterDiscount)}</span>
+                  <span class="value">L ${this.formatCurrency(exonerated ? 0 : subtotalAfterDiscount)}</span>
                 </div>
                 <div class="total-row">
                   <span class="label">Gravado 18%</span>

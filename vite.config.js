@@ -19,6 +19,10 @@ export default defineConfig({
   server: {
     port: 3001, // Development server port
     proxy: {
+      '/uploads': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
@@ -36,4 +40,9 @@ export default defineConfig({
     }
   },
   base: '/vue/template/',
+  build: {
+    // La salida respeta la ruta base para que Vercel sirva /vue/template/* tal cual
+    outDir: 'dist/vue/template',
+    emptyOutDir: true,
+  },
 })

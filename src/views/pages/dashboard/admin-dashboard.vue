@@ -577,7 +577,7 @@ export default {
           return imageUrl;
         }
         // Si es una ruta relativa del backend
-        return `http://localhost:3000${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+        return `${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
       }
       // Imagen por defecto
       return new URL('@/assets/img/products/product-01.jpg', import.meta.url).href;

@@ -280,7 +280,7 @@ export default {
       this.error = null;
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/v1/offers', {
+        const response = await axios.get('/api/v1/offers', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -317,7 +317,7 @@ export default {
     async openViewModal(offer) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:3000/api/v1/offers/${offer.id}`, {
+        const response = await axios.get(`/api/v1/offers/${offer.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         this.selectedOffer = response.data.data;
@@ -331,7 +331,7 @@ export default {
     async openEditModal(offer) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:3000/api/v1/offers/${offer.id}`, {
+        const response = await axios.get(`/api/v1/offers/${offer.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         this.selectedOffer = response.data.data;

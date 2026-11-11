@@ -300,7 +300,7 @@ export default {
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.post('http://localhost:3000/api/v1/departments', this.formData, {
+        await axios.post('/api/v1/departments', this.formData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -353,7 +353,7 @@ export default {
         const token = localStorage.getItem('token');
         const { id, ...updateData } = this.editFormData;
 
-        await axios.put(`http://localhost:3000/api/v1/departments/${id}`, updateData, {
+        await axios.put(`/api/v1/departments/${id}`, updateData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -399,7 +399,7 @@ export default {
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3000/api/v1/departments/${this.department.id}`, {
+        await axios.delete(`/api/v1/departments/${this.department.id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

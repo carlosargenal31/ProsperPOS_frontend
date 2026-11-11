@@ -9,7 +9,7 @@
 export function downloadManual(manualFile) {
   try {
     // Los manuales se sirven desde el backend
-    const manualUrl = `http://localhost:3000/manuales/${manualFile}`;
+    const manualUrl = `/manuales/${manualFile}`;
 
     // Abrir en nueva pestaña
     const newWindow = window.open(manualUrl, '_blank');

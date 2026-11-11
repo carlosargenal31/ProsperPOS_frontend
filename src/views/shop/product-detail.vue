@@ -221,7 +221,7 @@ export default {
         loading.value = true
         error.value = null
 
-        const response = await axios.get(`http://localhost:3000/api/v1/ecommerce/products/${productId.value}`)
+        const response = await axios.get(`/api/v1/ecommerce/products/${productId.value}`)
 
         if (response.data && response.data.success && response.data.data) {
           product.value = response.data.data
@@ -240,7 +240,7 @@ export default {
 
     const getProductImage = (product) => {
       if (product.image && product.image.trim() !== '') {
-        return `http://localhost:3000${product.image}`
+        return `${product.image}`
       }
       return '/placeholder-product.svg'
     }

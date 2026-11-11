@@ -250,7 +250,7 @@ export default {
     const showExportModal = ref(false);
     const selectedSession = ref(null);
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+    const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
     // Cargar sesiones de caja
     const loadSessions = async () => {

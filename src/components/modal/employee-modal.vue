@@ -417,7 +417,7 @@ export default {
     async fetchDepartments() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/v1/departments/active', {
+        const response = await axios.get('/api/v1/departments/active', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         this.departments = response.data.data || [];
@@ -428,7 +428,7 @@ export default {
     async fetchPositions() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/v1/positions/active', {
+        const response = await axios.get('/api/v1/positions/active', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         this.positions = response.data.data || [];
@@ -446,7 +446,7 @@ export default {
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.post('http://localhost:3000/api/v1/employees', this.formData, {
+        await axios.post('/api/v1/employees', this.formData, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -490,7 +490,7 @@ export default {
         const token = localStorage.getItem('token');
         const { id, ...updateData } = this.editFormData;
 
-        await axios.put(`http://localhost:3000/api/v1/employees/${id}`, updateData, {
+        await axios.put(`/api/v1/employees/${id}`, updateData, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -530,7 +530,7 @@ export default {
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3000/api/v1/employees/${this.employee.id}`, {
+        await axios.delete(`/api/v1/employees/${this.employee.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 

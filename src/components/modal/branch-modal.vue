@@ -420,7 +420,7 @@ export default {
     async loadCities() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/v1/cities/active', {
+        const response = await axios.get('/api/v1/cities/active', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -436,7 +436,7 @@ export default {
       try {
         const token = localStorage.getItem('token');
 
-        await axios.post('http://localhost:3000/api/v1/branches', this.formData, {
+        await axios.post('/api/v1/branches', this.formData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -493,7 +493,7 @@ export default {
         const token = localStorage.getItem('token');
         const { id, ...updateData } = this.editFormData;
 
-        await axios.put(`http://localhost:3000/api/v1/branches/${id}`, updateData, {
+        await axios.put(`/api/v1/branches/${id}`, updateData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -539,7 +539,7 @@ export default {
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3000/api/v1/branches/${this.branch.id}`, {
+        await axios.delete(`/api/v1/branches/${this.branch.id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

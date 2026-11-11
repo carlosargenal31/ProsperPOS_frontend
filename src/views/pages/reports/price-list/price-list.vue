@@ -486,7 +486,7 @@ import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import api from '@/utils/axios';
 
-const API_URL = 'http://localhost:3000/api/v1';
+const API_URL = '/api/v1';
 
 export default {
   name: 'PriceList',

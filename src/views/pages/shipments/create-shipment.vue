@@ -58,11 +58,11 @@
                   <div class="col-md-12">
                     <label class="form-label fw-bold">Tipo de Entrega <span class="text-danger">*</span></label>
                     <div class="btn-group w-100" role="group">
-                      <input type="radio" class="btn-check" id="delivery-enviar" v-model="deliveryType" value="enviar">
+                      <input type="radio" class="btn-check" id="delivery-enviar" v-model="deliveryType" value="enviar" @change="onDeliveryTypeChange">
                       <label class="btn btn-outline-primary" for="delivery-enviar">
                         <i class="ti ti-truck-delivery me-2"></i>Para Enviar
                       </label>
-                      <input type="radio" class="btn-check" id="delivery-recoger" v-model="deliveryType" value="recoger">
+                      <input type="radio" class="btn-check" id="delivery-recoger" v-model="deliveryType" value="recoger" @change="onDeliveryTypeChange">
                       <label class="btn btn-outline-success" for="delivery-recoger">
                         <i class="ti ti-package me-2"></i>Para Recoger
                       </label>
@@ -94,7 +94,7 @@
                 <div class="row" v-if="form.customer_id">
                   <div class="col-md-12">
                     <div class="alert alert-info">
-                      <strong>Cliente:</strong> {{ form.customer_name }} | <strong>Teléfono:</strong> {{ form.customer_phone }}
+                      <strong>Cliente:</strong> {{ form.customer_name }}
                     </div>
                   </div>
                   <div class="col-md-12">
@@ -133,15 +133,14 @@
                   <div class="col-md-4">
                     <div class="mb-3">
                       <label class="form-label">Teléfono/Celular <span class="text-danger">*</span></label>
-                      <input type="tel" class="form-control" v-model="form.receiver_phone" required placeholder="Ej: 9999-9999">
+                      <PhoneInput v-model="form.receiver_phone" required />
                       <small class="text-muted">Para contactar al momento de entregar</small>
                     </div>
                   </div>
                   <div class="col-md-4">
                     <div class="mb-3">
                       <label class="form-label">Documento de Identidad</label>
-                      <input type="text" class="form-control" v-model="form.receiver_id_document" placeholder="Ej: 0801-1990-12345">
-                      <small class="text-muted">Cédula o pasaporte</small>
+                      <IdDocumentInput v-model="form.receiver_id_document" />
                     </div>
                   </div>
                 </div>
@@ -171,13 +170,13 @@
                   <div class="col-md-4">
                     <div class="mb-3">
                       <label class="form-label">Teléfono Alternativo</label>
-                      <input type="tel" class="form-control" v-model="form.receiver_alt_phone" placeholder="Ej: 8888-8888">
+                      <PhoneInput v-model="form.receiver_alt_phone" />
                     </div>
                   </div>
                   <div class="col-md-4">
                     <div class="mb-3">
                       <label class="form-label">Documento Alternativo</label>
-                      <input type="text" class="form-control" v-model="form.receiver_alt_id_document" placeholder="Cédula/Pasaporte">
+                      <IdDocumentInput v-model="form.receiver_alt_id_document" />
                     </div>
                   </div>
                 </div>
@@ -207,13 +206,13 @@
                   <div class="col-md-4">
                     <div class="mb-3">
                       <label class="form-label">Teléfono Alternativo 2</label>
-                      <input type="tel" class="form-control" v-model="form.receiver_alt2_phone" placeholder="Ej: 7777-7777">
+                      <PhoneInput v-model="form.receiver_alt2_phone" />
                     </div>
                   </div>
                   <div class="col-md-4">
                     <div class="mb-3">
                       <label class="form-label">Documento Alternativo 2</label>
-                      <input type="text" class="form-control" v-model="form.receiver_alt2_id_document" placeholder="Cédula/Pasaporte">
+                      <IdDocumentInput v-model="form.receiver_alt2_id_document" />
                     </div>
                   </div>
                 </div>
@@ -225,11 +224,11 @@
 
         <!-- Sección de Ubicaciones -->
         <div class="row">
-          <div class="col-lg-6">
+          <div :class="deliveryType === 'recoger' ? 'col-lg-12' : 'col-lg-6'">
             <!-- Lugar de Partida -->
             <div class="card mb-3">
               <div class="card-header">
-                <h5 class="card-title mb-0"><i class="ti ti-map-pin me-2 text-success"></i>Lugar de Partida (Origen)</h5>
+                <h5 class="card-title mb-0"><i class="ti ti-map-pin me-2 text-success"></i>{{ deliveryType === 'recoger' ? 'Lugar de Retiro' : 'Lugar de Partida (Origen)' }}</h5>
               </div>
               <div class="card-body">
                 <div class="row">
@@ -278,7 +277,7 @@
             </div>
           </div>
 
-          <div class="col-lg-6">
+          <div class="col-lg-6" v-if="deliveryType === 'enviar'">
             <!-- Lugar de Destino -->
             <div class="card mb-3">
               <div class="card-header">
@@ -289,7 +288,7 @@
                   <div class="col-md-12">
                     <div class="mb-3">
                       <label class="form-label">Dirección de Destino Completa <span class="text-danger">*</span></label>
-                      <textarea class="form-control" rows="2" v-model="form.destination_address" required placeholder="Ej: Barrio La Granja, 2 cuadras al norte del parque central"></textarea>
+                      <textarea class="form-control" rows="2" v-model="form.destination_address" :required="deliveryType === 'enviar'" placeholder="Ej: Barrio La Granja, 2 cuadras al norte del parque central"></textarea>
                     </div>
                   </div>
                   <div class="col-md-12">
@@ -392,24 +391,13 @@
               </div>
               <div class="card-body">
                 <div class="row">
-                  <div class="col-md-6">
+                  <div class="col-md-12">
                     <div class="mb-3">
                       <label class="form-label">Encargado de Bodega <span class="text-danger">*</span></label>
                       <select class="form-select form-select-lg" v-model="form.driver_employee_id" @change="onDriverChange" required>
                         <option value="">-- Seleccione el encargado --</option>
                         <option v-for="staff in warehouseStaff" :key="staff.id" :value="staff.id">
                           {{ staff.nombre }} {{ staff.apellido || '' }}
-                        </option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="mb-3">
-                      <label class="form-label">Bodega</label>
-                      <select class="form-select" v-model="form.origin_warehouse_id" @change="onWarehouseChange">
-                        <option value="">Seleccionar bodega...</option>
-                        <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id">
-                          {{ warehouse.nombre || warehouse.name }}
                         </option>
                       </select>
                     </div>
@@ -483,7 +471,7 @@
                   type="text"
                   class="form-control form-control-lg"
                   v-model="customerSearch"
-                  placeholder="Buscar por nombre, teléfono o código..."
+                  placeholder="Buscar por nombre, código o RTN..."
                   autofocus
                 >
               </div>
@@ -494,7 +482,6 @@
                   <tr>
                     <th>Código</th>
                     <th>Nombre</th>
-                    <th>Teléfono</th>
                     <th>Acción</th>
                   </tr>
                 </thead>
@@ -502,7 +489,6 @@
                   <tr v-for="customer in filteredCustomers" :key="customer.id" @click="selectCustomer(customer)" style="cursor: pointer;">
                     <td>{{ customer.codigo || customer.code || 'N/A' }}</td>
                     <td>{{ customer.nombre || customer.name }}</td>
-                    <td>{{ customer.telefono || customer.phone || 'N/A' }}</td>
                     <td>
                       <button class="btn btn-sm btn-primary" @click="selectCustomer(customer)">
                         <i class="ti ti-check"></i> Seleccionar
@@ -510,7 +496,7 @@
                     </td>
                   </tr>
                   <tr v-if="filteredCustomers.length === 0">
-                    <td colspan="4" class="text-center text-muted">
+                    <td colspan="3" class="text-center text-muted">
                       <i class="ti ti-search-off me-2"></i>No se encontraron clientes
                     </td>
                   </tr>
@@ -586,8 +572,14 @@
 <script>
 import api from '@/api/config';
 import Swal from 'sweetalert2';
+import PhoneInput from '@/components/inputs/PhoneInput.vue';
+import IdDocumentInput from '@/components/inputs/IdDocumentInput.vue';
+import { isValidPhone, isValidIdDocument, detectDocType } from '@/utils/phone';
+
+import { localToday, toDateOnly as toDateInput } from '@/utils/date';
 
 export default {
+  components: { PhoneInput, IdDocumentInput },
   data() {
     return {
       form: {
@@ -596,7 +588,8 @@ export default {
         sale_id: '',
         document_type: 'guia_remision',
         status: 'pendiente',
-        emission_date: new Date().toISOString().split('T')[0],
+        emission_date: localToday(),
+        delivery_type: 'enviar',
         customer_id: '',
         customer_name: '',
         customer_phone: '',
@@ -669,11 +662,7 @@ export default {
     },
     filteredInvoices() {
       if (!this.form.customer_id) return [];
-      console.log('Filtering invoices for customer:', this.form.customer_id);
-      console.log('All invoices:', this.invoices.map(i => ({ id: i.id, customer_id: i.customer_id, invoice_number: i.invoice_number })));
-      const filtered = this.invoices.filter(inv => inv.customer_id == this.form.customer_id);
-      console.log('Filtered invoices:', filtered);
-      return filtered;
+      return this.invoices.filter(inv => inv.customer_id == this.form.customer_id);
     },
     drivers() {
       return this.employees.filter(emp => emp.position_name && emp.position_name.toLowerCase().includes('conductor'));
@@ -686,7 +675,7 @@ export default {
       const search = this.customerSearch.toLowerCase();
       return this.customers.filter(c =>
         (c.nombre || c.name || '').toLowerCase().includes(search) ||
-        (c.telefono || c.phone || '').toLowerCase().includes(search) ||
+        (c.rtn || c.doc_identificacion || c.tax_id || '').toLowerCase().includes(search) ||
         (c.codigo || c.code || '').toLowerCase().includes(search)
       );
     },
@@ -746,11 +735,6 @@ export default {
 
           return isPaid && notReturned && notCancelled;
         });
-        console.log('Loaded invoices:', this.invoices.length);
-        console.log('Sample invoice structure:', this.invoices[0]);
-        if (this.invoices.length > 0) {
-          console.log('Invoice customer_id examples:', this.invoices.slice(0, 3).map(i => ({ id: i.id, invoice_number: i.invoice_number, customer_id: i.customer_id, customer_name: i.customer_name })));
-        }
         this.employees = employeesRes.data?.data || [];
         this.cities = citiesRes.data?.data || [];
         this.states = statesRes.data?.data || [];
@@ -801,18 +785,18 @@ export default {
         if (response.data?.data) {
           const shipmentData = response.data.data;
 
-          // Convertir fechas ISO a formato yyyy-MM-dd para inputs tipo date
-          if (shipmentData.emission_date) {
-            shipmentData.emission_date = shipmentData.emission_date.split('T')[0];
-          }
-          if (shipmentData.estimated_delivery_date) {
-            shipmentData.estimated_delivery_date = shipmentData.estimated_delivery_date.split('T')[0];
-          }
-          if (shipmentData.actual_delivery_date) {
-            shipmentData.actual_delivery_date = shipmentData.actual_delivery_date.split('T')[0];
-          }
+          // Convertir fechas a yyyy-MM-dd (hora local) para inputs tipo date
+          ['emission_date', 'estimated_delivery_date', 'actual_delivery_date'].forEach(f => {
+            if (shipmentData[f]) shipmentData[f] = toDateInput(shipmentData[f]);
+          });
 
-          this.form = { ...shipmentData };
+          // Normalizar nulos a '' para los inputs
+          Object.keys(shipmentData).forEach(k => {
+            if (shipmentData[k] === null) shipmentData[k] = '';
+          });
+
+          this.form = { ...this.form, ...shipmentData };
+          this.deliveryType = shipmentData.delivery_type === 'recoger' ? 'recoger' : 'enviar';
 
           // Si hay invoice_id, cargar los datos de la factura
           if (this.form.invoice_id) {
@@ -873,6 +857,22 @@ export default {
         } catch (error) {
           console.error('Error al cargar items de la factura:', error);
         }
+      }
+    },
+
+    onDeliveryTypeChange() {
+      this.form.delivery_type = this.deliveryType;
+      // El encargado/conductor depende del tipo de entrega
+      this.form.driver_employee_id = '';
+      this.onDriverChange();
+      if (this.deliveryType === 'recoger') {
+        this.form.assistant_employee_id = '';
+        this.onAssistantChange();
+        this.form.vehicle_id = '';
+        this.form.vehicle_plate = '';
+        this.form.vehicle_type = '';
+        this.form.vehicle_brand = '';
+        this.form.vehicle_model = '';
       }
     },
 
@@ -958,20 +958,67 @@ export default {
           return;
         }
 
-        if (!this.form.origin_address || !this.form.destination_address) {
-          Swal.fire('Error', 'Las direcciones de origen y destino son requeridas', 'error');
+        const phones = [
+          [this.form.receiver_phone, true, 'receptor principal'],
+          [this.form.receiver_alt_phone, false, 'receptor alternativo 1'],
+          [this.form.receiver_alt2_phone, false, 'receptor alternativo 2']
+        ];
+        for (const [phone, required, label] of phones) {
+          if (!isValidPhone(phone, required)) {
+            Swal.fire('Error', `El teléfono del ${label} no es válido`, 'error');
+            return;
+          }
+        }
+        const docs = [
+          [this.form.receiver_id_document, 'receptor principal'],
+          [this.form.receiver_alt_id_document, 'receptor alternativo 1'],
+          [this.form.receiver_alt2_id_document, 'receptor alternativo 2']
+        ];
+        for (const [doc, label] of docs) {
+          if (doc && !isValidIdDocument(doc, detectDocType(doc))) {
+            Swal.fire('Error', `El DNI o pasaporte del ${label} no es válido`, 'error');
+            return;
+          }
+        }
+
+        this.form.delivery_type = this.deliveryType;
+
+        if (!this.form.origin_address) {
+          Swal.fire('Error', 'La dirección de partida es requerida', 'error');
           return;
+        }
+
+        if (this.deliveryType === 'enviar' && !this.form.destination_address) {
+          Swal.fire('Error', 'La dirección de destino es requerida', 'error');
+          return;
+        }
+
+        if (!this.form.driver_employee_id) {
+          Swal.fire('Error', this.deliveryType === 'recoger' ? 'Seleccione el encargado de bodega' : 'Seleccione el conductor', 'error');
+          return;
+        }
+
+        const payload = { ...this.form };
+        if (this.deliveryType === 'recoger') {
+          // Para recoger no hay destino: el cliente retira en el lugar de partida
+          payload.destination_address = payload.origin_address;
+          payload.destination_reference = '';
+          payload.destination_city = payload.origin_city;
+          payload.destination_state = payload.origin_state;
         }
 
         let response;
         if (this.isEdit) {
-          response = await api.put(`/shipments/${this.$route.params.id}`, this.form);
+          response = await api.put(`/shipments/${this.$route.params.id}`, payload);
         } else {
-          response = await api.post('/shipments', this.form);
+          response = await api.post('/shipments', payload);
         }
 
         if (response.data.success) {
-          const shipmentId = response.data.data?.id || response.data.data;
+          const data = response.data.data;
+          const shipmentId = this.isEdit
+            ? this.$route.params.id
+            : (data && typeof data === 'object' ? (data.id || data.shipment_id) : data);
           this.savedShipmentId = shipmentId;
 
           // Cargar los datos completos del envío
@@ -996,27 +1043,33 @@ export default {
       this.$router.push('/shipments');
     },
 
+    openPrint() {
+      if (!this.savedShipmentId) return;
+      const url = this.$router.resolve({ path: `/shipments/print/${this.savedShipmentId}` }).href;
+      window.open(url, '_blank');
+    },
+
     printShipment() {
       if (this.savedShipmentId) {
-        window.open(`/shipments/print/${this.savedShipmentId}`, '_blank');
+        this.openPrint();
       }
     },
 
     async exportToPDF() {
       if (this.savedShipmentId) {
-        window.open(`/shipments/print/${this.savedShipmentId}`, '_blank');
+        this.openPrint();
       }
     },
 
     async exportToImage() {
       if (this.savedShipmentId) {
-        window.open(`/shipments/print/${this.savedShipmentId}`, '_blank');
+        this.openPrint();
       }
     },
 
     async exportToExcel() {
       if (this.savedShipmentId) {
-        window.open(`/shipments/print/${this.savedShipmentId}`, '_blank');
+        this.openPrint();
       }
     }
   }

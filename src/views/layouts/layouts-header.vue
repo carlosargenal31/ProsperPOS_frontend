@@ -28,6 +28,37 @@
             <!-- Header Menu -->
             <ul class="nav user-menu">
 
+                <!-- Buscador de módulos (usa los enlaces visibles del menú lateral) -->
+                <li class="nav-item nav-searchinputs pp-search" ref="searchContainer">
+                    <div class="top-nav-search">
+                        <div class="searchinputs input-group">
+                            <input type="text"
+                                   ref="searchInput"
+                                   v-model="searchText"
+                                   placeholder="Buscar módulo... (Ctrl+K)"
+                                   @focus="openSearch"
+                                   @keydown.down.prevent="moveSelection(1)"
+                                   @keydown.up.prevent="moveSelection(-1)"
+                                   @keydown.enter.prevent="goToSelected"
+                                   @keydown.esc="closeSearch">
+                            <div class="search-addon">
+                                <span><i class="ti ti-search"></i></span>
+                            </div>
+                        </div>
+                        <div v-if="searchOpen && searchText" class="dropdown-menu search-dropdown show pp-search__results">
+                            <a v-for="(item, i) in searchResults" :key="item.href"
+                               href="javascript:void(0);"
+                               class="dropdown-item d-flex flex-column"
+                               :class="{ active: i === searchIndex }"
+                               @mousedown.prevent="goTo(item)">
+                                <span>{{ item.label }}</span>
+                                <small v-if="item.section" class="text-muted">{{ item.section }}</small>
+                            </a>
+                            <span v-if="searchResults.length === 0" class="dropdown-item text-muted">Sin resultados</span>
+                        </div>
+                    </div>
+                </li>
+
                 <li v-if="showAddNewButton" class="nav-item dropdown link-nav" ref="dropdownContainer">
                     <a href="javascript:void(0);"
                        class="btn btn-primary btn-md d-inline-flex align-items-center"
@@ -205,36 +236,42 @@ export default {
     data() {
         return {
             showDropdown: false,
-            currentUser: null
+            currentUser: null,
+            searchText: '',
+            searchOpen: false,
+            searchIndex: 0,
+            searchItems: []
         };
     },
     computed: {
+        searchResults() {
+            const norm = (t) => (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            const q = norm(this.searchText.trim());
+            if (!q) return [];
+            return this.searchItems
+                .filter(i => norm(i.label).includes(q) || norm(i.section).includes(q))
+                .slice(0, 12);
+        },
         homeRoute() {
             const user = this.currentUser || getCurrentUser();
 
             // DEBUG: Log para verificar el usuario actual
-            console.log('🔍 [LOGO DEBUG] Usuario actual:', user);
-            console.log('🔍 [LOGO DEBUG] Roles:', user?.roles);
 
             if (!user || !user.roles) {
-                console.log('❌ [LOGO DEBUG] No hay usuario o roles, redirigiendo a admin dashboard');
                 return '/dashboard/admin-dashboard';
             }
 
             // Vendedor → Ventas por Vendedor
             if (user.roles.includes('cashier') || user.roles.includes('vendedor')) {
-                console.log('✅ [LOGO DEBUG] Usuario es VENDEDOR, redirigiendo a /sales-report/sales-by-seller');
                 return '/sales-report/sales-by-seller';
             }
 
             // Bodega → Inventario
             if (user.roles.includes('warehouse') || user.roles.includes('almacenista') || user.roles.includes('bodega') || user.roles.includes('personal_de_bodega')) {
-                console.log('✅ [LOGO DEBUG] Usuario es BODEGA, redirigiendo a /inventory/product-list');
                 return '/inventory/product-list';
             }
 
             // Admin → Dashboard
-            console.log('✅ [LOGO DEBUG] Usuario es ADMIN, redirigiendo a /dashboard/admin-dashboard');
             return '/dashboard/admin-dashboard';
         },
         showAddNewButton() {
@@ -270,7 +307,6 @@ export default {
     mounted() {
         // Inicializar el usuario actual de forma reactiva
         this.currentUser = getCurrentUser();
-        console.log('🔄 [MOUNTED] Usuario cargado:', this.currentUser);
 
         this.initMouseoverListener();
         // Cerrar dropdown al hacer clic fuera
@@ -278,12 +314,68 @@ export default {
 
         // Escuchar cambios en el storage (por si se actualiza en otra pestaña)
         window.addEventListener('storage', this.handleStorageChange);
+
+        // Atajo Ctrl+K / Cmd+K para el buscador
+        window.addEventListener('keydown', this.handleSearchShortcut);
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.handleClickOutside);
+        window.removeEventListener('storage', this.handleStorageChange);
+        window.removeEventListener('keydown', this.handleSearchShortcut);
     },
     methods: {
+        collectSearchItems() {
+            // Toma los enlaces del menú lateral (ya filtrados por permisos del usuario)
+            const links = document.querySelectorAll('#sidebar-menu a[href], .sidebar a[href]');
+            const seen = new Set();
+            const items = [];
+            const base = this.$router.options.history.base || '';
+            links.forEach(a => {
+                let href = a.getAttribute('href') || '';
+                if (!href || href === '#' || href.startsWith('javascript')) return;
+                if (base && href.startsWith(base)) href = href.slice(base.length) || '/';
+                const label = (a.textContent || '').replace(/\s+/g, ' ').trim();
+                if (!label || seen.has(href)) return;
+                seen.add(href);
+                const sectionEl = a.closest('li.submenu')?.parentElement?.closest('li.submenu')?.querySelector(':scope > a')
+                    || a.closest('ul')?.closest('li')?.querySelector(':scope > a');
+                const section = sectionEl && sectionEl !== a ? (sectionEl.textContent || '').replace(/\s+/g, ' ').trim() : '';
+                items.push({ href, label, section });
+            });
+            this.searchItems = items;
+        },
+        openSearch() {
+            this.collectSearchItems();
+            this.searchOpen = true;
+            this.searchIndex = 0;
+        },
+        closeSearch() {
+            this.searchOpen = false;
+            this.$refs.searchInput?.blur();
+        },
+        moveSelection(step) {
+            const n = this.searchResults.length;
+            if (!n) return;
+            this.searchIndex = (this.searchIndex + step + n) % n;
+        },
+        goToSelected() {
+            const item = this.searchResults[this.searchIndex];
+            if (item) this.goTo(item);
+        },
+        goTo(item) {
+            this.searchText = '';
+            this.searchOpen = false;
+            this.$router.push(item.href);
+        },
+        handleSearchShortcut(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                this.$refs.searchInput?.focus();
+            }
+        },
         handleStorageChange(event) {
             // Actualizar usuario cuando cambie en localStorage
             if (event.key === 'user') {
-                console.log('🔄 [STORAGE] Usuario actualizado en localStorage');
                 this.currentUser = getCurrentUser();
             }
         },
@@ -294,6 +386,10 @@ export default {
             this.showDropdown = false;
         },
         handleClickOutside(event) {
+            const search = this.$refs.searchContainer;
+            if (search && !search.contains(event.target)) {
+                this.searchOpen = false;
+            }
             const dropdown = this.$refs.dropdownContainer;
             if (dropdown && !dropdown.contains(event.target)) {
                 this.showDropdown = false;
@@ -382,3 +478,10 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+.pp-search { position: relative; }
+.pp-search__results { display: block; position: absolute; top: 100%; left: 0; min-width: 320px; max-height: 360px; overflow-y: auto; z-index: 1050; }
+.pp-search__results .dropdown-item.active { background: var(--bs-primary, #fe9f43); color: #fff; }
+.pp-search__results .dropdown-item.active small { color: #fff !important; }
+</style>

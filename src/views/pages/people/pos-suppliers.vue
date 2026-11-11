@@ -246,7 +246,7 @@ export default {
       this.error = null;
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/v1/suppliers', {
+        const response = await axios.get('/api/v1/suppliers', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

@@ -7273,7 +7273,7 @@ export default {
         };
 
         // Usar axios directamente sin interceptores para evitar que se agregue store_id
-        const response = await axios.post('http://localhost:3000/api/v1/ecommerce/cart/validate-coupon', cartData);
+        const response = await axios.post('/api/v1/ecommerce/cart/validate-coupon', cartData);
 
         if (response.data.success) {
           const newCoupon = response.data.data.coupon;
@@ -7337,7 +7337,7 @@ export default {
             }
           };
 
-          const response = await axios.post('http://localhost:3000/api/v1/ecommerce/cart/validate-coupon', cartData);
+          const response = await axios.post('/api/v1/ecommerce/cart/validate-coupon', cartData);
 
           if (response.data.success) {
             // Cupón aún válido, actualizar descuento
@@ -7420,7 +7420,7 @@ export default {
         };
 
         // Usar axios directamente sin interceptores para evitar que se agregue store_id
-        const response = await axios.post('http://localhost:3000/api/v1/ecommerce/cart/active-offers', cartData);
+        const response = await axios.post('/api/v1/ecommerce/cart/active-offers', cartData);
 
         if (response.data.success) {
           this.activeOffers = response.data.data.offers || [];

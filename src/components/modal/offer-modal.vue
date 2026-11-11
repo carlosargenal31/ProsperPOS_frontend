@@ -1236,7 +1236,7 @@ export default {
     async loadBranches() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/v1/branches', {
+        const response = await axios.get('/api/v1/branches', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         this.branches = response.data.data || [];
@@ -1248,7 +1248,7 @@ export default {
     async loadCategories() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/v1/categories', {
+        const response = await axios.get('/api/v1/categories', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         this.categories = response.data.data || [];
@@ -1261,7 +1261,7 @@ export default {
     async loadSubcategories() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/v1/subcategories', {
+        const response = await axios.get('/api/v1/subcategories', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         this.subcategories = response.data.data || [];
@@ -1273,7 +1273,7 @@ export default {
     async loadProducts() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/v1/products?limit=1000', {
+        const response = await axios.get('/api/v1/products?limit=1000', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         // El API devuelve { products: [...], pagination: {...} }
@@ -1291,7 +1291,7 @@ export default {
     async generateNextCode() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/v1/offers/next-code', {
+        const response = await axios.get('/api/v1/offers/next-code', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -1410,7 +1410,7 @@ export default {
 
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:3000/api/v1/products?search=${this.productSearch}`, {
+        const response = await axios.get(`/api/v1/products?search=${this.productSearch}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         // El API devuelve { products: [...], pagination: {...} }
@@ -1625,12 +1625,12 @@ export default {
         // Determinar si es creación o actualización
         if (this.formData.id) {
           // Actualizar oferta existente
-          await axios.put(`http://localhost:3000/api/v1/offers/${this.formData.id}`, dataToSend, {
+          await axios.put(`/api/v1/offers/${this.formData.id}`, dataToSend, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
         } else {
           // Crear nueva oferta
-          await axios.post('http://localhost:3000/api/v1/offers', dataToSend, {
+          await axios.post('/api/v1/offers', dataToSend, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
         }
@@ -1695,7 +1695,7 @@ export default {
       this.isSubmitting = true;
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3000/api/v1/offers/${this.offer.id}`, {
+        await axios.delete(`/api/v1/offers/${this.offer.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 

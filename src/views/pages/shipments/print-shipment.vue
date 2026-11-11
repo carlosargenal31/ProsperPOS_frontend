@@ -1,183 +1,21 @@
 <template>
-  <div class="print-container">
-    <!-- Botones de exportación (solo en pantalla, no se imprimen) -->
-    <div class="export-buttons no-print">
-      <button @click="exportToPDF" class="btn btn-danger">
-        <i class="ti ti-file-type-pdf"></i> Guardar PDF
-      </button>
-      <button @click="exportToImage" class="btn btn-info">
-        <i class="ti ti-photo"></i> Guardar Imagen
-      </button>
-      <button @click="printDocument" class="btn btn-success">
+  <div class="gr-page">
+    <!-- Botones (solo en pantalla) -->
+    <div class="gr-actions no-print">
+      <button @click="printDocument" class="btn btn-success" :disabled="!html">
         <i class="ti ti-printer"></i> Imprimir
       </button>
+      <button @click="exportToPDF" class="btn btn-danger" :disabled="!html">
+        <i class="ti ti-file-type-pdf"></i> Guardar PDF
+      </button>
+      <button @click="exportToImage" class="btn btn-info" :disabled="!html">
+        <i class="ti ti-photo"></i> Guardar Imagen
+      </button>
     </div>
 
-    <div class="print-content" v-if="shipment && billingSettings">
-      <!-- Company Header -->
-      <div class="company-header">
-        <h1 class="company-name">{{ billingSettings.company_name || 'Ceramicas Terrazos y Pulidos Universal' }}</h1>
-        <div class="company-details">
-          <p><strong>Cedula:</strong> {{ billingSettings.company_rtn || '0106197700251' }}</p>
-          <p><strong>Sucursal:</strong> {{ billingSettings.commercial_name || 'SUCURSAL PRINCIPAL' }}</p>
-          <p><strong>Teléfono:</strong> {{ billingSettings.company_phone || '+504 2440-0037' }} <strong>Email:</strong> {{ billingSettings.company_email || 'mauricio_argenal@hotmail.com' }}</p>
-          <p><strong>Dirección:</strong> {{ billingSettings.company_address || 'Casa Matriz, Barrio La Merced, Avenida 14 de Julio entre 15 y 16 calle frente a Repuestos del Atlántico, La Ceiba, Atlántida' }}</p>
-        </div>
-      </div>
-
-      <!-- Document Title -->
-      <div class="doc-title">
-        <h2>GUÍA DE REMISIÓN: <span class="guide-number">{{ shipment.shipment_number }}</span></h2>
-      </div>
-
-      <!-- Emission Info -->
-      <div class="emission-info">
-        <div class="info-row">
-          <div class="info-item">
-            <strong>Emisión:</strong> {{ formatDateTime(shipment.created_at) }}
-          </div>
-          <div class="info-item" v-if="shipment.estimated_delivery_date">
-            <strong>Vence:</strong> {{ formatDate(shipment.estimated_delivery_date) }}
-          </div>
-        </div>
-      </div>
-
-      <!-- Driver and Vehicle Section -->
-      <div class="section">
-        <div class="section-header">Datos del Conductor y Vehículo</div>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Cédula</th>
-              <th>Nombre</th>
-              <th>#Licencia</th>
-              <th>Placa</th>
-              <th>Vehículo</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{{ shipment.driver_id || 'N/A' }}</td>
-              <td>{{ shipment.driver_name || 'N/A' }}</td>
-              <td>{{ shipment.driver_license || 'N/A' }}</td>
-              <td>{{ shipment.vehicle_plate || 'N/A' }}</td>
-              <td>{{ getVehicleInfo() }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Departure and Arrival Points -->
-      <div class="points-container">
-        <div class="point-box">
-          <strong>Punto de partida:</strong>
-          <p>{{ shipment.origin_address }}</p>
-          <p><strong>Ciudad:</strong> {{ shipment.origin_city || 'N/A' }}</p>
-          <p><strong>Departamento:</strong> {{ shipment.origin_state || 'N/A' }}</p>
-        </div>
-        <div class="point-box">
-          <strong>Punto de llegada:</strong>
-          <p>{{ shipment.destination_address }}</p>
-          <p><strong>Ciudad:</strong> {{ shipment.destination_city || 'N/A' }}</p>
-          <p><strong>Departamento:</strong> {{ shipment.destination_state || 'N/A' }}</p>
-        </div>
-      </div>
-
-      <!-- Involved Documents -->
-      <div class="section">
-        <div class="section-header">Documentos Involucrados</div>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>#Doc</th>
-              <th>Cliente</th>
-              <th>Artículo(s)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{{ getDocumentNumber() }}</td>
-              <td>{{ shipment.customer_name }}</td>
-              <td>{{ getTotalQuantity() }}</td>
-            </tr>
-            <tr>
-              <td colspan="3"><strong>({{ getItemsCount() }}) Registros</strong></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Articles Detail -->
-      <div class="section">
-        <div class="section-header">Detalle de Artículos</div>
-        <table class="articles-table">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Artículo</th>
-              <th>Peso/Unit</th>
-              <th>Cantidad</th>
-              <th>PesoTotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            <template v-if="shipment.items && shipment.items.length > 0">
-              <tr v-for="(item, index) in shipment.items" :key="index">
-                <td class="text-center">{{ item.product_code || item.code || 'N/A' }}</td>
-                <td>{{ item.product_name || item.name || item.description || 'N/A' }}</td>
-                <td class="text-right">{{ formatWeight(item.weight) }}</td>
-                <td class="text-right">{{ formatQuantity(item.quantity) }}</td>
-                <td class="text-right">{{ formatTotalWeight(item.weight, item.quantity) }}</td>
-              </tr>
-              <!-- Totals Row -->
-              <tr class="totals-row">
-                <td colspan="4" class="text-right"><strong>Total Artículos: {{ shipment.items.length }}</strong></td>
-                <td class="text-right"><strong>{{ getTotalWeight() }}</strong></td>
-              </tr>
-            </template>
-            <tr v-else>
-              <td colspan="5" class="text-center">Sin artículos registrados</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Notes -->
-      <div class="notes-section" v-if="shipment.notes || shipment.assistant_name">
-        <strong>Notas:</strong> {{ shipment.notes || '' }} {{ shipment.assistant_name ? shipment.assistant_name + ' ' + (shipment.assistant_phone || '') : '' }}
-      </div>
-
-      <!-- Delivery Conditions -->
-      <div class="conditions">
-        <h4>Condiciones de entrega</h4>
-        <ul>
-          <li>* Nuestro servicio de fleta incluye la descarga del producto al <strong>pie del vehículo</strong> que entrega.</li>
-          <li>* Al momento de entregar debe haber una persona responsable encargada de recibir.</li>
-          <li>* No se aceptan cambios, ni reclamos.</li>
-          <li>* Una vez firmado el comprobante de entrega o una vez en el <strong>piso en su obra</strong>, la empresa no se hace responsable de quebraduras o roturas.</li>
-          <li>* Nuestra Responsabilidad termina una vez entregado el producto.</li>
-        </ul>
-      </div>
-
-      <!-- Signatures -->
-      <div class="signatures">
-        <div class="signature-line">
-          <p>Firma del Motorista (Empleado que entrega)</p>
-          <div class="line">_________________________________________</div>
-          <p class="small">Nombre: {{ shipment.driver_name || '_____________________' }}</p>
-        </div>
-        <div class="signature-line">
-          <p>Recibí Cliente</p>
-          <div class="line">_________________________________________</div>
-          <p class="small">Nombre: _____________________</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading State -->
-    <div v-else class="loading">
-      <p>Cargando guía de remisión...</p>
-    </div>
+    <div v-if="html" ref="ticket" class="gr-preview" v-html="html"></div>
+    <div v-else-if="error" class="gr-loading text-danger">{{ error }}</div>
+    <div v-else class="gr-loading">Cargando guía de remisión...</div>
   </div>
 </template>
 
@@ -185,13 +23,48 @@
 import api from '@/api/config';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { formatDateOnly } from '@/utils/date';
+
+const esc = (v) => String(v ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;');
+
+// Estilos del ticket (mismo formato que Reimpresiones de Ventas, 80 mm)
+const TICKET_CSS = `
+  .gr-ticket { font-family: Arial, sans-serif; color: #000; background: #fff; max-width: 80mm; margin: 0 auto; padding: 12px 18px; font-size: 13px; }
+  .gr-ticket * { box-sizing: border-box; }
+  .gr-header { text-align: center; margin-bottom: 2px; }
+  .gr-logo img { max-width: 120px; height: auto; margin-bottom: 6px; }
+  .gr-company { font-size: 13px; font-weight: 700; text-transform: uppercase; line-height: 1.3; margin: 4px 0; }
+  .gr-details { font-size: 12px; line-height: 1.25; }
+  .gr-title { font-size: 16px; font-weight: 700; text-align: center; margin: 6px 0 2px; text-transform: uppercase; }
+  .gr-number { text-align: center; font-size: 14px; font-weight: 700; }
+  .gr-badge { text-align: center; font-size: 13px; font-weight: 700; margin: 4px 0; padding: 2px 0; border-top: 1px dashed #000; border-bottom: 1px dashed #000; }
+  .gr-info { font-size: 13px; line-height: 1.3; margin: 4px 0; }
+  .gr-info strong { font-weight: 700; }
+  .gr-section { font-size: 13px; font-weight: 700; text-align: center; margin: 6px 0 2px; text-transform: uppercase; }
+  .gr-dots { text-align: center; font-size: 12px; overflow: hidden; white-space: nowrap; }
+  .gr-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .gr-table th { text-align: left; font-weight: 700; padding: 4px 3px; }
+  .gr-table td { padding: 3px; vertical-align: top; }
+  .gr-table .c { text-align: center; width: 40px; }
+  .gr-conditions { font-size: 11px; line-height: 1.25; margin-top: 6px; }
+  .gr-sign { margin-top: 26px; text-align: center; font-size: 12px; }
+  .gr-sign .line { border-top: 1px solid #000; margin: 0 10px 2px; }
+  .gr-footer { text-align: center; font-size: 11px; margin-top: 10px; }
+`;
 
 export default {
   name: 'PrintShipment',
   data() {
     return {
       shipment: null,
-      billingSettings: null
+      company: {},
+      logo: '',
+      html: '',
+      error: ''
     };
   },
   async mounted() {
@@ -200,62 +73,223 @@ export default {
   methods: {
     async loadData() {
       try {
-        const shipmentId = this.$route.params.id;
-
-        // Load shipment and billing settings in parallel
-        const [shipmentResponse, billingResponse] = await Promise.all([
-          api.get(`/shipments/${shipmentId}`),
-          api.get('/billing/settings')
+        const id = this.$route.params.id;
+        const [shipmentRes, billingRes, companyRes] = await Promise.allSettled([
+          api.get(`/shipments/${id}`),
+          api.get('/billing/settings'),
+          api.get('/companies/default')
         ]);
 
-        this.shipment = shipmentResponse.data?.data;
-        this.billingSettings = billingResponse.data?.data;
+        if (shipmentRes.status !== 'fulfilled' || !shipmentRes.value.data?.data) {
+          throw new Error('No se encontró la guía de remisión');
+        }
+        this.shipment = shipmentRes.value.data.data;
 
-        console.log('Shipment loaded:', this.shipment);
-        console.log('Items:', this.shipment?.items);
-      } catch (error) {
-        console.error('Error loading data:', error);
-        alert('Error al cargar la guía de remisión');
+        const billing = billingRes.status === 'fulfilled' ? (billingRes.value.data?.data || {}) : {};
+        const company = companyRes.status === 'fulfilled' ? (companyRes.value.data?.data || companyRes.value.data || {}) : {};
+        this.company = {
+          name: company.commercial_name || company.company_name || billing.company_name || 'EMPRESA',
+          rtn: company.rtn || billing.company_rtn || '',
+          address: company.address || company.direccion || billing.company_address || '',
+          phone: company.phone || company.telefono || billing.company_phone || '',
+          whatsapp: company.whatsapp || '',
+          email: company.email || billing.company_email || '',
+          logo_url: company.logo_url || ''
+        };
+
+        this.logo = await this.loadLogo(this.company.logo_url);
+        this.html = this.buildHTML();
+      } catch (err) {
+        console.error('Error loading shipment:', err);
+        this.error = err.message || 'Error al cargar la guía de remisión';
       }
     },
 
+    async loadLogo(url) {
+      if (!url || !url.startsWith('http')) return '';
+      try {
+        const res = await api.get('/image-proxy', { params: { url } });
+        return res.data?.success ? (res.data.data?.base64 || '') : '';
+      } catch {
+        return '';
+      }
+    },
+
+    isPickup() {
+      return this.shipment?.delivery_type === 'recoger';
+    },
+
+    formatTime(value) {
+      if (!value) return '';
+      const d = new Date(value);
+      if (isNaN(d)) return '';
+      return d.toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    },
+
+    formatQty(q) {
+      const n = parseFloat(q || 0);
+      return Number.isInteger(n) ? String(n) : n.toFixed(2);
+    },
+
+    receiverBlock(name, phone, doc) {
+      if (!name) return '';
+      return `${esc(name)}${phone ? `<br>Tel: ${esc(phone)}` : ''}${doc ? `<br>ID: ${esc(doc)}` : ''}`;
+    },
+
+    buildHTML() {
+      const s = this.shipment;
+      const c = this.company;
+      const pickup = this.isPickup();
+      const items = Array.isArray(s.items) ? s.items : [];
+      const dots = '.'.repeat(90);
+
+      const rows = items.length
+        ? items.map(i => `
+            <tr>
+              <td class="c">${esc(this.formatQty(i.quantity))}</td>
+              <td>${esc(i.product_name || i.description || '')}${i.product_code ? `<br><small>Cód: ${esc(i.product_code)}</small>` : ''}${i.unit ? ` <small>${esc(i.unit)}</small>` : ''}</td>
+            </tr>`).join('')
+        : '<tr><td colspan="2" style="text-align:center">Sin artículos registrados</td></tr>';
+
+      const totalQty = items.reduce((sum, i) => sum + parseFloat(i.quantity || 0), 0);
+
+      const alternates = [
+        this.receiverBlock(s.receiver_alt_name, s.receiver_alt_phone, s.receiver_alt_id_document),
+        this.receiverBlock(s.receiver_alt2_name, s.receiver_alt2_phone, s.receiver_alt2_id_document)
+      ].filter(Boolean);
+
+      const placeBlock = pickup
+        ? `
+          <div class="gr-section">Lugar de retiro</div>
+          <div class="gr-info">
+            ${esc(s.origin_address)}${s.origin_city ? `<br>${esc(s.origin_city)}${s.origin_state ? ', ' + esc(s.origin_state) : ''}` : ''}
+            ${s.driver_name ? `<br><strong>Entrega en bodega:</strong> ${esc(s.driver_name)}` : ''}
+          </div>`
+        : `
+          <div class="gr-section">Punto de partida</div>
+          <div class="gr-info">
+            ${esc(s.origin_address)}${s.origin_city ? `<br>${esc(s.origin_city)}${s.origin_state ? ', ' + esc(s.origin_state) : ''}` : ''}
+          </div>
+          <div class="gr-section">Punto de llegada</div>
+          <div class="gr-info">
+            ${esc(s.destination_address)}${s.destination_city ? `<br>${esc(s.destination_city)}${s.destination_state ? ', ' + esc(s.destination_state) : ''}` : ''}
+            ${s.destination_reference ? `<br><strong>Referencia:</strong> ${esc(s.destination_reference)}` : ''}
+          </div>
+          <div class="gr-section">Transporte</div>
+          <div class="gr-info">
+            <strong>Conductor:</strong> ${esc(s.driver_name || 'N/A')}${s.driver_id ? ` (ID ${esc(s.driver_id)})` : ''}<br>
+            ${s.driver_license ? `<strong>Licencia:</strong> ${esc(s.driver_license)}<br>` : ''}
+            <strong>Vehículo:</strong> ${esc(s.vehicle_plate || 'N/A')}${s.vehicle_brand ? ' ' + esc(s.vehicle_brand) : ''}${s.vehicle_model ? ' ' + esc(s.vehicle_model) : ''}
+            ${s.assistant_name ? `<br><strong>Acompañante:</strong> ${esc(s.assistant_name)}` : ''}
+          </div>`;
+
+      const conditions = pickup
+        ? `
+          <div>* El cliente o la persona autorizada debe presentar identificación al retirar.</div>
+          <div>* Revise su producto antes de retirarse; no se aceptan cambios ni reclamos posteriores.</div>
+          <div>* Una vez retirado, la empresa no se hace responsable por quebraduras o roturas.</div>`
+        : `
+          <div>* El servicio de flete incluye la descarga al pie del vehículo que entrega.</div>
+          <div>* Debe haber una persona responsable para recibir.</div>
+          <div>* No se aceptan cambios ni reclamos.</div>
+          <div>* Una vez firmado el comprobante de entrega, la empresa no se hace responsable de quebraduras o roturas.</div>`;
+
+      const signatures = pickup
+        ? `
+          <div class="gr-sign"><div class="line"></div>Entregado por (Bodega)<br>${esc(s.driver_name || '')}</div>
+          <div class="gr-sign"><div class="line"></div>Retiré conforme (Cliente)</div>`
+        : `
+          <div class="gr-sign"><div class="line"></div>Entregado por<br>${esc(s.driver_name || '')}</div>
+          <div class="gr-sign"><div class="line"></div>Recibí conforme (Cliente)</div>`;
+
+      return `
+        <style>${TICKET_CSS}</style>
+        <div class="gr-ticket">
+          <div class="gr-header">
+            ${this.logo ? `<div class="gr-logo"><img src="${this.logo}" alt="Logo"></div>` : ''}
+            <div class="gr-company">${esc(c.name)}</div>
+            <div class="gr-details">
+              ${c.rtn ? `<strong>RTN:</strong> ${esc(c.rtn)}<br>` : ''}
+              ${c.address ? `<strong>Dirección:</strong> ${esc(c.address)}<br>` : ''}
+              ${c.phone ? `<strong>Teléfono:</strong> ${esc(c.phone)}` : ''}${c.whatsapp ? `<br><strong>Móvil:</strong> ${esc(c.whatsapp)}` : ''}
+              ${c.email ? `<br>${esc(c.email)}` : ''}
+            </div>
+          </div>
+
+          <div class="gr-title">Guía de Remisión</div>
+          <div class="gr-number">${esc(s.shipment_number)}</div>
+          <div class="gr-badge">${pickup ? 'PARA RECOGER' : 'PARA ENVIAR'}</div>
+
+          <div class="gr-info">
+            <strong>Fecha:</strong> ${formatDateOnly(s.emission_date)} ${this.formatTime(s.created_at)}<br>
+            ${s.invoice_number ? `<strong>Factura:</strong> ${esc(s.invoice_number)}<br>` : ''}
+            <strong>Cliente:</strong> ${esc(s.customer_name || 'CONSUMIDOR FINAL')}<br>
+            ${s.customer_document ? `<strong>RTN/ID:</strong> ${esc(s.customer_document)}<br>` : ''}
+            <strong>${pickup ? 'Retira' : 'Recibe'}:</strong> ${this.receiverBlock(s.receiver_name, s.receiver_phone, s.receiver_id_document)}
+            ${alternates.length ? `<br><strong>Autorizados:</strong><br>${alternates.join('<br>')}` : ''}
+          </div>
+
+          ${placeBlock}
+
+          <table class="gr-table">
+            <thead>
+              <tr><td colspan="2" class="gr-dots">${dots}</td></tr>
+              <tr><th class="c">Cant</th><th>Producto</th></tr>
+            </thead>
+            <tbody>${rows}</tbody>
+            <tfoot>
+              <tr><td colspan="2" class="gr-dots">${dots}</td></tr>
+              <tr><td class="c"><strong>${esc(this.formatQty(totalQty))}</strong></td><td><strong>Total artículos (${items.length})</strong></td></tr>
+            </tfoot>
+          </table>
+
+          ${s.notes ? `<div class="gr-info"><strong>Notas:</strong> ${esc(s.notes)}</div>` : ''}
+
+          <div class="gr-conditions">${conditions}</div>
+
+          ${signatures}
+
+          <div class="gr-footer">Documento no fiscal · Control de entrega</div>
+        </div>`;
+    },
+
     printDocument() {
-      window.print();
+      const w = window.open('', '_blank');
+      if (!w) {
+        alert('Permita las ventanas emergentes para imprimir.');
+        return;
+      }
+      w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Guía ${esc(this.shipment.shipment_number)}</title>
+        <style>
+          body { margin: 0; padding: 0; background: #fff; }
+          @media print { @page { size: 80mm auto; margin: 2mm; } .gr-ticket { padding: 5px; } }
+        </style></head><body>${this.html}</body></html>`);
+      w.document.close();
+      w.onload = () => { w.focus(); w.print(); };
+    },
+
+    async renderCanvas() {
+      const el = this.$refs.ticket?.querySelector('.gr-ticket');
+      return html2canvas(el, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' });
     },
 
     async exportToPDF() {
       try {
-        const element = document.querySelector('.print-content');
-        const canvas = await html2canvas(element, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff'
-        });
-
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'letter');
-        const imgWidth = 210;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        const canvas = await this.renderCanvas();
+        const widthMm = 80;
+        const heightMm = (canvas.height * widthMm) / canvas.width;
+        const pdf = new jsPDF('p', 'mm', [widthMm, heightMm]);
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, widthMm, heightMm);
         pdf.save(`guia_remision_${this.shipment.shipment_number}.pdf`);
-      } catch (error) {
-        console.error('Error exporting PDF:', error);
+      } catch (err) {
+        console.error('Error exporting PDF:', err);
         alert('Error al generar el PDF');
       }
     },
 
     async exportToImage() {
       try {
-        const element = document.querySelector('.print-content');
-        const canvas = await html2canvas(element, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff'
-        });
-
+        const canvas = await this.renderCanvas();
         canvas.toBlob((blob) => {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -264,458 +298,23 @@ export default {
           a.click();
           URL.revokeObjectURL(url);
         });
-      } catch (error) {
-        console.error('Error exporting image:', error);
+      } catch (err) {
+        console.error('Error exporting image:', err);
         alert('Error al generar la imagen');
       }
-    },
-
-    formatDate(date) {
-      if (!date) return 'N/A';
-      const d = new Date(date);
-      const day = String(d.getDate()).padStart(2, '0');
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const year = d.getFullYear();
-      return `${day}/${month}/${year}`;
-    },
-
-    formatDateTime(datetime) {
-      if (!datetime) return 'N/A';
-      const d = new Date(datetime);
-      const day = String(d.getDate()).padStart(2, '0');
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const year = d.getFullYear();
-      const hours = String(d.getHours()).padStart(2, '0');
-      const minutes = String(d.getMinutes()).padStart(2, '0');
-      const seconds = String(d.getSeconds()).padStart(2, '0');
-      return `${day}/${month}/${year} / ${hours}:${minutes}:${seconds} AM`;
-    },
-
-    getVehicleInfo() {
-      if (!this.shipment) return 'N/A';
-      const parts = [];
-      if (this.shipment.vehicle_brand) parts.push(this.shipment.vehicle_brand);
-      if (this.shipment.vehicle_model) parts.push(this.shipment.vehicle_model);
-      if (this.shipment.vehicle_type) parts.push(`(${this.shipment.vehicle_type})`);
-      return parts.length > 0 ? parts.join(' ') : 'N/A';
-    },
-
-    getDocumentNumber() {
-      if (this.shipment?.invoice_id) {
-        return `DOC-${this.shipment.invoice_id}`;
-      }
-      return '000-002-01-00031863';
-    },
-
-    getTotalQuantity() {
-      if (!this.shipment?.items || this.shipment.items.length === 0) return '0.00';
-      const total = this.shipment.items.reduce((sum, item) => {
-        return sum + (parseFloat(item.quantity) || 0);
-      }, 0);
-      return total.toFixed(2);
-    },
-
-    getItemsCount() {
-      return this.shipment?.items?.length || 0;
-    },
-
-    formatWeight(weight) {
-      const w = parseFloat(weight) || 0;
-      return w.toFixed(2);
-    },
-
-    formatQuantity(qty) {
-      const q = parseFloat(qty) || 0;
-      return q.toFixed(2);
-    },
-
-    formatTotalWeight(weight, qty) {
-      const w = parseFloat(weight) || 0;
-      const q = parseFloat(qty) || 0;
-      return (w * q).toFixed(2);
-    },
-
-    getTotalWeight() {
-      if (!this.shipment?.items || this.shipment.items.length === 0) return '0.00';
-      const total = this.shipment.items.reduce((sum, item) => {
-        const w = parseFloat(item.weight) || 0;
-        const q = parseFloat(item.quantity) || 0;
-        return sum + (w * q);
-      }, 0);
-      return total.toFixed(2);
     }
   }
 };
 </script>
 
 <style scoped>
-/* Reset and Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-.print-container {
-  width: 21.59cm;
-  min-height: 27.94cm;
-  margin: 0 auto;
-  padding: 1cm;
-  background: white;
-  font-family: Arial, sans-serif;
-  font-size: 10pt;
-  color: #000;
-}
-
-.print-content {
-  width: 100%;
-}
-
-/* Company Header */
-.company-header {
-  text-align: center;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #333;
-  padding-bottom: 10px;
-}
-
-.company-name {
-  font-size: 16pt;
-  font-weight: bold;
-  margin: 0;
-  color: #000;
-}
-
-.company-subtitle {
-  font-size: 12pt;
-  margin: 5px 0;
-}
-
-.company-details {
-  font-size: 9pt;
-  margin-top: 8px;
-}
-
-.company-details p {
-  margin: 2px 0;
-}
-
-/* Document Title */
-.doc-title {
-  text-align: center;
-  margin: 15px 0;
-}
-
-.doc-title h2 {
-  font-size: 14pt;
-  font-weight: bold;
-  margin: 0;
-}
-
-.guide-number {
-  color: #c00000;
-}
-
-/* Emission Info */
-.emission-info {
-  margin: 15px 0;
-  border: 1px solid #000;
-  padding: 8px;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-}
-
-.info-item {
-  flex: 1;
-}
-
-/* Section Styles */
-.section {
-  margin: 15px 0;
-}
-
-.section-header {
-  background-color: #4472c4;
-  color: white;
-  padding: 6px;
-  font-weight: bold;
-  text-align: center;
-  font-size: 11pt;
-}
-
-/* Tables */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 0;
-}
-
-.data-table th,
-.data-table td {
-  border: 1px solid #000;
-  padding: 5px;
-  font-size: 9pt;
-}
-
-.data-table th {
-  background-color: #d9e1f2;
-  font-weight: bold;
-  text-align: center;
-}
-
-.data-table td {
-  text-align: center;
-}
-
-/* Articles Table */
-.articles-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 0;
-}
-
-.articles-table th,
-.articles-table td {
-  border: 1px solid #000;
-  padding: 5px;
-  font-size: 9pt;
-}
-
-.articles-table th {
-  background-color: #d9e1f2;
-  font-weight: bold;
-  text-align: center;
-}
-
-.articles-table td {
-  vertical-align: top;
-}
-
-.articles-table td:nth-child(1) {
-  width: 12%;
-  text-align: center;
-}
-
-.articles-table td:nth-child(2) {
-  width: 40%;
-  text-align: left;
-}
-
-.articles-table td:nth-child(3),
-.articles-table td:nth-child(4),
-.articles-table td:nth-child(5) {
-  width: 16%;
-  text-align: right;
-}
-
-.totals-row {
-  font-weight: bold;
-  background-color: #f0f0f0;
-}
-
-/* Points Container */
-.points-container {
-  display: flex;
-  gap: 10px;
-  margin: 15px 0;
-}
-
-.point-box {
-  flex: 1;
-  border: 1px solid #000;
-  padding: 8px;
-  font-size: 9pt;
-}
-
-.point-box strong {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.point-box p {
-  margin: 0;
-}
-
-/* Notes */
-.notes-section {
-  margin: 15px 0;
-  padding: 8px;
-  border: 1px solid #000;
-  font-size: 9pt;
-}
-
-/* Conditions */
-.conditions {
-  margin: 15px 0;
-  page-break-inside: avoid;
-}
-
-.conditions h4 {
-  font-size: 11pt;
-  margin-bottom: 8px;
-  font-weight: bold;
-}
-
-.conditions ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.conditions li {
-  margin: 4px 0;
-  font-size: 9pt;
-  line-height: 1.4;
-}
-
-/* Signatures */
-.signatures {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 40px;
-  page-break-inside: avoid;
-}
-
-.signature-line {
-  flex: 1;
-  text-align: center;
-  margin: 0 10px;
-}
-
-.signature-line p {
-  margin: 5px 0;
-  font-size: 9pt;
-  font-weight: bold;
-}
-
-.signature-line .line {
-  margin: 20px 0 10px 0;
-  border-bottom: 1px solid #000;
-  width: 100%;
-}
-
-.signature-line .small {
-  font-size: 8pt;
-  font-weight: normal;
-}
-
-/* Utility Classes */
-.text-center {
-  text-align: center;
-}
-
-.text-right {
-  text-align: right;
-}
-
-/* Loading State */
-.loading {
-  text-align: center;
-  padding: 50px;
-  font-size: 14pt;
-}
-
-/* Print Styles */
+.gr-page { background: #f2f2f2; min-height: 100vh; padding: 20px 10px; }
+.gr-actions { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+.gr-preview { background: #fff; max-width: 80mm; margin: 0 auto; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12); }
+.gr-loading { text-align: center; padding: 40px; }
 @media print {
-  @page {
-    size: letter;
-    margin: 0.5cm;
-  }
-
-  body {
-    margin: 0;
-    padding: 0;
-  }
-
-  .print-container {
-    width: 100%;
-    margin: 0;
-    padding: 0.5cm;
-    box-shadow: none;
-  }
-
-  .section-header {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    color-adjust: exact;
-  }
-
-  .data-table th,
-  .articles-table th {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    color-adjust: exact;
-  }
-
-  .totals-row {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    color-adjust: exact;
-  }
-}
-
-/* Screen Preview */
-@media screen {
-  .print-container {
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    margin: 20px auto;
-  }
-}
-
-/* Export Buttons */
-.export-buttons {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  display: flex;
-  gap: 10px;
-  z-index: 1000;
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.export-buttons .btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s;
-}
-
-.export-buttons .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.export-buttons .btn-danger {
-  background-color: #dc3545;
-}
-
-.export-buttons .btn-info {
-  background-color: #17a2b8;
-}
-
-.export-buttons .btn-success {
-  background-color: #28a745;
-}
-
-.no-print {
-  display: block;
-}
-
-@media print {
-  .no-print {
-    display: none !important;
-  }
+  .no-print { display: none !important; }
+  .gr-page { background: #fff; padding: 0; }
+  .gr-preview { box-shadow: none; }
 }
 </style>
